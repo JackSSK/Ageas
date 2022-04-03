@@ -8,9 +8,6 @@ import gc
 import re
 import time
 import shap
-import torch
-import pickle
-import sklearn
 import numpy as np
 import pandas as pd
 from warnings import warn
@@ -19,27 +16,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 import ageas.classifier.cnn as cnn
 import ageas.operator as operator
-
-
-
-# Find key factors in feature importance
-def findFactors(featureImpts, appearThread = 2):
-    dict = {}
-    for ele in featureImpts.index.tolist():
-        ele = ele.strip().split('_')
-        _updateDict(dict, ele[0])
-        _updateDict(dict, ele[1])
-    answer = []
-    for ele in dict:
-        if dict[ele] >= appearThread:
-            answer.append([ele, dict[ele]])
-    answer.sort(key = lambda x:x[-1], reverse = True)
-    return answer
-
-# Just to up date the temp dict
-def _updateDict(dict, ele):
-    if ele not in dict: dict[ele] = 1
-    else: dict[ele] += 1
 
 
 
@@ -146,7 +122,9 @@ class Find:
                                 ).sort_values('importance', ascending = False)
 
     # Just to stratify feature importances to top n scale
-    def stratify(self, top): return self.featureImpts[:top]
+    # need to revise this part to support stratify by value
+    def stratify(self, top_GRP_amount, importance_thread):
+        return self.featureImpts[:top_GRP_amount]
 
     # Save feature importances to given path
     def save(self, path): self.featureImpts.to_csv(path, sep='\t')

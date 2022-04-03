@@ -5,53 +5,14 @@ Ageas Reborn
 author: jy, nkmtmsys
 """
 
-import gc
 import os
-import pickle
 import warnings
 from ageas.operator.gem_db_loader import Load
 import ageas.operator.grn_guidance as grn_guidance
 import ageas.operator.trainer as trainer
 import ageas.operator.model_interpreter as interpreter
+import ageas.operator.feature_extractor as extractor
 import ageas.tool.json as json
-from collections import OrderedDict
-
-
-
-class Error(Exception):
-    """
-    Error handling
-    """
-    pass
-
-
-
-# Add correlation in class 1 and class 2 into regulon record
-def makeEle(rec):
-    return {k:rec[k] for k in rec if k not in ['grp_ID','sourceID','targetID']}
-
-# Find Common source TFs or target genes in given factors
-def findCommon(grnGuide, factors, mode = 'sourceID', thread = 2):
-    if mode == 'sourceID': known = 'targetID'
-    elif mode == 'targetID': known = 'sourceID'
-    genes = [x[0] for x in factors]
-    dict = {}
-    for grp in grnGuide:
-        record = grnGuide[grp]
-        if record[known] in genes:
-            target = record[mode]
-            if target not in dict:
-                dict[target] = {
-                    'relate': [{record[known]:makeEle(record)}],
-                    'influence': 1
-                }
-            else:
-                dict[target]['relate'].append({record[known]:makeEle(record)})
-                dict[target]['influence'] += 1
-    dict = {ele:dict[ele] for ele in dict if dict[ele]['influence'] >= thread}
-    dict = OrderedDict(sorted(dict.items(), key = lambda x: x[1]['influence'],
-                                reverse = True))
-    return dict
 
 
 
@@ -112,13 +73,10 @@ class Find:
                                     keepRatio = keepRatio,
                                     keepThread = keepThread)
         self.penelope = interpreter.Find(self.ulysses.models)
-        self.factors = interpreter.findFactors(self.penelope.stratify(topGRP))
-        self.comSource = findCommon(self.circe.guide,
-                                    self.factors,
-                                    'sourceID')
-        self.comTarget = findCommon(self.circe.guide,
-                                    self.factors,
-                                    'targetID')
+        self.factors = extractor.Extract(self.penelope,
+                                        top_GRP_amount = topGRP)
+        self.factors.extract_common(self.circe.guide, type = 'sourceID')
+        self.factors.extract_common(self.circe.guide, type = 'targetID')
 
     # Stop iteration if abundace factors are not really changing
     def _earlyStopping(self, prevFactors, curFactors):
@@ -143,6 +101,4 @@ class Find:
         if not os.path.exists(reportPath): os.makedirs(reportPath)
         self.penelope.save(reportPath + 'feature_importances.txt')
         self.circe.save_guide(reportPath + 'grn_guide.js')
-        json.encode(self.factors, reportPath + 'repeated_factors.js')
-        json.encode(self.comSource, reportPath + 'common_source.js')
-        json.encode(self.comTarget, reportPath + 'common_target.js')
+        self.factors.save(reportPath)
