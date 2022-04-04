@@ -75,8 +75,8 @@ class Find:
         self.penelope = interpreter.Find(self.ulysses.models)
         self.factors = extractor.Extract(self.penelope,
                                         top_GRP_amount = topGRP)
-        self.factors.extract_common(self.circe.guide, type = 'sourceID')
-        self.factors.extract_common(self.circe.guide, type = 'targetID')
+        self.factors.extract_common(self.circe.guide, type = 'reg_source')
+        self.factors.extract_common(self.circe.guide, type = 'reg_target')
 
     # Stop iteration if abundace factors are not really changing
     def _earlyStopping(self, prevFactors, curFactors):

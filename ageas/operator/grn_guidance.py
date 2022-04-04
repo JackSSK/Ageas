@@ -53,12 +53,12 @@ def update_grn_guidance(grn_guidance,
             passed = True
     # If the testing pass survived till here, save it
     if passed:
-        grn_guidance[grp_ID] = {'grp_ID': grp_ID,
+        grn_guidance[grp_ID] = {'id': grp_ID,
                                 'reversable': False,
-                                'sourceID': source,
-                                'targetID': target,
-                                'class1': cor_class1,
-                                'class2': cor_class2}
+                                'regulatory_source': source,
+                                'regulatory_target': target,
+                                'correlation_in_class1': cor_class1,
+                                'correlation_in_class2': cor_class2}
 
 
 
@@ -91,7 +91,9 @@ class Cast:
             gBoost = grp.Predict(gem_data, self.guide, prediction_thread)
             if len(self.tfs_no_interaction_rec) == 0:   genes = gem_data.genes
             else:   genes = self.tfs_no_interaction_rec
-            self.guide = gBoost.expandGuide(self.guide, genes, correlation_thread)
+            self.guide = gBoost.expandGuide(self.guide,
+                                            genes,
+                                            correlation_thread)
             print('With predictions, total length of guide:', len(self.guide))
         # else: raise operator.Error('Sorry, such mode is not supported yet!')
         """ ToDo:if more than 1 guide can be casted, let them make agreement """

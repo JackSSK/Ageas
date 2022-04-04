@@ -59,8 +59,8 @@ class Make:
             grn = {}
             if grn_guidance is not None:
                 for grp in grn_guidance:
-                    source_ID = grn_guidance[grp]['sourceID']
-                    target_ID = grn_guidance[grp]['targetID']
+                    source_ID = grn_guidance[grp]['reg_source']
+                    target_ID = grn_guidance[grp]['reg_target']
                     try:
                         source = list(data[sample].loc[[source_ID]].values[0])
                         target = list(data[sample].loc[[target_ID]].values[0])
@@ -71,9 +71,9 @@ class Make:
                     cor = pearsonr(source, target)[0]
                     if abs(cor) > correlation_thread:
                         grn[grp] = {
-                            'grp_ID': grp,
-                            'sourceID': source_ID,
-                            'targetID': target_ID,
+                            'id': grp,
+                            'reg_source': source_ID,
+                            'reg_target': target_ID,
                             'correlation':cor
                         }
             # Process data without guidance
@@ -95,9 +95,9 @@ class Make:
                                             data[sample][target_ID])[0]
                             if abs(cor) > correlation_thread:
                                 grn[grp_ID] = {
-                                    'grp_ID': grp_ID,
-                                    'sourceID': source_ID,
-                                    'targetID': target_ID,
+                                    'id': grp_ID,
+                                    'reg_source': source_ID,
+                                    'reg_target': target_ID,
                                     'correlation':cor
                                 }
                             else:

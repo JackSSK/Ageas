@@ -49,7 +49,7 @@ class Packer:
         tarTable = pd.read_csv(filepath, sep = sep, header = header)
         for index, row in tarTable.iterrows():
             result[row['Gene symbol'].upper()] = {
-                'ID':row['ID'],
+                'id':row['id'],
                 'ENS_TransID':row['Ensembl ID'],
                 'siteCount':row['SiteCount']
             }
