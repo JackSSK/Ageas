@@ -6,6 +6,7 @@ author: jy, nkmtmsys
 """
 
 import re
+import pandas as pd
 import ageas.tool as tool
 import ageas.tool.gem as gem
 import ageas.tool.json as json
@@ -95,3 +96,12 @@ class Load:
                                             std_value_thread = std_value_thread,
                                             std_ratio_thread = std_ratio_thread)
         return class1, class2
+
+
+
+class Sliding_Window_Separate(Load):
+    """docstring for Sliding_Window_Separate."""
+
+    def __init__(self,
+                database_info,):
+        self.arg = arg

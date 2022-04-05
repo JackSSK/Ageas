@@ -29,6 +29,9 @@ class Find:
                 class1_path = None,
                 class2_path = None,
                 specie = 'mouse',
+                # sliding window related args (for gem_file mode)
+                sliding_window_size = None,
+                sliding_window_stride = None,
                 # supportive data location related args
                 facNameType = 'gn',
                 model_config_path = None,
@@ -52,23 +55,27 @@ class Find:
         self.noChangeNum = 0
         if not warning: warnings.filterwarnings('ignore')
         # Set up database path info
-        self.database_info = binary_db.Setup(database_path = database_path,
-                                            database_type = database_type,
-                                            class1_path = class1_path,
-                                            class2_path = class2_path,
-                                            specie = specie)
+        self.database_info = binary_db.Setup(database_path,
+                                            database_type,
+                                            class1_path,
+                                            class2_path,
+                                            specie,
+                                            sliding_window_size,
+                                            sliding_window_stride)
+        gem_data = Load(self.database_info,
+                        facNameType,
+                        mww_thread,
+                        log2fc_thread,
+                        std_value_thread)
         # Let kirke casts GRN construction guidance first
-        self.circe = grn_guidance.Cast(gem_data = Load(self.database_info,
-                                                        facNameType,
-                                                        mww_thread,
-                                                        log2fc_thread,
-                                                        std_value_thread),
+        self.circe = grn_guidance.Cast(gem_data = gem_data,
                                         prediction_thread = prediction_thread,
                                         correlation_thread = correlation_thread)
 
         # train classifiers
         self.ulysses = trainer.Train(self.database_info,
                                     model_config_path = model_config_path,
+                                    gem_data = gem_data,
                                     grn_guidance = self.circe.guide,
                                     std_value_thread = std_value_thread,
                                     correlation_thread = correlation_thread,
@@ -78,8 +85,8 @@ class Find:
         self.penelope = interpreter.Find(self.ulysses.models)
         self.factors = extractor.Extract(self.penelope,
                                         top_GRP_amount = topGRP)
-        self.factors.extract_common(self.circe.guide, type = 'reg_source')
-        self.factors.extract_common(self.circe.guide, type = 'reg_target')
+        self.factors.extract_common(self.circe.guide, type = 'regulatory_source')
+        self.factors.extract_common(self.circe.guide, type = 'regulatory_target')
 
     # Stop iteration if abundace factors are not really changing
     def _earlyStopping(self, prevFactors, curFactors):

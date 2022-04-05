@@ -30,10 +30,10 @@ class Extract(object):
     # extract common regulaoty sources or targets of given genes
     def extract_common(self,
                         grn_guidance,
-                        type = 'reg_source',
+                        type = 'regulatory_source',
                         occurrence_thread = 2):
-        if type == 'reg_source': known = 'reg_target'
-        elif type == 'reg_target': known = 'reg_source'
+        if type == 'regulatory_source': known = 'regulatory_target'
+        elif type == 'regulatory_target': known = 'regulatory_source'
         genes = [x[0] for x in self.key_genes]
         dict = {}
         for grp in grn_guidance:
@@ -54,8 +54,8 @@ class Extract(object):
         dict = OrderedDict(sorted(dict.items(),
                                     key = lambda x: x[1]['influence'],
                                     reverse = True))
-        if type == 'reg_source':      self.common_reg_source = dict
-        elif type == 'reg_target':    self.common_reg_target = dict
+        if type == 'regulatory_source':      self.common_reg_source = dict
+        elif type == 'regulatory_target':    self.common_reg_target = dict
 
     # save files in json format
     def save(self, folder_path):
@@ -77,4 +77,6 @@ class Extract(object):
 
     # Add correlation in class 1 and class 2 into regulon record
     def __makeEle(self, rec):
-        return {k:rec[k] for k in rec if k not in ['id','reg_source','reg_target']}
+        return {k:rec[k] for k in rec if k not in ['id',
+                                                    'regulatory_source',
+                                                    'regulatory_target']}

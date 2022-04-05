@@ -226,8 +226,8 @@ class Gene_Exp(GRN):
     def _prepareFeatures(self, grnData):
         dataTrain = []
         dataTest = []
-        self._updateTrainTest(grnData.class1_pseudo_cGRNs, dataTrain, dataTest)
-        self._updateTrainTest(grnData.class2_pseudo_cGRNs, dataTrain, dataTest)
+        self._updateTrainTest(grnData.class1_pcGRNs, dataTrain, dataTest)
+        self._updateTrainTest(grnData.class2_pcGRNs, dataTrain, dataTest)
         # Add zeros for position holding
         self._addZeros(dataTrain)
         self._addZeros(dataTest)

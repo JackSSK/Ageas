@@ -12,7 +12,7 @@ import time
 import warnings
 import ageas.operator as operator
 import ageas.tool.json as json
-import ageas.lib.grn_caster as grn
+import ageas.lib.pcgrn_caster as grn
 import ageas.lib.model_caster as model
 from pkg_resources import resource_filename
 
@@ -26,6 +26,7 @@ class Train:
                 database_info,
                 model_config_path = None,
                 # GRN casting params
+                gem_data = None,
                 grn_guidance = None,
                 std_value_thread = 100,
                 std_ratio_thread = None,
@@ -49,10 +50,11 @@ class Train:
 
         # if reading in GEMs, we need to construct pseudo-cGRNs first
         if re.search(r'gem' , self.database_info.type):
-            self.grns = grn.Make(database = self.database_info,
+            self.grns = grn.Make(database_info = self.database_info,
                                 std_value_thread = std_value_thread,
                                 std_ratio_thread = std_ratio_thread,
                                 correlation_thread = correlation_thread,
+                                gem_data = gem_data,
                                 grn_guidance = grn_guidance)
             self.mode = 'gene_exp'
         # if we are reading in GRNs directly, just process them

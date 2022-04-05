@@ -58,9 +58,9 @@ class Reader(tool.Reader_Template):
 	# Pattern info in each line
 	def _prepareInfo(self, content):
 		return {'id':content[0],
-				'reg_source':content[1],
+				'regulatory_source':content[1],
 				'sourceGroup':content[2],
-				'reg_target':content[3],
+				'regulatory_target':content[3],
 				'targetGroup':content[4],
 				'correlation':float(content[5]),
 				'attribute':content[6],}

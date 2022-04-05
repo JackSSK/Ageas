@@ -59,7 +59,7 @@ class Predict:
     def _setThread(self, sampleGRPs):
         commonSource = {}
         for grp in sampleGRPs:
-            source = sampleGRPs[grp]['reg_source']
+            source = sampleGRPs[grp]['regulatory_source']
             if source not in commonSource: commonSource[source] = [grp]
             else: commonSource[source].append(grp)
         keyset = sorted([[x, len(commonSource[x])] for x in commonSource],

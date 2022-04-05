@@ -20,7 +20,9 @@ class Setup:
                 database_type = 'gem_file',
                 class1_path = 'CT1',
                 class2_path = 'CT2',
-                specie = 'mouse'):
+                specie = 'mouse',
+                sliding_window_size = None,
+                sliding_window_stride = None):
         # Auto GEM folder finder
         if database_path is None:
             assert os.path.exists(class1_path) and os.path.exists(class2_path)
@@ -35,6 +37,8 @@ class Setup:
         self.db_path = database_path
         self.type = database_type
         self.specie = specie
+        self.sliding_window_size = sliding_window_size
+        self.sliding_window_stride = sliding_window_stride
         # Get classes'correspond folder paths
         self.class1_path = self.__cast_path(class1_path)
         self.class2_path = self.__cast_path(class2_path)

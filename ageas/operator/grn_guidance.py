@@ -10,7 +10,7 @@ author: jy, nkmtmsys
 import warnings
 import ageas.tool as tool
 import ageas.tool.json as json
-import ageas.lib.grn_caster as grn
+import ageas.lib.pcgrn_caster as grn
 import ageas.lib.grp_predictor as grp
 import ageas.operator as operator
 

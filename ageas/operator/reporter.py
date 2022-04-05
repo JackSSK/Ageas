@@ -17,8 +17,8 @@ def grn_degree_based_analysis(path, top = 50):
 	grn_abundance = {}
 	grn = json.decode(path)
 	for ele in grn:
-		source = grn[ele]['reg_source']
-		target = grn[ele]['reg_target']
+		source = grn[ele]['regulatory_source']
+		target = grn[ele]['regulatory_target']
 		if source not in grn_abundance: grn_abundance[source] = 1
 		else: grn_abundance[source] += 1
 		if target not in grn_abundance: grn_abundance[target] = 1
