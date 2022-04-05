@@ -62,7 +62,7 @@ class Train:
             self.mode = 'grn'
         else:
             raise operator.Error('Unrecogonized database type: ',
-                                self.database_info.type)
+                                    self.database_info.type)
         # Train out models and find the best ones
         self.models = model.Cast(database = self.database_info,
                                 modelsConfig = model_config,

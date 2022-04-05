@@ -7,12 +7,12 @@ author: jy, nkmtmsys
 
 import os
 import warnings
+import ageas.tool.json as json
+import ageas.operator.trainer as trainer
 from ageas.operator.gem_db_loader import Load
 import ageas.operator.grn_guidance as grn_guidance
-import ageas.operator.trainer as trainer
 import ageas.operator.model_interpreter as interpreter
 import ageas.operator.feature_extractor as extractor
-import ageas.tool.json as json
 import ageas.database_setup.binary_class as binary_db
 
 
@@ -30,7 +30,7 @@ class Find:
                 class2_path = None,
                 specie = 'mouse',
                 # sliding window related args (for gem_file mode)
-                sliding_window_size = None,
+                sliding_window_size = 10,
                 sliding_window_stride = None,
                 # supportive data location related args
                 facNameType = 'gn',
@@ -71,7 +71,6 @@ class Find:
         self.circe = grn_guidance.Cast(gem_data = gem_data,
                                         prediction_thread = prediction_thread,
                                         correlation_thread = correlation_thread)
-
         # train classifiers
         self.ulysses = trainer.Train(self.database_info,
                                     model_config_path = model_config_path,
@@ -85,8 +84,10 @@ class Find:
         self.penelope = interpreter.Find(self.ulysses.models)
         self.factors = extractor.Extract(self.penelope,
                                         top_GRP_amount = topGRP)
-        self.factors.extract_common(self.circe.guide, type = 'regulatory_source')
-        self.factors.extract_common(self.circe.guide, type = 'regulatory_target')
+        self.factors.extract_common(self.circe.guide,
+                                    type = 'regulatory_source')
+        self.factors.extract_common(self.circe.guide,
+                                    type = 'regulatory_target')
 
     # Stop iteration if abundace factors are not really changing
     def _earlyStopping(self, prevFactors, curFactors):

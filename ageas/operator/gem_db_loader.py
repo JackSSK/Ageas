@@ -96,12 +96,3 @@ class Load:
                                             std_value_thread = std_value_thread,
                                             std_ratio_thread = std_ratio_thread)
         return class1, class2
-
-
-
-class Sliding_Window_Separate(Load):
-    """docstring for Sliding_Window_Separate."""
-
-    def __init__(self,
-                database_info,):
-        self.arg = arg

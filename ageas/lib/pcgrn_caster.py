@@ -11,9 +11,9 @@ gem_data method also need to be done <- higher priority
 """
 
 import os
+import ageas.tool as tool
 import ageas.tool.gem as gem
 import ageas.tool.json as json
-import ageas.tool as tool
 from scipy.stats import pearsonr
 
 
@@ -46,38 +46,80 @@ class Make:
     # main controller to cast pseudo cell GRNs (pcGRNs)
     def __make_pcGRNs(self, gem_data, grn_guidance):
         if gem_data is not None:
-            print('we loaded data before')
+            class1_pcGRNs = self.__loaded_gem_method(gem_data.class1,
+                                                    grn_guidance)
+            class2_pcGRNs = self.__loaded_gem_method(gem_data.class2,
+                                                    grn_guidance)
         elif self.database_info.type == 'gem_folder':
             class1_pcGRNs = self.__folder_method(self.database_info.class1_path,
                                                 grn_guidance)
             class2_pcGRNs = self.__folder_method(self.database_info.class2_path,
                                                 grn_guidance)
         elif self.database_info.type == 'gem_file':
-            print('ToDo')
+            # need to revise here!
+            class1_pcGRNs = self.__file_method(self.database_info.class1_path,
+                                                grn_guidance)
+            class2_pcGRNs = self.__file_method(self.database_info.class2_path,
+                                                grn_guidance)
         else:
-            print('Make an Error here')
+            raise tool.Error('pcGRN Caster Error: Unsupported database type')
         return class1_pcGRNs, class2_pcGRNs
 
     # as named
-    def __file_method(self,):
-        print('something here')
+    def __file_method(self, path, grn_guidance):
+        pcGRNs = {}
+        print('pcgrn_caster.py:class Make: need to do something here')
+        return pcGRNs
+
+    # as named
+    def __loaded_gem_method(self, gem, grn_guidance):
+        pcGRNs = {}
+        sample_num = 0
+        start = 0
+        end = self.database_info.sliding_window_size
+        # set stride
+        if self.database_info.sliding_window_stride is not None:
+            stride = self.database_info.sliding_window_stride
+        else:
+            stride = end
+        # use sliding window techinque to set pseudo cell
+        loop = True
+        while loop:
+            if start >= len(gem.columns):
+                break
+            elif end >= len(gem.columns):
+                end = len(gem.columns)
+                loop = False
+            sample_id = 'sample' + str(sample_num)
+            sample = gem.iloc[:, start:end]
+            if grn_guidance is not None:
+                grn = self.__process_sample_with_guidance(sample, grn_guidance)
+            else:
+                grn = self.__process_sample_without_guidance(sample)
+            # Save data into pcGRNs
+            pcGRNs[sample_id] = self.__reform_grn(grn)
+            start += stride
+            end += stride
+            sample_num += 1
+        return pcGRNs
 
     # as named
     def __folder_method(self, path, grn_guidance):
         data = self.__readin_folder(path)
         pcGRNs = {}
         for sample in data:
-            grn = {}
             if grn_guidance is not None:
                 grn = self.__process_sample_with_guidance(data[sample],
                                                             grn_guidance)
             else:
                 grn = self.__process_sample_without_guidance(data[sample])
             # Save data into pcGRNs
-            pcGRNs[sample] = {pth:data
-                            for pth,data in grn.items()
-                            if data is not None}
+            pcGRNs[sample] = self.__reform_grn(grn)
         return pcGRNs
+
+    # again, as named
+    def __reform_grn(self, grn):
+        return {pth:data for pth,data in grn.items() if data is not None}
 
     # as named
     def __process_sample_with_guidance(self, gem, grn_guidance):
