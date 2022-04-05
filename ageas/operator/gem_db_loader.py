@@ -12,7 +12,6 @@ import ageas.tool.json as json
 import ageas.tool.grtd as grtd
 import ageas.operator as operator
 import ageas.tool.transfac as transfac
-import ageas.database_setup.binary_class as binary_db
 from ageas.lib.deg_finder import Find
 from ageas.database_setup import get_specie_path
 
@@ -23,34 +22,30 @@ class Load:
     Load in GEM data sets
     """
     def __init__(self,
-                database_path = None,
-                database_type = 'gem_folder',
-                class1_path = None,
-                class2_path = None,
-                specie = 'mouse',
+                database_info,
                 facNameType = 'gn',
                 mww_thread = 0.05,
                 log2fc_thread = 0.1,
-                stdevThread = 100,
-                stdRatio = None):
+                std_value_thread = 100,
+                std_ratio_thread = None):
+        # Initialization
+        self.database_info = database_info
         # Load TF databases based on specie
-        specie_path = get_specie_path(__name__, specie)
+        specie = get_specie_path(__name__, self.database_info.specie)
         # Load TRANSFAC databases
-        self.tf_list = transfac.Reader(specie_path + 'Tranfac201803_MotifTFsF.txt',
+        self.tf_list = transfac.Reader(specie + 'Tranfac201803_MotifTFsF.txt',
                                         facNameType).tfs
         # Load GRTD database
-        self.interactions = grtd.Processor(specie_path,
+        self.interactions = grtd.Processor(specie,
                                             facNameType,
                                             path = 'wholeGene.js.gz')
-        # Set up database
-        self.db = binary_db.Setup(database_path,
-                                    class1_path,
-                                    class2_path,
-                                    database_type)
-        if self.db.type == 'gem_folder':
-            class1, class2 = self.__process_gem_folder(stdevThread, stdRatio)
-        elif self.db.type == 'gem_file':
-            class1, class2 = self.__process_gem_file(stdevThread, stdRatio)
+        # process file or folder based on database type
+        if self.database_info.type == 'gem_folder':
+            class1, class2 = self.__process_gem_folder(std_value_thread,
+                                                        std_ratio_thread)
+        elif self.database_info.type == 'gem_file':
+            class1, class2 = self.__process_gem_file(std_value_thread,
+                                                        std_ratio_thread)
         # Distribuition Filter if threshod is specified
         if mww_thread is not None or log2fc_thread is not None:
             self.genes = Find(class1,
@@ -66,13 +61,17 @@ class Load:
 
 
     # Process in expression matrix file (dataframe) scenario
-    def __process_gem_file(self, stdevThread, stdRatio):
-        class1 = self.__read_df(self.db.class1_path, stdevThread, stdRatio)
-        class2 = self.__read_df(self.db.class2_path, stdevThread, stdRatio)
+    def __process_gem_file(self, std_value_thread, std_ratio_thread):
+        class1 = self.__read_df(self.database_info.class1_path,
+                                std_value_thread,
+                                std_ratio_thread)
+        class2 = self.__read_df(self.database_info.class2_path,
+                                std_value_thread,
+                                std_ratio_thread)
         return class1, class2
 
     # Read in gem file
-    def __read_df(self, path, stdevThread, stdRatio):
+    def __read_df(self, path, std_value_thread, std_ratio_thread):
         # Decide which seperation mark to use
         if re.search(r'csv', path): sep = ','
         elif re.search(r'txt', path): sep = '\t'
@@ -85,16 +84,14 @@ class Load:
                         compression = compression,
                         header = 0,
                         index_col = 0)
-        return tool.STD_Filter(df, stdevThread, stdRatio)
+        return tool.STD_Filter(df, std_value_thread, std_ratio_thread)
 
     # Process in Database scenario
-    def __process_gem_folder(self, stdevThread, stdRatio):
-        class1 = gem.Folder(self.db.class1_path).combine(
-                                                std_value_thread = stdevThread,
-                                                std_ratio_thread = stdRatio
-                                                )
-        class2 = gem.Folder(self.db.class2_path).combine(
-                                                std_value_thread = stdevThread,
-                                                std_ratio_thread = stdRatio
-                                                )
+    def __process_gem_folder(self, std_value_thread, std_ratio_thread):
+        class1 = gem.Folder(self.database_info.class1_path).combine(
+                                            std_value_thread = std_value_thread,
+                                            std_ratio_thread = std_ratio_thread)
+        class2 = gem.Folder(self.database_info.class2_path).combine(
+                                            std_value_thread = std_value_thread,
+                                            std_ratio_thread = std_ratio_thread)
         return class1, class2

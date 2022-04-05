@@ -151,7 +151,8 @@ class Cast:
         # Iterate source TF candidates for GRP
         for source in data.genes:
             # Go through tf_list filter if avaliable
-            if data.tf_list is not None and source not in data.tf_list: continue
+            if data.tf_list is not None and source not in data.tf_list:
+                continue
             for target in data.genes:
                 update_grn_guidance(self.guide,
                                     source,

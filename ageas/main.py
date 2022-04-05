@@ -13,6 +13,7 @@ import ageas.operator.trainer as trainer
 import ageas.operator.model_interpreter as interpreter
 import ageas.operator.feature_extractor as extractor
 import ageas.tool.json as json
+import ageas.database_setup.binary_class as binary_db
 
 
 
@@ -22,18 +23,22 @@ class Find:
     and write report files into given folder
     """
     def __init__(self,
-                database_path,
-                database_type = 'gem_folder',
+                # GEM data location related args
+                database_path = None,
+                database_type = 'gem_file',
                 class1_path = None,
                 class2_path = None,
                 specie = 'mouse',
+                # supportive data location related args
                 facNameType = 'gn',
                 model_config_path = None,
-                stdevThread = 100,
+                # filter thread related args
+                std_value_thread = 100,
                 mww_thread = 0.05,
                 log2fc_thread = 0.1,
                 prediction_thread = 'auto',
                 correlation_thread = 0.2,
+                # training related args
                 iteration = 1,
                 patient = None,
                 noChangeThread = 0.1,
@@ -46,28 +51,26 @@ class Find:
         self.noChangeThread = noChangeThread
         self.noChangeNum = 0
         if not warning: warnings.filterwarnings('ignore')
-
+        # Set up database path info
+        self.database_info = binary_db.Setup(database_path = database_path,
+                                            database_type = database_type,
+                                            class1_path = class1_path,
+                                            class2_path = class2_path,
+                                            specie = specie)
         # Let kirke casts GRN construction guidance first
-        self.circe = grn_guidance.Cast(gem_data = Load(database_path,
-                                                        database_type,
-                                                        class1_path,
-                                                        class2_path,
-                                                        specie,
+        self.circe = grn_guidance.Cast(gem_data = Load(self.database_info,
                                                         facNameType,
                                                         mww_thread,
                                                         log2fc_thread,
-                                                        stdevThread),
+                                                        std_value_thread),
                                         prediction_thread = prediction_thread,
                                         correlation_thread = correlation_thread)
 
         # train classifiers
-        self.ulysses = trainer.Train(database_path =  database_path,
-                                    database_type = database_type,
-                                    class1_path = class1_path,
-                                    class2_path = class2_path,
+        self.ulysses = trainer.Train(self.database_info,
                                     model_config_path = model_config_path,
                                     grn_guidance = self.circe.guide,
-                                    stdevThread = stdevThread,
+                                    std_value_thread = std_value_thread,
                                     correlation_thread = correlation_thread,
                                     iteration = iteration,
                                     keepRatio = keepRatio,

@@ -39,31 +39,31 @@ class Reader(tool.Reader_Template):
 				content = line.split(self.split)
 				self._processLine(coordinate, content, stdevThread)
 
-    # Process information in reading line
-    def _processLine(self, coordinate, content, stdevThread):
-        # Check file format
-        if len(content) < 7:
-            if content == ['\n']:
-                raise tool.Error('Bad GRN format: empty line')
-            else:
-                raise tool.Error('Fatal GRN format: not enough info')
-        # Process current record
-        else:
-            id = content[0]
-            if id not in self.entryCoords:
-                self.entryCoords[id] = coordinate
-            else:
-                raise tool.Error('Dulpicate GRP id in GRN: ' + self.filePath)
+	# Process information in reading line
+	def _processLine(self, coordinate, content, stdevThread):
+		# Check file format
+		if len(content) < 7:
+			if content == ['\n']:
+				raise tool.Error('Bad GRN format: empty line')
+			else:
+				raise tool.Error('Fatal GRN format: not enough info')
+		# Process current record
+		else:
+			id = content[0]
+			if id not in self.entryCoords:
+				self.entryCoords[id] = coordinate
+			else:
+				raise tool.Error('Dulpicate GRP id in GRN: ' + self.filePath)
 
-    # Pattern info in each line
-    def _prepareInfo(self, content):
-        return {'id':content[0],
-                'reg_source':content[1],
-                'sourceGroup':content[2],
-                'reg_target':content[3],
-                'targetGroup':content[4],
-                'correlation':float(content[5]),
-                'attribute':content[6],}
+	# Pattern info in each line
+	def _prepareInfo(self, content):
+		return {'id':content[0],
+				'reg_source':content[1],
+				'sourceGroup':content[2],
+				'reg_target':content[3],
+				'targetGroup':content[4],
+				'correlation':float(content[5]),
+				'attribute':content[6],}
 
 	# Output all Gene Expression data in dict format
 	def makeGeneExpDict(self, stdevKpRatio):
@@ -100,13 +100,13 @@ class Reader(tool.Reader_Template):
 			return self.get(self, id)
 
 
-    """ Old GEM Reader """
-    # # Pattern info in each line
-    # def _prepareInfo(self, content):
-    #     id = content[0].strip().upper()
-    #     data = [float(x) for x in content[1:]]
-    #     return id, data
-    #
+	""" Old GEM Reader """
+	# # Pattern info in each line
+	# def _prepareInfo(self, content):
+	#     id = content[0].strip().upper()
+	#     data = [float(x) for x in content[1:]]
+	#     return id, data
+	#
 	# # Process information in reading line
 	# def _processLine(self, coordinate, content, stdevThread):
 	# 	id, data = self._prepareInfo(content)

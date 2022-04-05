@@ -16,12 +16,15 @@ class Setup:
     """
 
     def __init__(self,
-                database_path,
+                database_path = None,
+                database_type = 'gem_file',
                 class1_path = 'CT1',
                 class2_path = 'CT2',
-                database_type = 'gem_folder'):
-        # Auto class finder
-        if class1_path is None or class2_path is None:
+                specie = 'mouse'):
+        # Auto GEM folder finder
+        if database_path is None:
+            assert os.path.exists(class1_path) and os.path.exists(class2_path)
+        elif class1_path is None or class2_path is None:
             if len(os.listdir(database_path)) != 2:
                 raise DB_Error('Please specify classes for binary clf')
             else:
@@ -29,11 +32,12 @@ class Setup:
                 class2_path = os.listdir(database_path)[1]
 
         # Initialization
-        self.path = database_path
+        self.db_path = database_path
         self.type = database_type
+        self.specie = specie
         # Get classes'correspond folder paths
         self.class1_path = self.__cast_path(class1_path)
-        self.class2_path= self.__cast_path(class2_path)
+        self.class2_path = self.__cast_path(class2_path)
         # Perform label encoding
         self.label_transformer = Label_Encode(class1_path, class2_path)
         self.label1 = self.label_transformer.get_label1()
@@ -42,12 +46,12 @@ class Setup:
     # make path str for the input class based on data path and folder name
     def __cast_path(self, path):
         # no need to concat if path is already completed
-        if os.path.exists(path):
+        if self.db_path is None:
             return path
         elif path[0] == '/':
-            return self.path + path
+            return self.db_path + path
         else:
-            return self.path + '/' + path
+            return self.db_path + '/' + path
 
 
 
