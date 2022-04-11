@@ -45,8 +45,8 @@ class Find:
                 iteration = 1,
                 patient = None,
                 noChangeThread = 0.1,
-                keepRatio = 1.0,
-                keepThread = 0.9,
+                clf_keep_ratio = 1.0,
+                clf_accuracy_thread = 0.9,
                 topGRP = 100,
                 warning = False):
         # Initialization
@@ -79,8 +79,8 @@ class Find:
                                     std_value_thread = std_value_thread,
                                     correlation_thread = correlation_thread,
                                     iteration = iteration,
-                                    keepRatio = keepRatio,
-                                    keepThread = keepThread)
+                                    clf_keep_ratio = clf_keep_ratio,
+                                    clf_accuracy_thread = clf_accuracy_thread)
         self.penelope = interpreter.Find(self.ulysses.models)
         self.factors = extractor.Extract(self.penelope,
                                         top_GRP_amount = topGRP)

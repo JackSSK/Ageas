@@ -11,17 +11,15 @@ import re
 import time
 import math
 import torch
-import joblib
 import difflib
 import numpy as np
 import pandas as pd
 from warnings import warn
-import ageas.lib.preprocessor as pre
 import ageas.classifier.svm as svm
 import ageas.classifier.cnn as cnn
 import ageas.classifier.xgb as xgb
 import ageas.classifier as classifier
-
+from ageas.database_setup.binary_class import Process
 
 
 class Mod_Cas_Error(Exception):
@@ -38,29 +36,27 @@ class Cast(classifier.Make_Template):
     """
 
     def __init__(self, database_info,
-                        modelsConfig,
-                        mode = 'grn',
+                        model_config,
                         grnData = None,
                         iteration = None,
                         testSetRatio = None,
-                        randomState = None,
-                        keepRatio = None,
-                        keepThread = None):
+                        random_state = None,
+                        clf_keep_ratio = None,
+                        clf_accuracy_thread = None):
         # Initialize and perform iterative training
-        self.mode = mode
         self.models = None
-        self.modelsConfig = modelsConfig
-        self.allGRP_IDs = {}
+        self.model_config = model_config
+        self.all_grp_ids = {}
         self.allData = None
         self.allLabel = None
-        self.testSizeInt = None
+        self.testSizeRatio = testSetRatio
         self._iterativeTraining(database_info,
                                 grnData,
                                 iteration,
                                 testSetRatio,
-                                randomState,
-                                keepRatio,
-                                keepThread)
+                                random_state,
+                                clf_keep_ratio,
+                                clf_accuracy_thread)
 
         # Concat models together based on performace
         temp = []
@@ -72,16 +68,16 @@ class Cast(classifier.Make_Template):
         print('Finished model concat')
 
         # Keep best performancing models
-        self._filterModels(keepRatio, keepThread)
+        self._filterModels(clf_keep_ratio, clf_accuracy_thread)
         # Filter based on all data performace
         self._calculateAllDataAccuracy()
         self.models.sort(key = lambda x:x[-1], reverse = True)
-        self._filterModels(keepRatio, keepThread)
+        self._filterModels(clf_keep_ratio, clf_accuracy_thread)
         print('Finished all data test on candidate models')
         print('Keeping ', len(self.models), ' models')
-        self.allData = pd.DataFrame(self.allData, columns = self.allGRP_IDs)
+        self.allData = pd.DataFrame(self.allData, columns = self.all_grp_ids)
         print('Changed allData into pandas data frame format')
-        del self.allGRP_IDs
+        del self.all_grp_ids
         gc.collect()
 
     # Make model sets based on given config
@@ -101,29 +97,32 @@ class Cast(classifier.Make_Template):
                                 grnData,
                                 iteration,
                                 testSetRatio,
-                                randomState,
-                                keepRatio,
-                                keepThread):
+                                random_state,
+                                clf_keep_ratio,
+                                clf_accuracy_thread):
         for i in range(iteration):
             # Change random state for each iteration
-            if randomState is not None: randomState = i * randomState
-            dataSets = pre.Process(database_info, grnData,
-                                testSetRatio, randomState,
-                                self.allGRP_IDs, self.allData,
-                                self.allLabel, self.testSizeInt)
-            dataSets.autoCastMatrixSize()
+            if random_state is not None: random_state = i * random_state
+            dataSets = Process(database_info,
+                                grnData,
+                                testSetRatio,
+                                random_state,
+                                self.all_grp_ids,
+                                self.allData,
+                                self.allLabel)
+            dataSets.auto_inject_fake_grps()
 
             # Update allGRP_IDs, allData, allLabel after first iteration
             # to try to avoid redundant calculation
             if i == 0 and self.allData is None and self.allLabel is None:
-                print('allIDs length: ', len(dataSets.allIDs))
-                self.allGRP_IDs = dataSets.allIDs
-                self.testSizeInt = len(dataSets.dataTest)
+                print('allIDs length: ', len(dataSets.all_grp_ids))
+                self.all_grp_ids = dataSets.all_grp_ids
+                self.testSizeRatio = len(dataSets.dataTest)
                 self.allData = dataSets.dataTrain + dataSets.dataTest
                 self.allLabel = np.concatenate((dataSets.labelTrain,
                                             dataSets.labelTest))
                 self._checkMatrixConfig()
-                self.models = self._initializeModelSets(self.modelsConfig)
+                self.models = self._initializeModelSets(self.model_config)
                 # Clear redundant data
                 database_info = None
                 grnData = None
@@ -131,42 +130,43 @@ class Cast(classifier.Make_Template):
                     raise pre.Preprocess_Error('Full data extraction Error')
             elif i == 0:
                 self._checkMatrixConfig()
-                self.models = self._initializeModelSets(self.modelsConfig)
+                self.models = self._initializeModelSets(self.model_config)
             # For testing
             # else:
-            #     print('constant allIDs' ,dataSets.allIDs == self.allGRP_IDs )
+            #     print('constant allIDs' ,
+                        # dataSets.all_grp_ids == self.all_grp_ids )
 
             # Do trainings
             for modelSet in self.models:
-                modelSet.train(dataSets, keepRatio, keepThread)
+                modelSet.train(dataSets, clf_keep_ratio, clf_accuracy_thread)
             print('Finished iterative trainig: ', i)
             gc.collect()
 
     # Check whether matrix sizes are reasonable or not
     def _checkMatrixConfig(self):
-        matlen = int(math.sqrt(len(self.allGRP_IDs)))
+        matlen = int(math.sqrt(len(self.all_grp_ids)))
         idealMatSize = [matlen, matlen]
-        if 'CNN' in self.modelsConfig:
-            if self.modelsConfig['CNN']['matrixSizes'] is not None:
+        if 'CNN' in self.model_config:
+            if self.model_config['CNN']['matrixSizes'] is not None:
                 remove = []
 
-                for size in self.modelsConfig['CNN']['matrixSizes']:
-                    if size[0] * size[1] != len(self.allGRP_IDs):
+                for size in self.model_config['CNN']['matrixSizes']:
+                    if size[0] * size[1] != len(self.all_grp_ids):
                         warn('Ignored illegal matrix size setting:' + str(size))
                         remove.append(size)
 
                 for ele in remove:
-                    self.modelsConfig['CNN']['matrixSizes'].remove(ele)
+                    self.model_config['CNN']['matrixSizes'].remove(ele)
 
-            elif self.modelsConfig['CNN']['matrixSizes'] is None:
+            elif self.model_config['CNN']['matrixSizes'] is None:
                 warn('No valid matrix size in config')
                 warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                self.modelsConfig['CNN']['matrixSizes'] = [idealMatSize]
+                self.model_config['CNN']['matrixSizes'] = [idealMatSize]
 
-            if len(self.modelsConfig['CNN']['matrixSizes']) == 0:
+            if len(self.model_config['CNN']['matrixSizes']) == 0:
                 warn('No valid matrix size in config')
                 warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                self.modelsConfig['CNN']['matrixSizes'] = [idealMatSize]
+                self.model_config['CNN']['matrixSizes'] = [idealMatSize]
 
     # Re-assign accuracy based on all data performance
     def _calculateAllDataAccuracy(self,):

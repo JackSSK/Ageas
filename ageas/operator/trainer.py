@@ -35,9 +35,9 @@ class Train:
                 # Model casting params
                 iteration = 1,
                 testSetRatio = 0.3,
-                randomState = None,
-                keepRatio = 1.0,
-                keepThread = 0.9,):
+                random_state = None,
+                clf_keep_ratio = 1.0,
+                clf_accuracy_thread = 0.9,):
         # load standard config file if not further specified
         if model_config_path is None:
             model_config_path = resource_filename(__name__,
@@ -56,24 +56,22 @@ class Train:
                                 correlation_thread = correlation_thread,
                                 gem_data = gem_data,
                                 grn_guidance = grn_guidance)
-            self.mode = 'gene_exp'
         # if we are reading in GRNs directly, just process them
         elif re.search(r'grn' , self.database_info.type):
-            self.mode = 'grn'
+            self.grns = None
             print('trainer.py: mode grn need to be revised here')
         else:
             raise operator.Error('Unrecogonized database type: ',
                                     self.database_info.type)
         # Train out models and find the best ones
         self.models = model.Cast(database_info = self.database_info,
-                                modelsConfig = model_config,
-                                mode = self.mode,
+                                model_config = model_config,
                                 grnData = self.grns,
                                 iteration = iteration,
                                 testSetRatio = testSetRatio,
-                                randomState = randomState,
-                                keepRatio = keepRatio,
-                                keepThread = keepThread)
+                                random_state = random_state,
+                                clf_keep_ratio = clf_keep_ratio,
+                                clf_accuracy_thread = clf_accuracy_thread)
 
     # Save GRN data in given path
     def save_GRNs(self, path):
