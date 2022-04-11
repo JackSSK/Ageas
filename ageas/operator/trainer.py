@@ -34,7 +34,7 @@ class Train:
                 distrThred = None,
                 # Model casting params
                 iteration = 1,
-                testSize = 0.3,
+                testSetRatio = 0.3,
                 randomState = None,
                 keepRatio = 1.0,
                 keepThread = 0.9,):
@@ -60,16 +60,17 @@ class Train:
         # if we are reading in GRNs directly, just process them
         elif re.search(r'grn' , self.database_info.type):
             self.mode = 'grn'
+            print('trainer.py: mode grn need to be revised here')
         else:
             raise operator.Error('Unrecogonized database type: ',
                                     self.database_info.type)
         # Train out models and find the best ones
-        self.models = model.Cast(database = self.database_info,
+        self.models = model.Cast(database_info = self.database_info,
                                 modelsConfig = model_config,
                                 mode = self.mode,
                                 grnData = self.grns,
                                 iteration = iteration,
-                                testSize = testSize,
+                                testSetRatio = testSetRatio,
                                 randomState = randomState,
                                 keepRatio = keepRatio,
                                 keepThread = keepThread)

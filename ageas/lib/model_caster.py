@@ -37,12 +37,12 @@ class Cast(classifier.Make_Template):
     Find best models in each type of models
     """
 
-    def __init__(self, database,
+    def __init__(self, database_info,
                         modelsConfig,
                         mode = 'grn',
                         grnData = None,
                         iteration = None,
-                        testSize = None,
+                        testSetRatio = None,
                         randomState = None,
                         keepRatio = None,
                         keepThread = None):
@@ -54,10 +54,10 @@ class Cast(classifier.Make_Template):
         self.allData = None
         self.allLabel = None
         self.testSizeInt = None
-        self._iterativeTraining(database,
+        self._iterativeTraining(database_info,
                                 grnData,
                                 iteration,
-                                testSize,
+                                testSetRatio,
                                 randomState,
                                 keepRatio,
                                 keepThread)
@@ -97,28 +97,21 @@ class Cast(classifier.Make_Template):
     # Generate training data and testing data iteratively
     # Then train out models in model sets
     # Only keep top performancing models in each set
-    def _iterativeTraining(self, database,
+    def _iterativeTraining(self, database_info,
                                 grnData,
                                 iteration,
-                                testSize,
+                                testSetRatio,
                                 randomState,
                                 keepRatio,
                                 keepThread):
         for i in range(iteration):
             # Change random state for each iteration
             if randomState is not None: randomState = i * randomState
-            if self.mode == 'grn':
-                dataSets = pre.GRN(database, grnData,
-                                testSize, randomState,
+            dataSets = pre.Process(database_info, grnData,
+                                testSetRatio, randomState,
                                 self.allGRP_IDs, self.allData,
                                 self.allLabel, self.testSizeInt)
-                dataSets.autoCastMatrixSize()
-            elif self.mode == 'gene_exp':
-                dataSets = pre.Gene_Exp(database, grnData,
-                                testSize, randomState,
-                                self.allGRP_IDs, self.allData,
-                                self.allLabel, self.testSizeInt)
-                dataSets.autoCastMatrixSize()
+            dataSets.autoCastMatrixSize()
 
             # Update allGRP_IDs, allData, allLabel after first iteration
             # to try to avoid redundant calculation
@@ -132,7 +125,7 @@ class Cast(classifier.Make_Template):
                 self._checkMatrixConfig()
                 self.models = self._initializeModelSets(self.modelsConfig)
                 # Clear redundant data
-                database = None
+                database_info = None
                 grnData = None
                 if len(self.allData) !=  len(self.allLabel):
                     raise pre.Preprocess_Error('Full data extraction Error')
