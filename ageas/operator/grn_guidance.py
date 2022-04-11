@@ -14,52 +14,6 @@ import ageas.lib.pcgrn_caster as grn
 import ageas.lib.grp_predictor as grp
 import ageas.operator as operator
 
-# Update grn_guidance if given pathway exist in either class
-# and be able to pass corelation filter
-def update_grn_guidance(grn_guidance,
-                        source,
-                        target,
-                        gem1,
-                        gem2,
-                        correlation_thread):
-    # Skip if processing self-regulating pathway
-    if source == target: return
-    grp_ID = tool.Cast_GRP_ID(source, target)
-    if grp_ID in grn_guidance:
-        if not grn_guidance[grp_ID]['reversable']:
-            grn_guidance[grp_ID]['reversable'] = True
-        return
-    # Test out global scale correlation
-    cor_class1 = None
-    cor_class2 = None
-    passed = False
-    # check cor_class1
-    if source in gem1.index and target in gem1.index:
-        cor_class1 = tool.Get_Pearson(gem1.loc[[source]].values[0],
-                                        gem1.loc[[target]].values[0])
-    # check cor_class2
-    if source in gem2.index and target in gem2.index:
-        cor_class2 = tool.Get_Pearson(gem2.loc[[source]].values[0],
-                                        gem2.loc[[target]].values[0])
-    # Go through abs(correlation) threshod check
-    if cor_class1 is None and cor_class2 is None:
-        return
-    if cor_class1 is None and abs(cor_class2) > correlation_thread:
-        passed = True
-    elif cor_class2 is None and abs(cor_class1) > correlation_thread:
-        passed = True
-    elif cor_class1 is not None and cor_class2 is not None:
-        if abs(cor_class1 - cor_class2) > correlation_thread:
-            passed = True
-    # If the testing pass survived till here, save it
-    if passed:
-        grn_guidance[grp_ID] = {'id': grp_ID,
-                                'reversable': False,
-                                'regulatory_source': source,
-                                'regulatory_target': target,
-                                'correlation_in_class1': cor_class1,
-                                'correlation_in_class2': cor_class2}
-
 
 
 class Cast:
@@ -89,9 +43,12 @@ class Cast:
         # Start GRNBoost2-like process if thread is set
         if prediction_thread is not None:
             gBoost = grp.Predict(gem_data, self.guide, prediction_thread)
-            if len(self.tfs_no_interaction_rec) == 0:   genes = gem_data.genes
-            else:   genes = self.tfs_no_interaction_rec
-            self.guide = gBoost.expandGuide(self.guide,
+            """ this condition may need to revise """
+            if len(self.tfs_no_interaction_rec) == 0:
+                genes = gem_data.genes
+            else:
+                genes = self.tfs_no_interaction_rec
+            self.guide = gBoost.expand_guide(self.guide,
                                             genes,
                                             correlation_thread)
             print('With predictions, total length of guide:', len(self.guide))
@@ -139,12 +96,12 @@ class Cast:
             for target in data.genes:
                 # Handle source TFs with record in target database
                 if target in reg_target:
-                    update_grn_guidance(self.guide,
-                                        source,
-                                        target,
-                                        data.class1,
-                                        data.class2,
-                                        correlation_thread)
+                    operator.update_grn_guidance(self.guide,
+                                                source,
+                                                target,
+                                                data.class1,
+                                                data.class2,
+                                                correlation_thread)
 
     # Kinda like GRTD version but only with correlation_thread and
     def __no_interaction(self, data, correlation_thread):
@@ -154,12 +111,12 @@ class Cast:
             if data.tf_list is not None and source not in data.tf_list:
                 continue
             for target in data.genes:
-                update_grn_guidance(self.guide,
-                                    source,
-                                    target,
-                                    data.class1,
-                                    data.class2,
-                                    correlation_thread)
+                operator.update_grn_guidance(self.guide,
+                                            source,
+                                            target,
+                                            data.class1,
+                                            data.class2,
+                                            correlation_thread)
 
     # Save guide file to given path
     def save_guide(self, path):

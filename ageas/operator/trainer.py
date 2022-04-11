@@ -37,7 +37,8 @@ class Train:
                 testSetRatio = 0.3,
                 random_state = None,
                 clf_keep_ratio = 1.0,
-                clf_accuracy_thread = 0.9,):
+                clf_accuracy_thread = 0.9,
+                grns = None):
         # load standard config file if not further specified
         if model_config_path is None:
             model_config_path = resource_filename(__name__,
@@ -45,24 +46,26 @@ class Train:
         model_config = json.decode(model_config_path)
 
         # Initialization
-        self.grns = None
+        self.grns = grns
         self.database_info = database_info
 
-        # if reading in GEMs, we need to construct pseudo-cGRNs first
-        if re.search(r'gem' , self.database_info.type):
-            self.grns = grn.Make(database_info = self.database_info,
-                                std_value_thread = std_value_thread,
-                                std_ratio_thread = std_ratio_thread,
-                                correlation_thread = correlation_thread,
-                                gem_data = gem_data,
-                                grn_guidance = grn_guidance)
-        # if we are reading in GRNs directly, just process them
-        elif re.search(r'grn' , self.database_info.type):
-            self.grns = None
-            print('trainer.py: mode grn need to be revised here')
-        else:
-            raise operator.Error('Unrecogonized database type: ',
-                                    self.database_info.type)
+        if self.grns is None:
+            # if reading in GEMs, we need to construct pseudo-cGRNs first
+            if re.search(r'gem' , self.database_info.type):
+                self.grns = grn.Make(database_info = self.database_info,
+                                    std_value_thread = std_value_thread,
+                                    std_ratio_thread = std_ratio_thread,
+                                    correlation_thread = correlation_thread,
+                                    gem_data = gem_data,
+                                    grn_guidance = grn_guidance)
+            # if we are reading in GRNs directly, just process them
+            elif re.search(r'grn' , self.database_info.type):
+                self.grns = None
+                print('trainer.py: mode grn need to be revised here')
+            else:
+                raise operator.Error('Unrecogonized database type: ',
+                                        self.database_info.type)
+        assert self.grns is not None
         # Train out models and find the best ones
         self.models = model.Cast(database_info = self.database_info,
                                 model_config = model_config,
