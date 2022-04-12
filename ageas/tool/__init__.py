@@ -9,6 +9,53 @@ import re
 import gzip
 from scipy.stats import pearsonr
 
+# Update grn_guidance if given pathway exist in either class
+# and be able to pass corelation filter
+def Update_GRN_Guidance(grn_guidance,
+                        source,
+                        target,
+                        gem1,
+                        gem2,
+                        correlation_thread):
+    # Skip if processing self-regulating pathway
+    if source == target: return
+    grp_ID = Cast_GRP_ID(source, target)
+    if grp_ID in grn_guidance:
+        if not grn_guidance[grp_ID]['reversable']:
+            grn_guidance[grp_ID]['reversable'] = True
+        return
+    # Test out global scale correlation
+    cor_class1 = None
+    cor_class2 = None
+    passed = False
+    # check cor_class1
+    if source in gem1.index and target in gem1.index:
+        cor_class1 = Get_Pearson(gem1.loc[[source]].values[0],
+                                gem1.loc[[target]].values[0])
+    # check cor_class2
+    if source in gem2.index and target in gem2.index:
+        cor_class2 = Get_Pearson(gem2.loc[[source]].values[0],
+                                gem2.loc[[target]].values[0])
+    # Go through abs(correlation) threshod check
+    if cor_class1 is None and cor_class2 is None:
+        return
+    if cor_class1 is None and abs(cor_class2) > correlation_thread:
+        passed = True
+    elif cor_class2 is None and abs(cor_class1) > correlation_thread:
+        passed = True
+    elif cor_class1 is not None and cor_class2 is not None:
+        if abs(cor_class1 - cor_class2) > correlation_thread:
+            passed = True
+    # If the testing pass survived till here, save it
+    if passed:
+        grn_guidance[grp_ID] = {'id': grp_ID,
+                                'reversable': False,
+                                'regulatory_source': source,
+                                'regulatory_target': target,
+                                'correlation_in_class1': cor_class1,
+                                'correlation_in_class2': cor_class2}
+
+
 # Get pearson correlation value while p-value not lower than thread
 # Originally pearson p-value thread was 1, which should be inappropriate
 def Get_Pearson(source, target, p_thread = 0.05):
@@ -20,6 +67,16 @@ def Get_Pearson(source, target, p_thread = 0.05):
 def Cast_GRP_ID(source, target):
     if source > target: return source + '_' + target
     else: return target + '_' + source
+
+# Extract all genes influenced among regulon/GRPs
+def Get_GRP_Genes(grps):
+    answer = {}
+    for grp_id in grps:
+        genes = grp_id.split('_')
+        assert len(genes) == 2
+        if genes[0] not in answer: answer[genes[0]] = 0
+        if genes[1] not in answer: answer[genes[1]] = 0
+    return answer
 
 # Standard Deviation (STD) Filter for data frame(df)
 def STD_Filter(df, std_value_thread = None, std_ratio_thread = None):
@@ -43,6 +100,8 @@ def STD_Filter(df, std_value_thread = None, std_ratio_thread = None):
 def Update_Counting_Dict(dict, ele):
     if ele not in dict: dict[ele] = 1
     else: dict[ele] += 1
+
+
 
 class Error(Exception):
     """

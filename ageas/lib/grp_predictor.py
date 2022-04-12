@@ -3,15 +3,13 @@
 Ageas Reborn
 Predict potential Gene Regulatory Pathways(GRPs) using GRNBoost-Like algo
 
-ToDo: Need to revice. I broke every thing and this part is not working now
-Check performance here, transposed dataframe may not work properly
 author: jy, nkmtmsys
 """
 
 import ageas.tool as tool
 from xgboost import XGBRegressor
 from collections import OrderedDict
-from ageas.operator import update_grn_guidance
+import ageas.operator as operator
 
 
 
@@ -25,39 +23,49 @@ class Predict:
         assert sample_grps is not None or thread is not None
         self.class1_gem = gem_data.class1
         self.class2_gem = gem_data.class2
+        self.thread = 1 / len(gem_data.genes)
         if thread is not None and thread != 'auto':
             self.thread = float(thread)
-        else:
+        elif thread == 'auto':
             self.thread = self.__auto_set_thread(sample_grps)
-        print('GRP prediction thread set to ', self.thread)
+        else:
+            raise operator.Error('Predictor thread setting is wrong')
 
     # Expand GRN guide by applying GRNBoost2-like algo on source TFs without
     # documented targets
     def expand_guide(self, grn_guidance, genes, correlation_thread):
         for gene in genes:
             class1FeatImpts, class2FeatImpts = self._getFeatureImportences(gene)
-            for i in range(len(self.class1_gem.index)):
-                if class1FeatImpts is None: break
-                tar = self.class1_gem.index[i]
-                if class1FeatImpts[i] > self.thread:
-                    update_grn_guidance(grn_guidance,
-                                        gene,
-                                        tar,
-                                        self.class1_gem,
-                                        self.class2_gem,
-                                        correlation_thread)
-            for i in range(len(self.class2_gem.index)):
-                if class2FeatImpts is None: break
-                tar = self.class2_gem.index[i]
-                if class2FeatImpts[i] > self.thread:
-                    if tool.Cast_GRP_ID(gene, tar) not in grn_guidance:
-                        update_grn_guidance(grn_guidance,
+            self.__update_GRPs_to_GRN_Guidance(grn_guidance,
+                                                correlation_thread,
+                                                gene,
+                                                self.class1_gem.index,
+                                                class1FeatImpts,)
+            self.__update_GRPs_to_GRN_Guidance(grn_guidance,
+                                                correlation_thread,
+                                                gene,
+                                                self.class2_gem.index,
+                                                class2FeatImpts,)
+        return grn_guidance
+
+    # decide whether update GRPs associated with given gene into GRN guidance
+    def __update_GRPs_to_GRN_Guidance(self, grn_guidance,
+                                            correlation_thread,
+                                            gene,
+                                            gene_list,
+                                            feature_importances,):
+        if feature_importances is None: return
+        for i in range(len(gene_list)):
+            tar = gene_list[i]
+            if feature_importances[i] > self.thread:
+                if tool.Cast_GRP_ID(gene, tar) not in grn_guidance:
+                    tool.Update_GRN_Guidance(grn_guidance,
                                             gene,
                                             tar,
                                             self.class1_gem,
                                             self.class2_gem,
                                             correlation_thread)
-        return grn_guidance
+        return
 
     # Automatically set prediction thread by tuning with sample GRPs
     # Essentially this part is finding a regulatory source having most
@@ -74,29 +82,33 @@ class Predict:
         regulatory_sources = OrderedDict(sorted(regulatory_sources.items(),
                                                 key = lambda x: x[1]))
         # Choose a key presenting in both classes
+        i = 0
         for src in regulatory_sources:
+            if i == len(regulatory_sources):
+                raise operator.Error('No reg source in both class')
             if src in self.class1_gem.index and src in self.class2_gem.index:
                 break
+            i += 1
         grps = regulatory_sources[src]
         class1FeatImpts, class2FeatImpts = self._getFeatureImportences(src,True)
         assert len(self.class1_gem.index) == len(class1FeatImpts)
-        rec = {}
-        answer = float('inf')
+        assert len(self.class2_gem.index) == len(class2FeatImpts)
+        genes = tool.Get_GRP_Genes(grps)
+        # assign feature importances to each gene in selected reg source's GRPs
         for i in range(len(self.class1_gem.index)):
-            gene = self.class1_gem.index[i]
-            score = class1FeatImpts[i]
-            if score > 0: rec[gene] = score
+            if self.class1_gem.index[i] in genes and class1FeatImpts[i] > 0:
+                genes[self.class1_gem.index[i]] = class1FeatImpts[i]
         for i in range(len(self.class2_gem.index)):
             gene = self.class2_gem.index[i]
-            score = class2FeatImpts[i]
-            if score > 0:
-                if gene in rec: rec[gene] = (rec[gene] + score)/2
-                else: rec[gene] = score
-        for gene in rec:
-            if src == gene: continue
-            grp_ID = tool.Cast_GRP_ID(src, gene)
-            if grp_ID in grps and rec[gene] < answer: answer = rec[gene]
-        return answer
+            if gene in genes and class2FeatImpts[i] > 0:
+                if genes[gene] == 0:
+                    genes[gene] = class2FeatImpts[i]
+                else:
+                    genes[gene] = (genes[gene] + class2FeatImpts[i]) / 2
+        # take out genes with 0 importances and reorder the dict
+        genes = {x:genes[x] for x in genes if genes[x] > 0}
+        genes = OrderedDict(sorted(genes.items(), key = lambda x: x[1]))
+        return min(genes[next(iter(genes))], self.thread)
 
     # Basically, this part mimicing what GRNBoost2 does
     def _getFeatureImportences(self, key, checked_in_gem = False):

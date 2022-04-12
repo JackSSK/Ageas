@@ -2,8 +2,6 @@
 """
 Ageas Reborn
 
-ToDo: May need to revise Prediction part
-
 author: jy, nkmtmsys
 """
 
@@ -35,15 +33,14 @@ class Cast:
             self.__no_interaction(gem_data, correlation_thread)
         self.tfs_no_interaction_rec = [x for x in self.tfs_no_interaction_rec]
 
-        # print out stats
-        print('Total length of guide:', len(self.guide))
+        # print out amount of TFs not covered by selected interaction database
         print(len(self.tfs_no_interaction_rec),
                 'potential source TFs not coverd by interaction DB')
 
         # Start GRNBoost2-like process if thread is set
         if prediction_thread is not None:
             gBoost = grp.Predict(gem_data, self.guide, prediction_thread)
-            """ this condition may need to revise """
+            """ ToDo: this condition may need to revise """
             if len(self.tfs_no_interaction_rec) == 0:
                 genes = gem_data.genes
             else:
@@ -51,9 +48,9 @@ class Cast:
             self.guide = gBoost.expand_guide(self.guide,
                                             genes,
                                             correlation_thread)
-            print('With predictions, total length of guide:', len(self.guide))
+        print('Total length of guide:', len(self.guide))
         # else: raise operator.Error('Sorry, such mode is not supported yet!')
-        """ ToDo:if more than 1 guide can be casted, let them make agreement """
+        """ ToDo: if more than 1 guide can be casted, make agreement """
 
     # Make GRN casting guide
     def __with_grtd(self, data, correlation_thread):
@@ -96,7 +93,7 @@ class Cast:
             for target in data.genes:
                 # Handle source TFs with record in target database
                 if target in reg_target:
-                    operator.update_grn_guidance(self.guide,
+                    tool.Update_GRN_Guidance(self.guide,
                                                 source,
                                                 target,
                                                 data.class1,
@@ -111,7 +108,7 @@ class Cast:
             if data.tf_list is not None and source not in data.tf_list:
                 continue
             for target in data.genes:
-                operator.update_grn_guidance(self.guide,
+                tool.Update_GRN_Guidance(self.guide,
                                             source,
                                             target,
                                             data.class1,
