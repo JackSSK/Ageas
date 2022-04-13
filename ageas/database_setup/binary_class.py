@@ -30,6 +30,7 @@ class Setup:
                 specie = 'mouse',
                 sliding_window_size = None,
                 sliding_window_stride = None):
+        super(Setup, self).__init__()
         # Auto GEM folder finder
         if database_path is None:
             assert os.path.exists(class1_path) and os.path.exists(class2_path)
@@ -72,6 +73,7 @@ class Label_Encode:
     """
 
     def __init__(self, class1_path, class2_path):
+        super(Label_Encode, self).__init__()
         # Initialization
         self.encoder = LabelEncoder().fit([class1_path, class2_path])
         self.transformed_labels = self.encoder.transform([class1_path,
@@ -100,6 +102,7 @@ class Process(object):
                         all_grp_ids = {},
                         fullData = None,
                         fullLabel = None,):
+        super(Process, self).__init__()
         # Initialization
         self.test_set_ratio = test_set_ratio
         self.random_state = ramdom_state

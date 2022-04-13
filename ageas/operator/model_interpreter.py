@@ -4,9 +4,7 @@ Ageas Reborn
 """
 
 
-import gc
 import re
-import time
 import shap
 import numpy as np
 import pandas as pd
@@ -25,6 +23,7 @@ class Find:
     Then, assign an importance score to every feature
     """
     def __init__(self, odysseusModels):
+        super(Find, self).__init__()
         # make background example based on mean of every sample
         # ToDo:
         # Background generation may need to be revised
@@ -35,13 +34,11 @@ class Find:
         # Delete redundant data
         del bases
         del odysseusModels
-        gc.collect()
 
     # Calculate importances of each feature
     def _findPaths(self, odysseusModels, bases):
         sumFeatureImpts = None
         # sumFIs = None
-        start = time.time()
         for records in odysseusModels.models:
             model = records[0]
             accuracy = records[-1]
@@ -106,8 +103,6 @@ class Find:
                 sumFeatureImpts = pd.array((featureImpts * accuracy),
                                                                 dtype=float)
             else: sumFeatureImpts += (featureImpts * accuracy)
-
-        print('Analyzed all records : ', time.time() - start)
 
         # Make feature importnace matrix
         featureImpts = pd.DataFrame()

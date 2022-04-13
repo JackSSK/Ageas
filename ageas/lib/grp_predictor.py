@@ -20,6 +20,7 @@ class Predict:
     But thread can be automatically set by checking confirmed GRPs
     """
     def __init__(self, gem_data, sample_grps = None, thread = None):
+        super(Predict, self).__init__()
         assert sample_grps is not None or thread is not None
         self.class1_gem = gem_data.class1
         self.class2_gem = gem_data.class2

@@ -17,6 +17,7 @@ class Reader(tool.Reader_Template):
 	Only suppordt .cvs and .txt for now
 	"""
 	def __init__(self, filename, skipFirst = False, stdevThread = None):
+		super(Reader, self).__init__()
 		# Initialization
 		self.load(filename)
 		self.entryCoords = {}

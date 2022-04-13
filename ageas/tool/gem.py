@@ -22,6 +22,7 @@ class Reader(object):
 	Only suppordt .cvs and .txt for now
 	"""
 	def __init__(self, path, **kwargs):
+		super(Reader, self).__init__()
 		# Decide which seperation mark to use
 		if re.search(r'csv', path): 	self.sep = ','
 		elif re.search(r'txt', path): 	self.vsep = '\t'

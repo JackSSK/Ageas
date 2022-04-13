@@ -20,6 +20,7 @@ class Extract(object):
                 top_GRP_amount = 100,
                 importance_thread = None,
                 occurrence_thread = 2):
+        super(Extract, self).__init__()
         stratified_grps = grp_importances.stratify(top_GRP_amount,
                                                     importance_thread)
         self.key_genes = self.__extract_by_occurence(stratified_grps,

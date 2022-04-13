@@ -286,6 +286,7 @@ class Make(classifier.Make_Template):
     def train(self, dataSets, keepRatio, keepThread):
         testData = self.reshapeData(dataSets.dataTest)
         testLabel = dataSets.labelTest
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         # Generate blank models for training
         vanillaModels = []
@@ -324,7 +325,10 @@ class Make(classifier.Make_Template):
                                                                 [currentPos:])
                         currentPos = None
 
+                    batchData = batchData.to(device)
+                    batchLabel = batchLabel.to(device)
                     for model in tempModels:
+                        model.to(device)
                         model.train()
                         model.optimizer.zero_grad()
                         outputs = model(batchData)

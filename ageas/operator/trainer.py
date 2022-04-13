@@ -7,7 +7,6 @@ author: jy, nkmtmsys
 """
 
 import re
-import time
 import math
 import torch
 import pickle
@@ -144,7 +143,6 @@ class Cast_Models(classifier.Make_Template):
     # Make model sets based on given config
     def _initializeModelSets(self, config):
         models = []
-        start = time.time()
         if 'XGB' in config: models.append(xgb.Make(config = config['XGB']))
         if 'SVM' in config: models.append(svm.Make(config = config['SVM']))
         if 'CNN' in config: models.append(cnn.Make(config = config['CNN']))

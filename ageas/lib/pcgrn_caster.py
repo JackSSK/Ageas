@@ -30,6 +30,7 @@ class Make:
                 gem_data = None,
                 grn_guidance = None,
                 save_path = None):
+        super(Make, self).__init__()
         # Initialize
         self.database_info = database_info
         self.std_value_thread = std_value_thread

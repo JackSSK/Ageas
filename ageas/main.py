@@ -6,6 +6,7 @@ author: jy, nkmtmsys
 """
 
 import os
+import time
 import warnings
 import ageas.tool.json as json
 import ageas.operator.trainer as trainer
@@ -49,7 +50,9 @@ class Find:
                 clf_accuracy_thread = 0.9,
                 topGRP = 100,
                 warning = False):
+        super(Find, self).__init__()
         # Initialization
+        start = time.time()
         self.patient = patient
         self.noChangeThread = noChangeThread
         self.noChangeNum = 0
@@ -71,6 +74,8 @@ class Find:
         self.circe = grn_guidance.Cast(gem_data = gem_data,
                                         prediction_thread = prediction_thread,
                                         correlation_thread = correlation_thread)
+        print('Time to cast GRN Guidnace : ', time.time() - start)
+        start = time.time()
         # train classifiers
         self.ulysses = trainer.Train(self.database_info,
                                     model_config_path = model_config_path,
@@ -81,13 +86,19 @@ class Find:
                                     iteration = iteration,
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread)
+        print('Time to train out classifiers : ', time.time() - start)
+        start = time.time()
         self.penelope = interpreter.Find(self.ulysses.models)
+        print('Time to interpret classifiers : ', time.time() - start)
+        start = time.time()
         self.factors = extractor.Extract(self.penelope,
                                         top_GRP_amount = topGRP)
         self.factors.extract_common(self.circe.guide,
                                     type = 'regulatory_source')
         self.factors.extract_common(self.circe.guide,
                                     type = 'regulatory_target')
+        print('Time to do everything else : ', time.time() - start)
+        start = time.time()
 
     # Stop iteration if abundace factors are not really changing
     def _earlyStopping(self, prevFactors, curFactors):

@@ -22,6 +22,7 @@ class Reader(tool.Reader_Template):
     Read in ID Map file obtained from Uniprot
     """
     def __init__(self, filename):
+        super(Reader, self).__init__()
         self.load(filename)
 
     # Stratify the map file with selected genra -> Genra: Uniprot ID

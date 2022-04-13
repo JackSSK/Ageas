@@ -11,3 +11,7 @@ class Reader(tool.Reader_Template):
     """
     Load in ATAC peaks from files
     """
+
+    def __init__(self, arg):
+        super(Reader, self).__init__()
+        self.arg = arg

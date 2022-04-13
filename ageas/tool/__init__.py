@@ -116,6 +116,7 @@ class Reader_Template:
     Template for file reading class
     """
     def __init__(self, filename):
+        super(Reader_Template, self).__init__()
         self.filePath = filename
         self.file = None
 

@@ -25,6 +25,7 @@ class Sklearn_Template:
     Gaussian Naive Bayes is used as example here
     """
     def __init__(self, param):
+        super(Sklearn_Template, self).__init__()
         self.param = param
         self.initial()
 
@@ -42,6 +43,7 @@ class Make_Template:
     Find the top settings to build models
     """
     def __init__(self, config):
+        super(Make_Template, self).__init__()
         self.combs = self._getHyperParaSets(list(config.values()))
         self.models = []
 

@@ -29,6 +29,7 @@ class Load:
                 log2fc_thread = 0.1,
                 std_value_thread = 100,
                 std_ratio_thread = None):
+        super(Load, self).__init__()
         # Initialization
         self.database_info = database_info
         # Load TF databases based on specie

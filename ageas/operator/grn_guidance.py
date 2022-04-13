@@ -22,6 +22,7 @@ class Cast:
                 gem_data = None,
                 prediction_thread = None,
                 correlation_thread = 0.2):
+        super(Cast, self).__init__()
         # Initialization
         self.guide = {}
         self.tfs_no_interaction_rec = {}

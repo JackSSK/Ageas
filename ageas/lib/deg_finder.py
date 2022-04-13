@@ -39,8 +39,8 @@ class Find:
                 gem1,                   # Gene Expression Matrix 1 as dataframe
                 gem2,                   # Gene Expression Matrix 2 as dataframe
                 mww_thread = 0.05,      # p-value threshold for MWW test
-                log2fc_thread = None     # minimum log2fc for potential DEGs
-                ):
+                log2fc_thread = None):     # minimum log2fc for potential DEGs
+        super(Find, self).__init__()
         # non-intersection genes are automatically set as DEG
         self.degs = {
             gene:'' for gene in gem1.index.symmetric_difference(gem2.index)
