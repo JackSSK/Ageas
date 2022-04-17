@@ -26,6 +26,7 @@ import itertools
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as func
+from torch.utils.data import DataLoader
 import ageas.classifier as classifier
 
 
@@ -287,9 +288,47 @@ class Make(classifier.Make_Template):
         testData = self.reshapeData(dataSets.dataTest)
         testLabel = dataSets.labelTest
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        vanilla_models = self.__set_vanilla_models()
 
-        # Generate blank models for training
-        vanillaModels = []
+        # Try out each batch size setting
+        for batchSize in self.batchSizes:
+            tempModels = vanilla_models
+            for ep in range(self.epochs):
+                index_set = DataLoader(dataset = range(len(dataSets.dataTrain)),
+                                        batch_size = batchSize,
+                                        shuffle = True)
+                for index in index_set:
+                    index = index.tolist()
+                    data = [dataSets.dataTrain[i] for i in index]
+                    label = [dataSets.labelTrain[i] for i in index]
+                    batchData = self.reshapeData(data).to(device)
+                    batchLabel = torch.tensor(label).to(device)
+                    for model in tempModels:
+                        model.to(device)
+                        model.train()
+                        model.optimizer.zero_grad()
+                        outputs = model(batchData)
+                        loss = model.lossFunc(outputs, batchLabel)
+                        loss.backward()
+                        model.optimizer.step()
+
+            for model in tempModels:
+                accuracy = self._eval(model, testData, testLabel)
+                self.models.append([model, batchSize, accuracy])
+
+            self.models.sort(key = lambda x:x[2], reverse = True)
+            self._filterModels(keepRatio, keepThread)
+
+        # Clear data
+        del tempModels
+        del vanilla_models
+        del testData
+        del testLabel
+        del dataSets
+
+    # Generate blank models for training
+    def __set_vanilla_models(self,):
+        result = []
         for setting in self.combs:
             if setting['modelType'] == '1d':
                 if setting['layerSetLimit']:
@@ -301,57 +340,8 @@ class Make(classifier.Make_Template):
                     model = Hybrid_Model_Limited(setting)
                 else:
                     model = Hybrid_Model_Unlimited(setting)
-            vanillaModels.append(model)
-
-        # Try out each batch size setting
-        for batchSize in self.batchSizes:
-            tempModels = vanillaModels
-            for ep in range(self.epochs):
-                currentPos = 0
-                for i in range(len(dataSets.dataTrain) - batchSize):
-                    if currentPos is None: break
-                    if currentPos == len(dataSets.dataTrain): break
-                    elif currentPos + batchSize <= len(dataSets.dataTrain):
-                        batchData = self.reshapeData(dataSets.dataTrain
-                                        [currentPos : currentPos + batchSize])
-                        batchLabel = torch.tensor(dataSets.labelTrain
-                                        [currentPos : currentPos + batchSize])
-                        currentPos += batchSize
-
-                    elif currentPos is not None:
-                        batchData = self.reshapeData(dataSets.dataTrain
-                                                                [currentPos:])
-                        batchLabel = torch.tensor(dataSets.labelTrain
-                                                                [currentPos:])
-                        currentPos = None
-
-                    batchData = batchData.to(device)
-                    batchLabel = batchLabel.to(device)
-                    for model in tempModels:
-                        model.to(device)
-                        model.train()
-                        model.optimizer.zero_grad()
-                        outputs = model(batchData)
-                        loss = model.lossFunc(outputs, batchLabel)
-                        loss.backward()
-                        model.optimizer.step()
-                        # gc.collect()
-
-            for model in tempModels:
-                accuracy = self._eval(model, testData, testLabel)
-                self.models.append([model, batchSize, accuracy])
-                # gc.collect()
-
-            self.models.sort(key = lambda x:x[2], reverse = True)
-            self._filterModels(keepRatio, keepThread)
-
-        # Clear data
-        del tempModels
-        del vanillaModels
-        del testData
-        del testLabel
-        del dataSets
-        gc.collect()
+            result.append(model)
+        return result
 
     # Generate all possible hyperparameter combination
     def _getHyperParaSets(self, params):
