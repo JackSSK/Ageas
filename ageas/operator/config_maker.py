@@ -57,7 +57,6 @@ class Pytorch_CNN_Hybrid(operator.Config_Maker_Template):
     def __init__(self, header = None, config = None):
         self.epoch = 1
         self.batch_size = None
-        self.num_layers_limit = True
         self.header = header
         config = self.__resize_config(config)
         self.configs = self.__get_configs(config)
@@ -84,10 +83,8 @@ class Pytorch_CNN_Hybrid(operator.Config_Maker_Template):
         try:
             self.epoch = query['epoch']
             self.batch_size = query['batch_size']
-            self.num_layers_limit = query['num_layers_limit']
             del query['epoch']
             del query['batch_size']
-            del query['num_layers_limit']
         except Exception as CNN_Config_Maker_Error:
             raise
         return query
@@ -116,14 +113,12 @@ class Pytorch_CNN_1D(Pytorch_CNN_Hybrid):
 #     d1 = Pytorch_CNN_1D(header = 'pytorch_cnn_1d_', config = a['CNN_1D'])
 #     assert d1.epoch == hybrid.epoch
 #     assert d1.batch_size == hybrid.batch_size
-#     assert d1.num_layers_limit == hybrid.num_layers_limit
 #     result = {
 #         'SVM':svm.configs,
 #         'GBM':gbm.configs,
 #         'CNN':{
 #             'Epoch':d1.epoch,
 #             'Batch_Size':d1.batch_size,
-#             'Num_Layers_Limit':d1.num_layers_limit,
 #             '1D': d1.configs,
 #             'Hybrid':hybrid.configs
 #         }

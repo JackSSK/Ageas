@@ -202,25 +202,25 @@ class Cast_Models(classifier.Make_Template):
     # Check whether matrix sizes are reasonable or not
     def _checkMatrixConfig(self):
         matlen = int(math.sqrt(len(self.all_grp_ids)))
-        idealMatSize = [matlen, matlen]
+        # m is square shaped data dimmensions
+        m = [matlen, matlen]
         if 'CNN' in self.model_config and 'Hybrid' in self.model_config['CNN']:
             for id in self.model_config['CNN']['Hybrid']:
                 mat_size = self.model_config['CNN']['Hybrid'][id]['matrix_size']
-
                 if mat_size is not None:
                     if mat_size[0] * mat_size[1] != len(self.all_grp_ids):
                         warn('Ignored illegal matrixsize config:'+str(mat_size))
-                        self.model_config['CNN']['Hybrid'][id]['matrix_size'] = idealMatSize
+                        self.model_config['CNN']['Hybrid'][id]['matrix_size']= m
 
                 elif mat_size is None:
                     warn('No valid matrix size in config')
                     warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = idealMatSize
+                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = m
 
                 if len(mat_size) != 2:
                     warn('No valid matrix size in config')
                     warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = idealMatSize
+                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = m
 
     # Re-assign accuracy based on all data performance
     def _calculateAllDataAccuracy(self,):
@@ -237,7 +237,7 @@ class Cast_Models(classifier.Make_Template):
                 allSizeAccuracy = difflib.SequenceMatcher(None, allSizeResult,
                                                         self.allLabel).ratio()
             # Hybrid CNN cases and 1D CNN cases
-            elif re.search(r'Hybrid', modType) or re.search(r'OneD', modType):
+            elif re.search(r'Hybrid', modType) or re.search(r'1D', modType):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():

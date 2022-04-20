@@ -127,12 +127,12 @@ class Make(classifier.cnn.Make):
                 if setting['layerSetLimit']:
                     model = OneD_Model_Limited(setting)
                 else:
-                    model = OneD_Model_Unlimited(setting)
+                    model = Type_1D(setting)
             elif setting['modelType'] == 'hybrid':
                 if setting['layerSetLimit']:
                     model = Hybrid_Model_Limited(setting)
                 else:
-                    model = Hybrid_Model_Unlimited(setting)
+                    model = Type_Hybrid(setting)
             result.append(model)
         return result
 

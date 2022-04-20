@@ -201,14 +201,13 @@
             5,
             10
         ],
-        "Num_Layers_Limit": true,
         "1D": {
             "pytorch_cnn_1d_0": {
                 "conv_kernel_size": 32,
                 "conv_kernel_num": 64,
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
-                "num_layers": 2,
+                "num_layers": 4,
                 "learning_rate": 0.01
             },
             "pytorch_cnn_1d_1": {
@@ -374,7 +373,7 @@
                 "conv_kernel_num": 64,
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
-                "num_layers": 1,
+                "num_layers": 2,
                 "learning_rate": 0.01
             },
             "pytorch_cnn_hybrid_4": {

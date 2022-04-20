@@ -70,7 +70,7 @@ class Find:
                     # Get feature importances based on shapley value
                     featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
             # Hybrid CNN cases and 1D CNN cases
-            elif re.search(r'Hybrid', modType) or re.search(r'OneD', modType):
+            elif re.search(r'Hybrid', modType) or re.search(r'1D', modType):
                 # Use DeepExplainer when in limited mode
                 if re.search(r'Limited', modType):
                     explainer = shap.DeepExplainer(model,

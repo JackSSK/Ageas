@@ -59,7 +59,6 @@
           5,
           10
       ],
-      "num_layers_limit": true,
       "matrix_size": [
           [
               292,
@@ -92,7 +91,6 @@
           5,
           10
       ],
-      "num_layers_limit": true,
       "conv_kernel_size": [
           32
       ],

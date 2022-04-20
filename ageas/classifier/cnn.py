@@ -30,7 +30,7 @@ import ageas.classifier as classifier
 
 
 
-class OneD_Model_Limited(nn.Module):
+class Limited_1D(nn.Module):
     """
     Defining a CNN model treating input as 1D data
     with given hyperparameters
@@ -84,7 +84,7 @@ class OneD_Model_Limited(nn.Module):
 
 
 
-class Hybrid_Model_Limited(nn.Module):
+class Limited_Hybrid(nn.Module):
     """
     Defining a CNN model treating input as 2D data
     with given hyperparameters
@@ -163,8 +163,7 @@ class Hybrid_Model_Limited(nn.Module):
                                     self.matrixSize[0], self.matrixSize[1]))
 
 
-
-class OneD_Model_Unlimited(nn.Module):
+class Unlimited_1D(nn.Module):
     """
     Defining a CNN model treating input as 1D data
     with given hyperparameters
@@ -203,7 +202,7 @@ class OneD_Model_Unlimited(nn.Module):
 
 
 
-class Hybrid_Model_Unlimited(nn.Module):
+class Unlimited_Hybrid(nn.Module):
     """
     Defining a CNN model treating input as 2D data
     with given hyperparameters
@@ -212,26 +211,20 @@ class Hybrid_Model_Unlimited(nn.Module):
     def __init__(self, param):
         super().__init__()
         # Initialization
-        self.matrixSize = param['matrix_size']
+        self.mat_size = param['matrix_size']
         self.num_layers = param['num_layers']
         self.lossFunc = nn.CrossEntropyLoss()
         self.pool0 = nn.MaxPool2d((1, param['maxpool_kernel_size']))
         self.pool1 = nn.MaxPool2d((param['maxpool_kernel_size'], 1))
-
-        self.conv0 = nn.Conv2d(1, param['conv_kernel_num'],
-                                    (self.matrixSize[0], 1))
-        self.conv0More = nn.Conv2d(param['conv_kernel_num'],
+        dividen = pow(param['maxpool_kernel_size'], self.num_layers)
+        self.conv0 = nn.Conv2d(1, param['conv_kernel_num'],(self.mat_size[0],1))
+        self.conv0_recur = nn.Conv2d(param['conv_kernel_num'],
                                     param['conv_kernel_num'],
-                (1, int(self.matrixSize[0] / pow(param['maxpool_kernel_size'],
-                                    self.num_layers))))
-
-
-        self.conv1 = nn.Conv2d(1, param['conv_kernel_num'],
-                                    (1, self.matrixSize[1]))
-        self.conv1More = nn.Conv2d(param['conv_kernel_num'],
+                                    (1, max(1,int(self.mat_size[0] / dividen))))
+        self.conv1 = nn.Conv2d(1, param['conv_kernel_num'],(1,self.mat_size[1]))
+        self.conv1_recur = nn.Conv2d(param['conv_kernel_num'],
                                     param['conv_kernel_num'],
-                    (int(self.matrixSize[1] / pow(param['maxpool_kernel_size'],
-                                    self.num_layers)), 1))
+                                    (max(1,int(self.mat_size[1] / dividen)), 1))
 
         ### Same problem as 1D model ###
         # flattenLength = int(featureNum / pow(maxpool_kernel_size, num_layers))
@@ -246,13 +239,13 @@ class Hybrid_Model_Unlimited(nn.Module):
         input = self.reshape(input)
         temp0 = self.pool0(func.relu(self.conv0(input)))
         for i in range(self.num_layers - 1):
-            temp0 = self.pool0(func.relu(self.conv0More(temp0)))
+            temp0 = self.pool0(func.relu(self.conv0_recur(temp0)))
 
         temp0 = torch.flatten(temp0, start_dim = 1)
 
         temp1 = self.pool1(func.relu(self.conv1(input)))
         for i in range(self.num_layers - 1):
-            temp1 = self.pool1(func.relu(self.conv1More(temp1)))
+            temp1 = self.pool1(func.relu(self.conv1_recur(temp1)))
         temp1 = torch.flatten(temp1, start_dim = 1)
         input = torch.cat((temp0, temp1), dim = 1)
         input = func.relu(self.dense(input))
@@ -262,7 +255,7 @@ class Hybrid_Model_Unlimited(nn.Module):
     # transform input(1D) into a 2D matrix
     def reshape(self, input):
         return torch.reshape(input, (input.shape[0], input.shape[1],
-                                    self.matrixSize[0], self.matrixSize[1]))
+                                    self.mat_size[0], self.mat_size[1]))
 
 
 
@@ -322,17 +315,17 @@ class Make(classifier.Make_Template):
         result = []
         if '1D' in self.configs:
             for id in self.configs['1D']:
-                if self.configs['Num_Layers_Limit']:
-                    model = OneD_Model_Limited(self.configs['1D'][id])
+                if self.configs['1D'][id]['num_layers'] < 3:
+                    model = Limited_1D(self.configs['1D'][id])
                 else:
-                    model = OneD_Model_Unlimited(self.configs['1D'][id])
+                    model = Unlimited_1D(self.configs['1D'][id])
                 result.append(model)
         if 'Hybrid' in self.configs:
             for id in self.configs['Hybrid']:
-                if self.configs['Num_Layers_Limit']:
-                    model = Hybrid_Model_Limited(self.configs['Hybrid'][id])
+                if self.configs['Hybrid'][id]['num_layers'] < 3:
+                    model = Limited_Hybrid(self.configs['Hybrid'][id])
                 else:
-                    model = Hybrid_Model_Unlimited(self.configs['Hybrid'][id])
+                    model = Unlimited_Hybrid(self.configs['Hybrid'][id])
                 result.append(model)
         return result
 
