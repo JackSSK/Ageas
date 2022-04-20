@@ -37,9 +37,9 @@ class Make(classifier.Make_Template):
     # Perform classifier training process for given times
     # and keep given ratio of top performing classifiers
     def train(self, dataSets, keepRatio, keepThread):
-        for setting in self.combs:
+        for id in self.configs:
             # Initialize SVM model
-            candidate = SVM(setting)
+            candidate = SVM(self.configs[id])
             candidate.train(dataSets.dataTrain, dataSets.labelTrain)
             # Check performance
             testResult = candidate.clf.predict(dataSets.dataTest)
@@ -48,24 +48,3 @@ class Make(classifier.Make_Template):
             self.models.append([candidate, accuracy])
         self.models.sort(key = lambda x:x[1], reverse = True)
         self._filterModels(keepRatio, keepThread)
-
-    # Generate all possible hyperparameter combination
-    # Check model config file for orders of parameters
-    def _getHyperParaSets(self, params):
-        result = []
-        combs = list(itertools.product(*params[:3]))
-        for ele in combs:
-            param = {
-                'kernel': ele[0],
-                'gamma': ele[1],
-                'C': ele[2],
-                'degree': 0,
-                'cache_size': 500,
-                'probability': True
-            }
-            if ele[0] == 'poly':
-                for value in params[3]:
-                    param['degree'] = value
-                    result.append(param)
-            else: result.append(param)
-        return result

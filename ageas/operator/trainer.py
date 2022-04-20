@@ -203,27 +203,24 @@ class Cast_Models(classifier.Make_Template):
     def _checkMatrixConfig(self):
         matlen = int(math.sqrt(len(self.all_grp_ids)))
         idealMatSize = [matlen, matlen]
-        if 'CNN' in self.model_config:
-            if self.model_config['CNN']['matrixSizes'] is not None:
-                remove = []
+        if 'CNN' in self.model_config and 'Hybrid' in self.model_config['CNN']:
+            for id in self.model_config['CNN']['Hybrid']:
+                mat_size = self.model_config['CNN']['Hybrid'][id]['matrix_size']
 
-                for size in self.model_config['CNN']['matrixSizes']:
-                    if size[0] * size[1] != len(self.all_grp_ids):
-                        warn('Ignored illegal matrix size setting:' + str(size))
-                        remove.append(size)
+                if mat_size is not None:
+                    if mat_size[0] * mat_size[1] != len(self.all_grp_ids):
+                        warn('Ignored illegal matrixsize config:'+str(mat_size))
+                        self.model_config['CNN']['Hybrid'][id]['matrix_size'] = idealMatSize
 
-                for ele in remove:
-                    self.model_config['CNN']['matrixSizes'].remove(ele)
+                elif mat_size is None:
+                    warn('No valid matrix size in config')
+                    warn('Using 1:1 matrix size: ' + str(idealMatSize))
+                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = idealMatSize
 
-            elif self.model_config['CNN']['matrixSizes'] is None:
-                warn('No valid matrix size in config')
-                warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                self.model_config['CNN']['matrixSizes'] = [idealMatSize]
-
-            if len(self.model_config['CNN']['matrixSizes']) == 0:
-                warn('No valid matrix size in config')
-                warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                self.model_config['CNN']['matrixSizes'] = [idealMatSize]
+                if len(mat_size) != 2:
+                    warn('No valid matrix size in config')
+                    warn('Using 1:1 matrix size: ' + str(idealMatSize))
+                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = idealMatSize
 
     # Re-assign accuracy based on all data performance
     def _calculateAllDataAccuracy(self,):

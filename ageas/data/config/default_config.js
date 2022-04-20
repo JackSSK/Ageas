@@ -1,7 +1,7 @@
 {
     "SVM": {
         "sklearn_svc_0": {
-            "kernel": "linear",
+            "kernel": "rbf",
             "gamma": "auto",
             "C": 1.0,
             "degree": 0,
@@ -9,6 +9,54 @@
             "probability": true
         },
         "sklearn_svc_1": {
+            "kernel": "rbf",
+            "gamma": "scale",
+            "C": 1.0,
+            "degree": 0,
+            "cache_size": 500,
+            "probability": true
+        },
+        "sklearn_svc_2": {
+            "kernel": "poly",
+            "gamma": "auto",
+            "C": 1.0,
+            "degree": 5,
+            "cache_size": 500,
+            "probability": true
+        },
+        "sklearn_svc_3": {
+            "kernel": "poly",
+            "gamma": "auto",
+            "C": 1.0,
+            "degree": 3,
+            "cache_size": 500,
+            "probability": true
+        },
+        "sklearn_svc_4": {
+            "kernel": "poly",
+            "gamma": "scale",
+            "C": 1.0,
+            "degree": 5,
+            "cache_size": 500,
+            "probability": true
+        },
+        "sklearn_svc_5": {
+            "kernel": "poly",
+            "gamma": "scale",
+            "C": 1.0,
+            "degree": 3,
+            "cache_size": 500,
+            "probability": true
+        },
+        "sklearn_svc_6": {
+            "kernel": "linear",
+            "gamma": "auto",
+            "C": 1.0,
+            "degree": 0,
+            "cache_size": 500,
+            "probability": true
+        },
+        "sklearn_svc_7": {
             "kernel": "linear",
             "gamma": "scale",
             "C": 1.0,
@@ -196,12 +244,6 @@
         }
     },
     "CNN": {
-        "Epoch": 2,
-        "Batch_Size": [
-            5,
-            10
-        ],
-        "Num_Layers_Limit": true,
         "1D": {
             "pytorch_cnn_1d_0": {
                 "conv_kernel_size": 32,
