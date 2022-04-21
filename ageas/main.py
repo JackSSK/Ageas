@@ -9,6 +9,7 @@ import os
 import time
 import warnings
 import ageas.tool.json as json
+import ageas.lib.pcgrn_caster as grn
 import ageas.operator.trainer as trainer
 from ageas.operator.gem_db_loader import Load
 import ageas.operator.grn_guidance as grn_guidance
@@ -71,13 +72,16 @@ class Find:
                         log2fc_thread,
                         std_value_thread)
         # Let kirke casts GRN construction guidance first
-        self.circe = grn_guidance.Cast(gem_data = gem_data,
-                                        prediction_thread = prediction_thread,
-                                        correlation_thread = correlation_thread)
+        # self.circe = grn_guidance.Guide(gem_data = gem_data,
+        #                                 prediction_thread = prediction_thread,
+        #                                 correlation_thread = correlation_thread)
+        # self.circe.save_guide(path = 'data/guide_0.js')
+        self.circe = grn_guidance.Guide(load_path = 'data/guide_0.js')
         print('Time to cast GRN Guidnace : ', time.time() - start)
         start = time.time()
         # train classifiers
-        self.ulysses = trainer.Train(self.database_info,
+        loaded_grns = grn.Make(load_path = 'data/grns_0.js')
+        self.ulysses = trainer.Train(database_info = self.database_info,
                                     model_config_path = model_config_path,
                                     gem_data = gem_data,
                                     grn_guidance = self.circe.guide,
@@ -85,11 +89,15 @@ class Find:
                                     correlation_thread = correlation_thread,
                                     iteration = iteration,
                                     clf_keep_ratio = clf_keep_ratio,
-                                    clf_accuracy_thread = clf_accuracy_thread)
+                                    clf_accuracy_thread = clf_accuracy_thread,
+                                    grns = loaded_grns)
+        # self.ulysses.grns.save('data/grns_0.js')
         print('Time to train out classifiers : ', time.time() - start)
+        # interpret classifiers
         start = time.time()
         self.penelope = interpreter.Find(self.ulysses.models)
         print('Time to interpret classifiers : ', time.time() - start)
+        # final part: extract key factors
         start = time.time()
         self.factors = extractor.Extract(self.penelope,
                                         top_GRP_amount = topGRP)

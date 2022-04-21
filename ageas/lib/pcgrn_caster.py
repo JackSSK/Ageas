@@ -23,26 +23,27 @@ class Make:
     Make grns for gene expression datas
     """
     def __init__(self,
-                database_info,
+                database_info = None,
                 std_value_thread = None,
                 std_ratio_thread = None,
                 correlation_thread = 0.2,
                 gem_data = None,
                 grn_guidance = None,
-                save_path = None):
+                load_path = None):
         super(Make, self).__init__()
         # Initialize
         self.database_info = database_info
         self.std_value_thread = std_value_thread
         self.std_ratio_thread = std_ratio_thread
         self.correlation_thread = correlation_thread
+        # load in
+        if load_path is not None:
+            self.class1_pcGRNs,self.class2_pcGRNs=self.__load_pcGRNs(load_path)
         # Make GRNs
-        self.class1_pcGRNs, self.class2_pcGRNs= self.__make_pcGRNs(gem_data,
-                                                                grn_guidance)
-        # Save GRNs when asked
-        if save_path is not None:
-            self.saveGRN(self.class1_pcGRNs, save_path)
-            self.saveGRN(self.class2_pcGRNs, save_path)
+        else:
+            self.class1_pcGRNs,self.class2_pcGRNs=self.__make_pcGRNs(gem_data,
+                                                                    grn_guidance
+                                                                    )
 
     # main controller to cast pseudo cell GRNs (pcGRNs)
     def __make_pcGRNs(self, gem_data, grn_guidance):
@@ -188,16 +189,28 @@ class Make:
             result[filename] = temp.data
         return result
 
-    # Save GRN files as js.gz in new folder
-    def save_GRN(self, data, save_path):
-        for sample in data:
-            names = sample.strip().split('/')
-            name = names[-1].split('.')[0] + '.js'
-            path = '/'.join(names[:-3] + [save_path, names[-2], name])
-            # Make dir if dir not exists
-            folder = os.path.dirname(path)
-            if not os.path.exists(folder):
-                os.makedirs(folder)
-            # Get GRN and save it
-            grn = data[sample]
-            json.encode(grn, out = path)
+    # temporal pcGRN saving method
+    """ need to be revised later to save pcGRNs file by file"""
+    def save(self, save_path):
+        json.encode({'class1':self.class1_pcGRNs, 'class2':self.class2_pcGRNs},
+                    save_path)
+
+    # load in pcGRNs from files
+    """ need to be revised later with save_pcGRNs"""
+    def __load_pcGRNs(self, load_path):
+        data = json.decode(load_path)
+        return data['class1'], data['class2']
+
+    # OLD: Save GRN files as js.gz in new folder
+    # def save_GRN(self, data, save_path):
+    #     for sample in data:
+    #         names = sample.strip().split('/')
+    #         name = names[-1].split('.')[0] + '.js'
+    #         path = '/'.join(names[:-3] + [save_path, names[-2], name])
+    #         # Make dir if dir not exists
+    #         folder = os.path.dirname(path)
+    #         if not os.path.exists(folder):
+    #             os.makedirs(folder)
+    #         # Get GRN and save it
+    #         grn = data[sample]
+    #         json.encode(grn, out = path)

@@ -13,8 +13,8 @@ from scipy.special import softmax
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 import ageas.classifier.cnn as cnn
+import ageas.classifier.rnn as rnn
 import ageas.operator as operator
-
 
 
 class Find:
@@ -69,6 +69,7 @@ class Find:
                     shapVals = explainer.shap_values(usefullData)
                     # Get feature importances based on shapley value
                     featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
+
             # Hybrid CNN cases and 1D CNN cases
             elif re.search(r'Hybrid', modType) or re.search(r'1D', modType):
                 # Use DeepExplainer when in limited mode
@@ -86,6 +87,7 @@ class Find:
                             cnn.Make.reshapeData(usefullData.values.tolist()))
                 # Get feature importances based on shapley value
                 featureImpts = softmax(sum(np.abs(shapVals).mean(0))[0])
+
             # XGB's GBM cases
             elif re.search(r'XGB', modType):
                 # explainer = shap.TreeExplainer(model.clf,
@@ -95,6 +97,20 @@ class Find:
                 # shapVals = explainer.shap_values(usefullData,)
                 # featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
                 featureImpts = softmax(model.clf.feature_importances_)
+
+            elif re.search(r'LSTM', modType) or re.search(r'GRU', modType):
+                # Use DeepExplainer when in limited mode
+                # explainer = shap.DeepExplainer(model,
+                #             data = rnn.Make.reshapeData(bases.values.tolist()))
+                # Use GradientExplainer when in unlimited mode
+                explainer = shap.GradientExplainer(model,
+                            data = rnn.Make.reshapeData(bases.values.tolist()))
+                # Calculate shapley values
+                shapVals = explainer.shap_values(
+                            rnn.Make.reshapeData(usefullData.values.tolist()))
+                # Get feature importances based on shapley value
+                featureImpts = softmax(sum(np.abs(shapVals).mean(0))[0])
+
             else:
                 raise operator.Error('Unrecogonized model type: ', modType)
 

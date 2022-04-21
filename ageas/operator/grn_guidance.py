@@ -14,19 +14,28 @@ import ageas.operator as operator
 
 
 
-class Cast:
+class Guide:
     """
     Make GRN Guide based on GEMs
     """
     def __init__(self,
                 gem_data = None,
                 prediction_thread = None,
-                correlation_thread = 0.2):
-        super(Cast, self).__init__()
+                correlation_thread = 0.2,
+                load_path = None):
+        super(Guide, self).__init__()
         # Initialization
         self.guide = {}
         self.tfs_no_interaction_rec = {}
-        gene4Pred = None
+        # Choose process
+        if load_path is not None: self.__load(load_path)
+        else: self.__cast(gem_data, prediction_thread, correlation_thread)
+
+    def __load(self, load_path):
+        self.guide = json.decode(load_path)
+
+    # Process to Cast out GRN construction guidance
+    def __cast(self, gem_data, prediction_thread, correlation_thread):
         # proces guidance casting process based on avaliable information
         if gem_data.interactions is not None:
             self.__with_grtd(gem_data, correlation_thread)

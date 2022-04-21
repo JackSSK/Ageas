@@ -7,7 +7,6 @@ author: jy, nkmtmsys
 
 import os
 import re
-import gc
 import math
 import numpy as  np
 import pandas as pd
@@ -143,7 +142,6 @@ class Process(object):
         # Clear unnecessary data
         del grnData
         del database_info
-        gc.collect()
 
     # Update training and testing set based on given expression data
     def _updateTrainTest(self, grns, train_set, test_set):
@@ -214,7 +212,6 @@ class Process(object):
             raise db_setup.Error(
                 'preprocessor malfunction: duplicate ID in allIDs')
         del unique
-        gc.collect()
 
     # Calculate a close-to-square matrix size based on allIDs
     # for using 2D-input based machinle learning models (e.g. hybrid_model)

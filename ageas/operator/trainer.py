@@ -20,6 +20,7 @@ import ageas.lib.pcgrn_caster as grn
 from pkg_resources import resource_filename
 import ageas.classifier.svm as svm
 import ageas.classifier.cnn as cnn
+import ageas.classifier.rnn as rnn
 import ageas.classifier.xgb as xgb
 import ageas.classifier as classifier
 from ageas.database_setup.binary_class import Process
@@ -84,10 +85,6 @@ class Train:
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread)
 
-    # Save GRN data in given path
-    def save_GRNs(self, path):
-        grn.save_GRN(self.grns, path)
-
     # Save result models in given path
     def save_models(self, path):
         with open(path, 'wb') as file: pickle.dump(self.models, file)
@@ -114,13 +111,13 @@ class Cast_Models(classifier.Make_Template):
         self.allData = None
         self.allLabel = None
         self.testSizeRatio = testSetRatio
-        self._iterativeTraining(database_info,
-                                grnData,
-                                iteration,
-                                testSetRatio,
-                                random_state,
-                                clf_keep_ratio,
-                                clf_accuracy_thread)
+        self.__iterative_training(database_info,
+                                    grnData,
+                                    iteration,
+                                    testSetRatio,
+                                    random_state,
+                                    clf_keep_ratio,
+                                    clf_accuracy_thread)
 
         # Concat models together based on performace
         temp = []
@@ -141,23 +138,25 @@ class Cast_Models(classifier.Make_Template):
         del self.all_grp_ids
 
     # Make model sets based on given config
-    def _initializeModelSets(self, config):
-        models = []
-        if 'XGB' in config: models.append(xgb.Make(config = config['XGB']))
-        if 'SVM' in config: models.append(svm.Make(config = config['SVM']))
-        if 'CNN' in config: models.append(cnn.Make(config = config['CNN']))
-        return models
+    def __initialize_classifiers(self, config):
+        list = []
+        if 'GBM' in config: list.append(xgb.Make(config = config['GBM']))
+        if 'SVM' in config: list.append(svm.Make(config = config['SVM']))
+        if 'CNN' in config: list.append(cnn.Make(config = config['CNN']))
+        if 'RNN' in config: list.append(rnn.Make(config = config['RNN']))
+        return list
 
     # Generate training data and testing data iteratively
     # Then train out models in model sets
     # Only keep top performancing models in each set
-    def _iterativeTraining(self, database_info,
-                                grnData,
-                                iteration,
-                                testSetRatio,
-                                random_state,
-                                clf_keep_ratio,
-                                clf_accuracy_thread):
+    def __iterative_training(self,
+                            database_info,
+                            grnData,
+                            iteration,
+                            testSetRatio,
+                            random_state,
+                            clf_keep_ratio,
+                            clf_accuracy_thread):
         for i in range(iteration):
             # Change random state for each iteration
             if random_state is not None: random_state = i * random_state
@@ -179,16 +178,16 @@ class Cast_Models(classifier.Make_Template):
                 self.allData = dataSets.dataTrain + dataSets.dataTest
                 self.allLabel = np.concatenate((dataSets.labelTrain,
                                             dataSets.labelTest))
-                self._checkMatrixConfig()
-                self.models = self._initializeModelSets(self.model_config)
+                self.__check_input_matrix_size()
+                self.models = self.__initialize_classifiers(self.model_config)
                 # Clear redundant data
                 database_info = None
                 grnData = None
                 if len(self.allData) !=  len(self.allLabel):
                     raise pre.Preprocess_Error('Full data extraction Error')
             elif i == 0:
-                self._checkMatrixConfig()
-                self.models = self._initializeModelSets(self.model_config)
+                self.__check_input_matrix_size()
+                self.models = self.__initialize_classifiers(self.model_config)
             # For testing
             # else:
             #     print('constant allIDs' ,
@@ -200,7 +199,7 @@ class Cast_Models(classifier.Make_Template):
             print('Finished iterative trainig: ', i)
 
     # Check whether matrix sizes are reasonable or not
-    def _checkMatrixConfig(self):
+    def __check_input_matrix_size(self):
         matlen = int(math.sqrt(len(self.all_grp_ids)))
         # m is square shaped data dimmensions
         m = [matlen, matlen]
@@ -242,6 +241,14 @@ class Cast_Models(classifier.Make_Template):
                 model.eval()
                 with torch.no_grad():
                     allSizeResult = model(cnn.Make.reshapeData(self.allData))
+                allSizeAccuracy, allSizeResult = self._evalNN(allSizeResult,
+                                                                self.allLabel)
+            # RNN type handling
+            elif re.search(r'LSTM', modType) or re.search(r'GRU', modType):
+                # Enter eval mode and turn off gradient calculation
+                model.eval()
+                with torch.no_grad():
+                    allSizeResult = model(rnn.Make.reshapeData(self.allData))
                 allSizeAccuracy, allSizeResult = self._evalNN(allSizeResult,
                                                                 self.allLabel)
             else:

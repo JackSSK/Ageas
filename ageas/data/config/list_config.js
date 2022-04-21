@@ -21,35 +21,32 @@
       ]
   },
   "GBM": {
-      "boosters": [
+      "booster": [
           "gbtree"
       ],
-      "objectives": [
+      "objective": [
           "multi:softmax",
           "binary:logistic"
-      ],
-      "num_class":[
-          2
       ],
       "eval_metric": [
           "mlogloss"
       ],
-      "etas": [
+      "eta": [
           0.1,
           0.3
       ],
-      "gammas": [
+      "gamma": [
           0,
           0.1
       ],
-      "max_depths": [
+      "max_depth": [
           6
       ],
-      "min_child_weights": [
+      "min_child_weight": [
           1,
           2
       ],
-      "alphas": [
+      "alpha": [
           0
       ]
   },

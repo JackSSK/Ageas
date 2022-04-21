@@ -18,31 +18,54 @@ from torch.utils.data import DataLoader
 import ageas.classifier as classifier
 
 
-
-import torch
-import torch.nn as nn
-import torchvision
-import torchvision.transforms as transforms
-
 # Hyper-parameters
 # input_size = 784 # 28x28
-sequence_length = 28
-input_size = 28
-batch_size = 100
-num_epochs = 2
 
-param = {
-    'hidden_size' = 128,
-    'num_layers' = 2,
-    'learning_rate' = 0.01
-}
-
+# Fully connected neural network with one hidden layer
 class RNN(nn.Module):
+    def __init__(self, input_size, hidden_size, num_layers, num_classes):
+        super(RNN, self).__init__()
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.rnn = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
+        # -> x needs to be: (batch_size, seq, input_size)
+
+        # or:
+        #self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
+        #self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        # Set initial hidden states (and cell states for LSTM)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        #c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+
+        # x: (n, 28, 28), h0: (2, n, 128)
+
+        # Forward propagate RNN
+        out, _ = self.rnn(x, h0)
+        # or:
+        #out, _ = self.lstm(x, (h0,c0))
+
+        # out: tensor of shape (batch_size, seq_length, hidden_size)
+        # out: (n, 28, 128)
+
+        # Decode the hidden state of the last time step
+        out = out[:, -1, :]
+        # out: (n, 128)
+
+        out = self.fc(out)
+        # out: (n, 10)
+        return out
+
+
+
+class LSTM(nn.Module):
     """
     Recurrent neural network (many-to-one)
     """
     def __init__(self, input_size, param):
-        super(RNN, self).__init__()
+        super(LSTM, self).__init__()
         self.hidden_size = param['hidden_size']
         self.num_layers = param['num_layers']
         self.lstm = nn.LSTM(input_size,
@@ -50,14 +73,15 @@ class RNN(nn.Module):
                             self.num_layers,
                             batch_first = True)
         self.fc = nn.Linear(self.hidden_size, 2)
-        self.optimizer = torch.optim.Adam(model.parameters(),
+        self.optimizer = torch.optim.Adam(self.parameters(),
                                             lr = param['learning_rate'])
         self.lossFunc = nn.CrossEntropyLoss()
 
     def forward(self, x):
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         # Set initial hidden and cell states
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
+        h0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(device)
+        c0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(device)
         # Forward propagate LSTM
         out, _ = self.lstm(x, (h0, c0))
         # out: tensor of shape (batch_size, seq_length, hidden_size)
@@ -81,12 +105,12 @@ class Make(classifier.cnn.Make):
         testData = self.reshapeData(dataSets.dataTest)
         testLabel = dataSets.labelTest
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        vanilla_models = self.__set_vanilla_models()
+        vanilla_models = self.__set_vanilla_models(num_features)
 
         # Try out each batch size setting
-        for batchSize in self.batchSizes:
+        for batchSize in self.configs['Batch_Size']:
             tempModels = vanilla_models
-            for ep in range(self.epochs):
+            for ep in range(self.configs['Epoch']):
                 index_set = DataLoader(dataset = range(len(dataSets.dataTrain)),
                                         batch_size = batchSize,
                                         shuffle = True)
@@ -120,73 +144,14 @@ class Make(classifier.cnn.Make):
         del dataSets
 
     # Generate blank models for training
-    def __set_vanilla_models(self,):
+    def __set_vanilla_models(self, num_features):
         result = []
-        for setting in self.combs:
-            if setting['modelType'] == '1d':
-                if setting['layerSetLimit']:
-                    model = OneD_Model_Limited(setting)
-                else:
-                    model = Type_1D(setting)
-            elif setting['modelType'] == 'hybrid':
-                if setting['layerSetLimit']:
-                    model = Hybrid_Model_Limited(setting)
-                else:
-                    model = Type_Hybrid(setting)
-            result.append(model)
+        if 'LSTM' in self.configs:
+            for id in self.configs['LSTM']:
+                model = LSTM(num_features, self.configs['LSTM'][id])
+                result.append(model)
+        if 'GRU' in self.configs:
+            for id in self.configs['GRU']:
+                model = None
+                result.append(model)
         return result
-
-    # Generate all possible hyperparameter combination
-    def _getHyperParaSets(self, params):
-        # Long initialize here
-        self.epochs = params[0]
-        self.batchSizes = params[1]
-        layerSetLimit = params[2]
-        matrix_size = params[3]
-        conv_kernel_size = params[4]
-        # optFuncs = [optim.SGD, optim.Adam],
-        optFuncs = [optim.SGD]
-        params.append(optFuncs)
-        result = []
-        combs = list(itertools.product(*params[5:]))
-        for ele in combs:
-            param = {
-                'layerSetLimit': layerSetLimit,
-                'convKernelNum': ele[0],
-                'modelType': ele[1],
-                'maxPoolKernelSize': ele[2],
-                'densedSize': ele[3],
-                'num_layers': ele[4],
-                'learning_rate': ele[5],
-                'optFunc': ele[6],
-                'matrixSize': 0,
-                'convKernelSize': 0
-            }
-            if param['modelType'] == 'hybrid':
-                try:
-                    for size in matrix_size:
-                        param['matrixSize'] = size
-                        result.append(param)
-                except:
-                    raise classifier.Error('CNN hybrid model: No matrix setup')
-            elif param['modelType'] == '1d':
-                for size in conv_kernel_size:
-                    param['convKernelSize'] = size
-                    result.append(param)
-        return result
-
-    # Evaluate  the accuracy of given model with testing data
-    def _eval(self, model, testData, testLabel):
-        model.eval()
-        with torch.no_grad():
-            outputs = model(testData)
-            correct = 0
-            for i in range(len(outputs)):
-                if outputs[i][0] > outputs[i][1]: predict = 0
-                else: predict = 1
-                if predict == testLabel[i]: correct += 1
-            accuracy = correct / len(testLabel)
-        return accuracy
-                # _, predicted = torch.max(outputs.data, 1)
-                # total += labels.size(0)
-                # correct += (predicted == labels).sum().item()
