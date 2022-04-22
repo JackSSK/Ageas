@@ -98,11 +98,11 @@ class Find:
                 # featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
                 featureImpts = softmax(model.clf.feature_importances_)
 
-            elif re.search(r'LSTM', modType) or re.search(r'GRU', modType):
-                # Use DeepExplainer when in limited mode
+            elif re.search(r'rnn', modType):
+                # Use DeepExplainer
                 # explainer = shap.DeepExplainer(model,
                 #             data = rnn.Make.reshapeData(bases.values.tolist()))
-                # Use GradientExplainer when in unlimited mode
+                # Use GradientExplainer
                 explainer = shap.GradientExplainer(model,
                             data = rnn.Make.reshapeData(bases.values.tolist()))
                 # Calculate shapley values

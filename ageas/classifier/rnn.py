@@ -18,44 +18,31 @@ from torch.utils.data import DataLoader
 import ageas.classifier as classifier
 
 
-# Hyper-parameters
-# input_size = 784 # 28x28
 
-# Fully connected neural network with one hidden layer
 class RNN(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, num_classes):
+    def __init__(self, device, input_size, param):
         super(RNN, self).__init__()
-        self.num_layers = num_layers
-        self.hidden_size = hidden_size
-        self.rnn = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
-        # -> x needs to be: (batch_size, seq, input_size)
-
-        # or:
-        #self.gru = nn.GRU(input_size, hidden_size, num_layers, batch_first=True)
-        #self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, num_classes)
+        self.device = device
+        self.num_layers = param['num_layers']
+        self.hidden_size = param['hidden_size']
+        self.rnn = nn.RNN(input_size,
+                            self.hidden_size,
+                            self.num_layers,
+                            batch_first=True)
+        self.fc = nn.Linear(self.hidden_size, 2)
+        self.optimizer = torch.optim.Adam(self.parameters(),
+                                            lr = param['learning_rate'])
+        self.lossFunc = nn.CrossEntropyLoss()
 
     def forward(self, x):
         # Set initial hidden states (and cell states for LSTM)
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        #c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-
-        # x: (n, 28, 28), h0: (2, n, 128)
-
+        # -> x needs to be: (batch_size, seq, input_size)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(self.device)
         # Forward propagate RNN
         out, _ = self.rnn(x, h0)
-        # or:
-        #out, _ = self.lstm(x, (h0,c0))
-
         # out: tensor of shape (batch_size, seq_length, hidden_size)
-        # out: (n, 28, 128)
-
         # Decode the hidden state of the last time step
-        out = out[:, -1, :]
-        # out: (n, 128)
-
-        out = self.fc(out)
-        # out: (n, 10)
+        out = self.fc(out[:, -1, :])
         return out
 
 
@@ -64,8 +51,9 @@ class LSTM(nn.Module):
     """
     Recurrent neural network (many-to-one)
     """
-    def __init__(self, input_size, param):
+    def __init__(self, device, input_size, param):
         super(LSTM, self).__init__()
+        self.device = device
         self.hidden_size = param['hidden_size']
         self.num_layers = param['num_layers']
         self.lstm = nn.LSTM(input_size,
@@ -78,12 +66,39 @@ class LSTM(nn.Module):
         self.lossFunc = nn.CrossEntropyLoss()
 
     def forward(self, x):
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         # Set initial hidden and cell states
-        h0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(device)
-        c0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(device)
+        h0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(self.device)
+        c0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(self.device)
         # Forward propagate LSTM
         out, _ = self.lstm(x, (h0, c0))
+        # out: tensor of shape (batch_size, seq_length, hidden_size)
+        # Decode the hidden state of the last time step
+        out = self.fc(out[:, -1, :])
+        return out
+
+
+
+class GRU(nn.Module):
+    def __init__(self, device, input_size, param):
+        super(GRU, self).__init__()
+        self.device = device
+        self.num_layers = param['num_layers']
+        self.hidden_size = param['hidden_size']
+        self.gru = nn.GRU(input_size,
+                            self.hidden_size,
+                            self.num_layers,
+                            batch_first=True)
+        self.fc = nn.Linear(self.hidden_size, 2)
+        self.optimizer = torch.optim.Adam(self.parameters(),
+                                            lr = param['learning_rate'])
+        self.lossFunc = nn.CrossEntropyLoss()
+
+    def forward(self, x):
+        # Set initial hidden states (and cell states for LSTM)
+        # -> x needs to be: (batch_size, seq, input_size)
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(self.device)
+        # Forward propagate RNN
+        out, _ = self.gru(x, h0)
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         # Decode the hidden state of the last time step
         out = self.fc(out[:, -1, :])
@@ -146,12 +161,17 @@ class Make(classifier.cnn.Make):
     # Generate blank models for training
     def __set_vanilla_models(self, num_features):
         result = []
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        if 'RNN' in self.configs:
+            for id in self.configs['RNN']:
+                model = RNN(device, num_features, self.configs['RNN'][id])
+                result.append(model)
         if 'LSTM' in self.configs:
             for id in self.configs['LSTM']:
-                model = LSTM(num_features, self.configs['LSTM'][id])
+                model = LSTM(device, num_features, self.configs['LSTM'][id])
                 result.append(model)
         if 'GRU' in self.configs:
             for id in self.configs['GRU']:
-                model = None
+                model = GRU(device, num_features, self.configs['GRU'][id])
                 result.append(model)
         return result

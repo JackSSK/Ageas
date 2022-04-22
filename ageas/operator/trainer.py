@@ -244,7 +244,7 @@ class Cast_Models(classifier.Make_Template):
                 allSizeAccuracy, allSizeResult = self._evalNN(allSizeResult,
                                                                 self.allLabel)
             # RNN type handling
-            elif re.search(r'LSTM', modType) or re.search(r'GRU', modType):
+            elif re.search(r'rnn', modType):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():
