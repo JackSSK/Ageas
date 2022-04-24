@@ -110,5 +110,59 @@
       "learning_rate": [
           0.01
       ]
+  },
+  "RNN": {
+      "epoch": 2,
+      "batch_size": [
+          5,
+          10
+      ],
+      "hidden_size":[
+          128,
+          256
+      ],
+      "num_layers":[
+          2,
+          3
+      ],
+      "learning_rate":[
+          0.01
+      ]
+  },
+  "LSTM": {
+      "epoch": 2,
+      "batch_size": [
+          5,
+          10
+      ],
+      "hidden_size":[
+          128,
+          256
+      ],
+      "num_layers":[
+          2,
+          3
+      ],
+      "learning_rate":[
+          0.01
+      ]
+  },
+  "GRU": {
+      "epoch": 2,
+      "batch_size": [
+          5,
+          10
+      ],
+      "hidden_size":[
+          128,
+          256
+      ],
+      "num_layers":[
+          2,
+          3
+      ],
+      "learning_rate":[
+          0.01
+      ]
   }
 }

@@ -85,10 +85,10 @@ class Predict:
         # Choose a key presenting in both classes
         i = 0
         for src in regulatory_sources:
-            if i == len(regulatory_sources):
-                raise operator.Error('No reg source in both class')
             if src in self.class1_gem.index and src in self.class2_gem.index:
                 break
+            if i == len(regulatory_sources) - 1:
+                return self.thread
             i += 1
         grps = regulatory_sources[src]
         class1FeatImpts, class2FeatImpts = self._getFeatureImportences(src,True)

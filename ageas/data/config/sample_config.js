@@ -501,5 +501,78 @@
                 "learning_rate": 0.01
             }
         }
+    },
+    "RNN": {
+        "Epoch": 2,
+        "Batch_Size": [
+            5,
+            10
+        ],
+        "RNN": {
+            "pytorch_rnn_0": {
+                "hidden_size": 256,
+                "num_layers": 3,
+                "learning_rate": 0.01
+            },
+            "pytorch_rnn_1": {
+                "hidden_size": 256,
+                "num_layers": 2,
+                "learning_rate": 0.01
+            },
+            "pytorch_rnn_2": {
+                "hidden_size": 128,
+                "num_layers": 3,
+                "learning_rate": 0.01
+            },
+            "pytorch_rnn_3": {
+                "hidden_size": 128,
+                "num_layers": 2,
+                "learning_rate": 0.01
+            }
+        },
+        "LSTM": {
+            "pytorch_lstm_0": {
+                "hidden_size": 256,
+                "num_layers": 3,
+                "learning_rate": 0.01
+            },
+            "pytorch_lstm_1": {
+                "hidden_size": 256,
+                "num_layers": 2,
+                "learning_rate": 0.01
+            },
+            "pytorch_lstm_2": {
+                "hidden_size": 128,
+                "num_layers": 3,
+                "learning_rate": 0.01
+            },
+            "pytorch_lstm_3": {
+                "hidden_size": 128,
+                "num_layers": 2,
+                "learning_rate": 0.01
+            }
+        },
+        "GRU": {
+            "pytorch_gru_0": {
+                "hidden_size": 256,
+                "num_layers": 3,
+                "learning_rate": 0.01
+            },
+            "pytorch_gru_1": {
+                "hidden_size": 256,
+                "num_layers": 2,
+                "learning_rate": 0.01
+            },
+            "pytorch_gru_2": {
+                "hidden_size": 128,
+                "num_layers": 3,
+                "learning_rate": 0.01
+            },
+            "pytorch_gru_3": {
+                "hidden_size": 128,
+                "num_layers": 2,
+                "learning_rate": 0.01
+            }
+        }
     }
 }

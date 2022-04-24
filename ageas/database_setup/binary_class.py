@@ -120,7 +120,7 @@ class Process(object):
         class1Result = self._splitTrainTest(grnData.class1_pcGRNs,
                                             database_info.label1)
         # similar with class1
-        class2Result = self._splitTrainTest(grnData.class1_pcGRNs,
+        class2Result = self._splitTrainTest(grnData.class2_pcGRNs,
                                             database_info.label2)
         self.labelTrain = np.array(class1Result[2] + class2Result[2])
         self.labelTest = np.array(class1Result[3] + class2Result[3])

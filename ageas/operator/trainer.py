@@ -174,7 +174,6 @@ class Cast_Models(classifier.Make_Template):
             if i == 0 and self.allData is None and self.allLabel is None:
                 print('Total GRP amount: ', len(dataSets.all_grp_ids))
                 self.all_grp_ids = dataSets.all_grp_ids
-                self.testSizeRatio = len(dataSets.dataTest)
                 self.allData = dataSets.dataTrain + dataSets.dataTest
                 self.allLabel = np.concatenate((dataSets.labelTrain,
                                             dataSets.labelTest))

@@ -52,6 +52,7 @@ class Find:
             usefullData = odysseusModels.allData.iloc[usefullData,:]
             # Switch method based on model type
             modType = str(type(model))
+            print(modType)
             # Handling SVM cases
             if re.search(r'SVM', modType):
                 # Handle linear kernel SVC here
@@ -116,8 +117,7 @@ class Find:
 
             # Update sumFeatureImpts
             if sumFeatureImpts is None:
-                sumFeatureImpts = pd.array((featureImpts * accuracy),
-                                                                dtype=float)
+                sumFeatureImpts = pd.array((featureImpts*accuracy) ,dtype=float)
             else: sumFeatureImpts += (featureImpts * accuracy)
 
         # Make feature importnace matrix

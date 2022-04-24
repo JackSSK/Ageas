@@ -72,15 +72,16 @@ class Find:
                         log2fc_thread,
                         std_value_thread)
         # Let kirke casts GRN construction guidance first
+        self.circe = grn_guidance.Guide(load_path = 'data/guide_2.js')
         # self.circe = grn_guidance.Guide(gem_data = gem_data,
         #                                 prediction_thread = prediction_thread,
         #                                 correlation_thread = correlation_thread)
-        # self.circe.save_guide(path = 'data/guide_0.js')
-        self.circe = grn_guidance.Guide(load_path = 'data/guide_0.js')
+        # self.circe.save_guide(path = 'data/guide_2.js')
         print('Time to cast GRN Guidnace : ', time.time() - start)
         start = time.time()
         # train classifiers
-        loaded_grns = grn.Make(load_path = 'data/grns_0.js')
+        # loaded_grns = grn.Make(load_path = 'data/grns_1.js')
+        loaded_grns = None
         self.ulysses = trainer.Train(database_info = self.database_info,
                                     model_config_path = model_config_path,
                                     gem_data = gem_data,
@@ -91,7 +92,7 @@ class Find:
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread,
                                     grns = loaded_grns)
-        # self.ulysses.grns.save('data/grns_0.js')
+        self.ulysses.grns.save('data/grns_2.js')
         print('Time to train out classifiers : ', time.time() - start)
         # interpret classifiers
         start = time.time()

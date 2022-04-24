@@ -70,7 +70,7 @@ class XGBoost_GBM(operator.Config_Maker_Template):
 
 class Pytorch_CNN_Hybrid(operator.Config_Maker_Template):
     """
-    config maker for XGBoost based GBMs
+    config maker for Pytorch based Hybrid-CNN
     """
     def __init__(self, header = None, config = None):
         self.epoch = 1
@@ -114,31 +114,70 @@ class Pytorch_CNN_Hybrid(operator.Config_Maker_Template):
 
 class Pytorch_CNN_1D(Pytorch_CNN_Hybrid):
     """
-    config maker for XGBoost based GBMs
+    config maker for Pytorch based 1D-CNN
     """
     # verify a 1D CNN config before adding it to set
     def __verify_config(self, query):
         return query
 
+
+
+class Pytorch_RNN(Pytorch_CNN_Hybrid):
+    """
+    config maker for Pytorch based RNN
+    """
+    def __verify_config(self, query):
+        return query
+
+
+
+class Pytorch_LSTM(Pytorch_CNN_Hybrid):
+    """
+    config maker for Pytorch based RNN
+    """
+    def __verify_config(self, query):
+        return query
+
+
+class Pytorch_GRU(Pytorch_CNN_Hybrid):
+    """
+    config maker for Pytorch based RNN
+    """
+    def __verify_config(self, query):
+        return query
+
+
+
 """ For test """
-if __name__ == "__main__":
-    import ageas.tool.json as json
-    a = json.decode("../data/config/list_config.js")
-    svm = Sklearn_SVM(header = 'sklearn_svc_', config = a['SVM'])
-    gbm = XGBoost_GBM(header = 'xgboost_gbm_', config = a['GBM'])
-    hybrid = Pytorch_CNN_Hybrid(header = 'pytorch_cnn_hybrid_',
-                            config = a['CNN_Hybrid'])
-    d1 = Pytorch_CNN_1D(header = 'pytorch_cnn_1d_', config = a['CNN_1D'])
-    assert d1.epoch == hybrid.epoch
-    assert d1.batch_size == hybrid.batch_size
-    result = {
-        'SVM':svm.configs,
-        'GBM':gbm.configs,
-        'CNN':{
-            'Epoch':d1.epoch,
-            'Batch_Size':d1.batch_size,
-            '1D': d1.configs,
-            'Hybrid':hybrid.configs
-        }
-    }
-    json.encode(result, 'sample_config.js')
+# if __name__ == "__main__":
+#     import ageas.tool.json as json
+#     a = json.decode("../data/config/list_config.js")
+#     svm = Sklearn_SVM(header = 'sklearn_svc_', config = a['SVM'])
+#     gbm = XGBoost_GBM(header = 'xgboost_gbm_', config = a['GBM'])
+#     hybrid = Pytorch_CNN_Hybrid(header = 'pytorch_cnn_hybrid_',
+#                             config = a['CNN_Hybrid'])
+#     d1 = Pytorch_CNN_1D(header = 'pytorch_cnn_1d_', config = a['CNN_1D'])
+#     rnn = Pytorch_RNN(header = 'pytorch_rnn_', config = a['RNN'])
+#     lstm = Pytorch_LSTM(header = 'pytorch_lstm_', config = a['LSTM'])
+#     gru = Pytorch_GRU(header = 'pytorch_gru_', config = a['GRU'])
+#     assert d1.epoch == hybrid.epoch
+#     assert d1.batch_size == hybrid.batch_size
+#     result = {
+#         'SVM':svm.configs,
+#         'GBM':gbm.configs,
+#         'CNN':{
+#             'Epoch':d1.epoch,
+#             'Batch_Size':d1.batch_size,
+#             '1D': d1.configs,
+#             'Hybrid':hybrid.configs
+#         },
+#         'RNN':{
+#             'Epoch':rnn.epoch,
+#             'Batch_Size':rnn.batch_size,
+#             'RNN': rnn.configs,
+#             'LSTM':lstm.configs,
+#             'GRU':gru.configs
+#         }
+#     }
+#     # print(result)
+#     json.encode(result, 'sample_config.js')
