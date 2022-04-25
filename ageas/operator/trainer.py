@@ -7,20 +7,19 @@ author: jy, nkmtmsys
 """
 
 import re
-import math
 import torch
 import pickle
 import difflib
 import numpy as np
 import pandas as pd
-from warnings import warn
 import ageas.operator as operator
-import ageas.tool.json as json
 import ageas.lib.pcgrn_caster as grn
-from pkg_resources import resource_filename
 import ageas.classifier.svm as svm
-import ageas.classifier.cnn as cnn
+import ageas.classifier.cnn_1d as cnn_1d
+import ageas.classifier.cnn_hybrid as cnn_hybrid
 import ageas.classifier.rnn as rnn
+import ageas.classifier.lstm as lstm
+import ageas.classifier.gru as gru
 import ageas.classifier.xgb as xgb
 import ageas.classifier as classifier
 from ageas.database_setup.binary_class import Process
@@ -33,7 +32,7 @@ class Train:
     """
     def __init__(self,
                 database_info,
-                model_config_path = None,
+                model_config = None,
                 # GRN casting params
                 gem_data = None,
                 grn_guidance = None,
@@ -48,35 +47,28 @@ class Train:
                 clf_keep_ratio = 1.0,
                 clf_accuracy_thread = 0.9,
                 grns = None):
-        # load standard config file if not further specified
-        if model_config_path is None:
-            model_config_path = resource_filename(__name__,
-                                            '../data/config/sample_config.js')
-        model_config = json.decode(model_config_path)
-
         # Initialization
         self.grns = grns
-        self.database_info = database_info
-
+        # Generate pcGRNs if not avaliable
         if self.grns is None:
             # if reading in GEMs, we need to construct pseudo-cGRNs first
-            if re.search(r'gem' , self.database_info.type):
-                self.grns = grn.Make(database_info = self.database_info,
+            if re.search(r'gem' , database_info.type):
+                self.grns = grn.Make(database_info = database_info,
                                     std_value_thread = std_value_thread,
                                     std_ratio_thread = std_ratio_thread,
                                     correlation_thread = correlation_thread,
                                     gem_data = gem_data,
                                     grn_guidance = grn_guidance)
             # if we are reading in GRNs directly, just process them
-            elif re.search(r'grn' , self.database_info.type):
+            elif re.search(r'grn' , database_info.type):
                 self.grns = None
                 print('trainer.py: mode grn need to be revised here')
             else:
                 raise operator.Error('Unrecogonized database type: ',
-                                        self.database_info.type)
+                                        database_info.type)
         assert self.grns is not None
         # Train out models and find the best ones
-        self.models = Cast_Models(database_info = self.database_info,
+        self.models = Cast_Models(database_info = database_info,
                                     model_config = model_config,
                                     grnData = self.grns,
                                     iteration = iteration,
@@ -130,7 +122,9 @@ class Cast_Models(classifier.Make_Template):
         # Keep best performancing models
         self._filterModels(clf_keep_ratio, clf_accuracy_thread)
         # Filter based on all data performace
-        self._calculateAllDataAccuracy()
+        self.models = self.get_clf_accuracy(clf_list = self.models,
+                                                data = self.allData,
+                                                label = self.allLabel)
         self.models.sort(key = lambda x:x[-1], reverse = True)
         self._filterModels(clf_keep_ratio, clf_accuracy_thread)
         print('Keeping ', len(self.models), ' models')
@@ -140,10 +134,21 @@ class Cast_Models(classifier.Make_Template):
     # Make model sets based on given config
     def __initialize_classifiers(self, config):
         list = []
-        if 'GBM' in config: list.append(xgb.Make(config = config['GBM']))
-        if 'SVM' in config: list.append(svm.Make(config = config['SVM']))
-        if 'CNN' in config: list.append(cnn.Make(config = config['CNN']))
-        if 'RNN' in config: list.append(rnn.Make(config = config['RNN']))
+        if 'GBM' in config:
+            list.append(xgb.Make(config = config['GBM']))
+        if 'SVM' in config:
+            list.append(svm.Make(config = config['SVM']))
+        if 'CNN_1D' in config:
+            list.append(cnn_1d.Make(config = config['CNN_1D']))
+        if 'CNN_Hybrid' in config:
+            list.append(cnn_hybrid.Make(config = config['CNN_Hybrid'],
+                                        grp_amount = len(self.all_grp_ids)))
+        if 'RNN' in config:
+            list.append(rnn.Make(config = config['RNN']))
+        if 'LSTM' in config:
+            list.append(lstm.Make(config = config['LSTM']))
+        if 'GRU' in config:
+            list.append(gru.Make(config = config['GRU']))
         return list
 
     # Generate training data and testing data iteratively
@@ -177,93 +182,68 @@ class Cast_Models(classifier.Make_Template):
                 self.allData = dataSets.dataTrain + dataSets.dataTest
                 self.allLabel = np.concatenate((dataSets.labelTrain,
                                             dataSets.labelTest))
-                self.__check_input_matrix_size()
                 self.models = self.__initialize_classifiers(self.model_config)
                 # Clear redundant data
                 database_info = None
                 grnData = None
                 if len(self.allData) !=  len(self.allLabel):
-                    raise pre.Preprocess_Error('Full data extraction Error')
+                    raise operator.Error('Full data extraction Error')
             elif i == 0:
-                self.__check_input_matrix_size()
                 self.models = self.__initialize_classifiers(self.model_config)
-            # For testing
-            # else:
-            #     print('constant allIDs' ,
-                        # dataSets.all_grp_ids == self.all_grp_ids )
 
             # Do trainings
             for modelSet in self.models:
                 modelSet.train(dataSets, clf_keep_ratio, clf_accuracy_thread)
             print('Finished iterative trainig: ', i)
 
-    # Check whether matrix sizes are reasonable or not
-    def __check_input_matrix_size(self):
-        matlen = int(math.sqrt(len(self.all_grp_ids)))
-        # m is square shaped data dimmensions
-        m = [matlen, matlen]
-        if 'CNN' in self.model_config and 'Hybrid' in self.model_config['CNN']:
-            for id in self.model_config['CNN']['Hybrid']:
-                mat_size = self.model_config['CNN']['Hybrid'][id]['matrix_size']
-                if mat_size is not None:
-                    if mat_size[0] * mat_size[1] != len(self.all_grp_ids):
-                        warn('Ignored illegal matrixsize config:'+str(mat_size))
-                        self.model_config['CNN']['Hybrid'][id]['matrix_size']= m
-
-                elif mat_size is None:
-                    warn('No valid matrix size in config')
-                    warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = m
-
-                if len(mat_size) != 2:
-                    warn('No valid matrix size in config')
-                    warn('Using 1:1 matrix size: ' + str(idealMatSize))
-                    self.model_config['CNN']['Hybrid'][id]['matrix_size'] = m
-
     # Re-assign accuracy based on all data performance
-    def _calculateAllDataAccuracy(self,):
+    def get_clf_accuracy(self, clf_list, data, label):
         i = 0
-        for record in self.models:
+        for record in clf_list:
             model = record[0]
             accuracy = record[-1]
-            modType = str(type(model))
+            clf_type = str(type(model))
             i+=1
             # Handel SVM and XGB cases
             # Or maybe any sklearn-style case
-            if re.search(r'SVM', modType) or re.search(r'XGB', modType):
-                allSizeResult = model.clf.predict(self.allData)
-                allSizeAccuracy = difflib.SequenceMatcher(None, allSizeResult,
-                                                        self.allLabel).ratio()
-            # Hybrid CNN cases and 1D CNN cases
-            elif re.search(r'Hybrid', modType) or re.search(r'1D', modType):
+            if re.search(r'svm', clf_type) or re.search(r'xgb', clf_type):
+                pred_result = model.clf.predict(data)
+                pred_accuracy = difflib.SequenceMatcher(None,
+                                                        pred_result,
+                                                        label).ratio()
+            # CNN cases
+            elif re.search(r'cnn_', clf_type):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():
-                    allSizeResult = model(cnn.Make.reshapeData(self.allData))
-                allSizeAccuracy, allSizeResult = self._evalNN(allSizeResult,
-                                                                self.allLabel)
+                    pred_result = model(classifier.reshape_tensor(data))
+                pred_accuracy, pred_result = self.__evaluate_NN(pred_result,
+                                                                label)
             # RNN type handling
-            elif re.search(r'rnn', modType):
+            elif (re.search(r'rnn', clf_type) or
+                    re.search(r'lstm', clf_type) or
+                    re.search(r'gru', clf_type)):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():
-                    allSizeResult = model(rnn.Make.reshapeData(self.allData))
-                allSizeAccuracy, allSizeResult = self._evalNN(allSizeResult,
-                                                                self.allLabel)
+                    pred_result = model(classifier.reshape_tensor(data))
+                pred_accuracy, pred_result = self.__evaluate_NN(pred_result,
+                                                                label)
             else:
-                raise operator.Error('All data test cannot handle: ', modType)
-            record[-1] = allSizeResult
-            record.append(allSizeAccuracy)
+                raise operator.Error('Cannot handle classifier: ', clf_type)
+            record[-1] = pred_result
+            record.append(pred_accuracy)
             # For debug purpose
             # print('Performined all data test on model', i,
-            #         ' type:', modType, '\n',
+            #         ' type:', clf_type, '\n',
             #         'test set accuracy:', round(accuracy, 2),
-            #         ' all data accuracy: ', round(allSizeAccuracy, 2), '\n')
-        self.models.sort(key = lambda x:x[-1], reverse = True)
+            #         ' all data accuracy: ', round(pred_accuracy, 2), '\n')
+        clf_list.sort(key = lambda x:x[-1], reverse = True)
+        return clf_list
 
 
     # Evaluate Neural Network based methods'accuracies
-    def _evalNN(self, result, label):
+    def __evaluate_NN(self, result, label):
         modifiedResult = []
         correct = 0
         for i in range(len(result)):

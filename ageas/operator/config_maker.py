@@ -160,24 +160,38 @@ class Pytorch_GRU(Pytorch_CNN_Hybrid):
 #     rnn = Pytorch_RNN(header = 'pytorch_rnn_', config = a['RNN'])
 #     lstm = Pytorch_LSTM(header = 'pytorch_lstm_', config = a['LSTM'])
 #     gru = Pytorch_GRU(header = 'pytorch_gru_', config = a['GRU'])
-#     assert d1.epoch == hybrid.epoch
-#     assert d1.batch_size == hybrid.batch_size
 #     result = {
-#         'SVM':svm.configs,
-#         'GBM':gbm.configs,
-#         'CNN':{
+#         'SVM':{
+#             'Config':svm.configs
+#         },
+#         'GBM':{
+#             'Config':gbm.configs
+#         },
+#         'CNN_1D':{
 #             'Epoch':d1.epoch,
 #             'Batch_Size':d1.batch_size,
-#             '1D': d1.configs,
-#             'Hybrid':hybrid.configs
+#             'Config': d1.configs
+#         },
+#         'CNN_Hybrid':{
+#             'Epoch':hybrid.epoch,
+#             'Batch_Size':hybrid.batch_size,
+#             'Config':hybrid.configs
 #         },
 #         'RNN':{
 #             'Epoch':rnn.epoch,
 #             'Batch_Size':rnn.batch_size,
-#             'RNN': rnn.configs,
-#             'LSTM':lstm.configs,
-#             'GRU':gru.configs
-#         }
+#             'Config': rnn.configs
+#         },
+#         'LSTM':{
+#             'Epoch':lstm.epoch,
+#             'Batch_Size':lstm.batch_size,
+#             'Config':lstm.configs
+#         },
+#         'GRU':{
+#             'Epoch':gru.epoch,
+#             'Batch_Size':gru.batch_size,
+#             'Config':gru.configs
+#         },
 #     }
 #     # print(result)
 #     json.encode(result, 'sample_config.js')

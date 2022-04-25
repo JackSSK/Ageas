@@ -20,7 +20,7 @@ class XGB(classifier.Sklearn_Template):
     # Set clf to default level
     # Turned off label encoder as official doc recommended
     def initial(self):
-        self.clf = XGBClassifier(**self.param, use_label_encoder=False)
+        self.clf = XGBClassifier(**self.param, use_label_encoder = False)
 
 
 
@@ -33,9 +33,9 @@ class Make(classifier.Make_Template):
     # Perform classifier training process for given times
     # and keep given ratio of top performing classifiers
     def train(self, dataSets, keepRatio, keepThread):
-        for id in self.configs:
+        for id in self.configs['Config']:
             # Initialize XGB model
-            candidate = XGB(self.configs[id])
+            candidate = XGB(self.configs['Config'][id])
             candidate.train(dataSets.dataTrain, dataSets.labelTrain)
             # Check performance
             testResult = candidate.clf.predict(dataSets.dataTest)

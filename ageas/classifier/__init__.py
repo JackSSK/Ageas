@@ -5,10 +5,16 @@ Ageas Reborn
 author: jy, nkmtmsys
 """
 
+import torch
 import difflib
 import itertools
 from sklearn.naive_bayes import GaussianNB
 
+# Cast input data into tensor format
+# Then reshape the data in format of [#data, 1(only 1 chgannel), len(data)]
+def reshape_tensor(data):
+    return torch.reshape(torch.tensor(data, dtype = torch.float),
+                                        (len(data), 1, len(data[0])))
 
 
 class Error(Exception):

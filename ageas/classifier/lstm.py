@@ -15,27 +15,30 @@ import ageas.classifier as classifier
 
 
 
-class RNN(nn.Module):
+class LSTM(nn.Module):
+    """
+    Recurrent neural network (many-to-one)
+    """
     def __init__(self, device, input_size, param):
-        super(RNN, self).__init__()
+        super(LSTM, self).__init__()
         self.device = device
-        self.num_layers = param['num_layers']
         self.hidden_size = param['hidden_size']
-        self.rnn = nn.RNN(input_size,
+        self.num_layers = param['num_layers']
+        self.lstm = nn.LSTM(input_size,
                             self.hidden_size,
                             self.num_layers,
-                            batch_first=True)
+                            batch_first = True)
         self.fc = nn.Linear(self.hidden_size, 2)
         self.optimizer = torch.optim.Adam(self.parameters(),
                                             lr = param['learning_rate'])
         self.lossFunc = nn.CrossEntropyLoss()
 
     def forward(self, x):
-        # Set initial hidden states (and cell states for LSTM)
-        # -> x needs to be: (batch_size, seq, input_size)
-        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(self.device)
-        # Forward propagate RNN
-        out, _ = self.rnn(x, h0)
+        # Set initial hidden and cell states
+        h0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(self.device)
+        c0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(self.device)
+        # Forward propagate LSTM
+        out, _ = self.lstm(x, (h0, c0))
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         # Decode the hidden state of the last time step
         out = self.fc(out[:, -1, :])
@@ -43,7 +46,7 @@ class RNN(nn.Module):
 
 
 
-class Make(classifier.cnn_1d.Make):
+class Make(classifier.rnn.Make):
     """
     Analysis the performances of CNN based approaches
     with different hyperparameters
@@ -62,6 +65,6 @@ class Make(classifier.cnn_1d.Make):
         result = []
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs['Config']:
-            model = RNN(device, num_features, self.configs['Config'][id])
+            model = LSTM(device, num_features, self.configs['Config'][id])
             result.append(model)
         return result

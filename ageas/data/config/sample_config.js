@@ -1,199 +1,203 @@
 {
     "SVM": {
-        "sklearn_svc_0": {
-            "kernel": "linear",
-            "gamma": "auto",
-            "C": 1.0,
-            "degree": 0,
-            "cache_size": 500,
-            "probability": true
-        },
-        "sklearn_svc_1": {
-            "kernel": "linear",
-            "gamma": "scale",
-            "C": 1.0,
-            "degree": 0,
-            "cache_size": 500,
-            "probability": true
+        "Config": {
+            "sklearn_svc_0": {
+                "kernel": "linear",
+                "gamma": "auto",
+                "C": 1.0,
+                "degree": 0,
+                "cache_size": 500,
+                "probability": true
+            },
+            "sklearn_svc_1": {
+                "kernel": "linear",
+                "gamma": "scale",
+                "C": 1.0,
+                "degree": 0,
+                "cache_size": 500,
+                "probability": true
+            }
         }
     },
     "GBM": {
-        "xgboost_gbm_0": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0
-        },
-        "xgboost_gbm_1": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0
-        },
-        "xgboost_gbm_2": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0
-        },
-        "xgboost_gbm_3": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0
-        },
-        "xgboost_gbm_4": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0
-        },
-        "xgboost_gbm_5": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0
-        },
-        "xgboost_gbm_6": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0
-        },
-        "xgboost_gbm_7": {
-            "booster": "gbtree",
-            "objective": "binary:logistic",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0
-        },
-        "xgboost_gbm_8": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0,
-            "num_class": 2
-        },
-        "xgboost_gbm_9": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0,
-            "num_class": 2
-        },
-        "xgboost_gbm_10": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0,
-            "num_class": 2
-        },
-        "xgboost_gbm_11": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.3,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0,
-            "num_class": 2
-        },
-        "xgboost_gbm_12": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0,
-            "num_class": 2
-        },
-        "xgboost_gbm_13": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0.1,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0,
-            "num_class": 2
-        },
-        "xgboost_gbm_14": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 2,
-            "alpha": 0,
-            "num_class": 2
-        },
-        "xgboost_gbm_15": {
-            "booster": "gbtree",
-            "objective": "multi:softmax",
-            "eval_metric": "mlogloss",
-            "eta": 0.1,
-            "gamma": 0,
-            "max_depth": 6,
-            "min_child_weight": 1,
-            "alpha": 0,
-            "num_class": 2
+        "Config": {
+            "xgboost_gbm_0": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0
+            },
+            "xgboost_gbm_1": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0
+            },
+            "xgboost_gbm_2": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0
+            },
+            "xgboost_gbm_3": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0
+            },
+            "xgboost_gbm_4": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0
+            },
+            "xgboost_gbm_5": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0
+            },
+            "xgboost_gbm_6": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0
+            },
+            "xgboost_gbm_7": {
+                "booster": "gbtree",
+                "objective": "binary:logistic",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0
+            },
+            "xgboost_gbm_8": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0,
+                "num_class": 2
+            },
+            "xgboost_gbm_9": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0,
+                "num_class": 2
+            },
+            "xgboost_gbm_10": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0,
+                "num_class": 2
+            },
+            "xgboost_gbm_11": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.3,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0,
+                "num_class": 2
+            },
+            "xgboost_gbm_12": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0,
+                "num_class": 2
+            },
+            "xgboost_gbm_13": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0.1,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0,
+                "num_class": 2
+            },
+            "xgboost_gbm_14": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 2,
+                "alpha": 0,
+                "num_class": 2
+            },
+            "xgboost_gbm_15": {
+                "booster": "gbtree",
+                "objective": "multi:softmax",
+                "eval_metric": "mlogloss",
+                "eta": 0.1,
+                "gamma": 0,
+                "max_depth": 6,
+                "min_child_weight": 1,
+                "alpha": 0,
+                "num_class": 2
+            }
         }
     },
-    "CNN": {
+    "CNN_1D": {
         "Epoch": 2,
         "Batch_Size": [
             5,
             10
         ],
-        "1D": {
+        "Config": {
             "pytorch_cnn_1d_0": {
                 "conv_kernel_size": 32,
                 "conv_kernel_num": 64,
@@ -322,8 +326,15 @@
                 "num_layers": 1,
                 "learning_rate": 0.01
             }
-        },
-        "Hybrid": {
+        }
+    },
+    "CNN_Hybrid": {
+        "Epoch": 2,
+        "Batch_Size": [
+            5,
+            10
+        ],
+        "Config": {
             "pytorch_cnn_hybrid_0": {
                 "matrix_size": [
                     292,
@@ -508,7 +519,7 @@
             5,
             10
         ],
-        "RNN": {
+        "Config": {
             "pytorch_rnn_0": {
                 "hidden_size": 256,
                 "num_layers": 3,
@@ -529,8 +540,15 @@
                 "num_layers": 2,
                 "learning_rate": 0.01
             }
-        },
-        "LSTM": {
+        }
+    },
+    "LSTM": {
+        "Epoch": 2,
+        "Batch_Size": [
+            5,
+            10
+        ],
+        "Config": {
             "pytorch_lstm_0": {
                 "hidden_size": 256,
                 "num_layers": 3,
@@ -551,8 +569,15 @@
                 "num_layers": 2,
                 "learning_rate": 0.01
             }
-        },
-        "GRU": {
+        }
+    },
+    "GRU": {
+        "Epoch": 2,
+        "Batch_Size": [
+            5,
+            10
+        ],
+        "Config": {
             "pytorch_gru_0": {
                 "hidden_size": 256,
                 "num_layers": 3,

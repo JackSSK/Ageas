@@ -37,9 +37,9 @@ class Make(classifier.Make_Template):
     # Perform classifier training process for given times
     # and keep given ratio of top performing classifiers
     def train(self, dataSets, keepRatio, keepThread):
-        for id in self.configs:
+        for id in self.configs['Config']:
             # Initialize SVM model
-            candidate = SVM(self.configs[id])
+            candidate = SVM(self.configs['Config'][id])
             candidate.train(dataSets.dataTrain, dataSets.labelTrain)
             # Check performance
             testResult = candidate.clf.predict(dataSets.dataTest)

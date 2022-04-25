@@ -8,6 +8,7 @@ author: jy, nkmtmsys
 import os
 import time
 import warnings
+from pkg_resources import resource_filename
 import ageas.tool.json as json
 import ageas.lib.pcgrn_caster as grn
 import ageas.operator.trainer as trainer
@@ -54,10 +55,10 @@ class Find:
         super(Find, self).__init__()
         # Initialization
         start = time.time()
+        if not warning: warnings.filterwarnings('ignore')
         self.patient = patient
         self.noChangeThread = noChangeThread
         self.noChangeNum = 0
-        if not warning: warnings.filterwarnings('ignore')
         # Set up database path info
         self.database_info = binary_db.Setup(database_path,
                                             database_type,
@@ -66,24 +67,31 @@ class Find:
                                             specie,
                                             sliding_window_size,
                                             sliding_window_stride)
+        # load standard config file if not further specified
+        if model_config_path is None:
+            model_config_path = resource_filename(__name__,
+                                            'data/config/sample_config.js')
+        self.model_config = json.decode(model_config_path)
         gem_data = Load(self.database_info,
                         facNameType,
                         mww_thread,
                         log2fc_thread,
                         std_value_thread)
+                        
         # Let kirke casts GRN construction guidance first
-        self.circe = grn_guidance.Guide(load_path = 'data/guide_2.js')
-        # self.circe = grn_guidance.Guide(gem_data = gem_data,
-        #                                 prediction_thread = prediction_thread,
-        #                                 correlation_thread = correlation_thread)
+        # self.circe = grn_guidance.Guide(load_path = 'data/guide_2.js')
+        self.circe = grn_guidance.Guide(gem_data = gem_data,
+                                        prediction_thread = prediction_thread,
+                                        correlation_thread = correlation_thread)
         # self.circe.save_guide(path = 'data/guide_2.js')
         print('Time to cast GRN Guidnace : ', time.time() - start)
         start = time.time()
+
         # train classifiers
         # loaded_grns = grn.Make(load_path = 'data/grns_1.js')
         loaded_grns = None
         self.ulysses = trainer.Train(database_info = self.database_info,
-                                    model_config_path = model_config_path,
+                                    model_config = self.model_config,
                                     gem_data = gem_data,
                                     grn_guidance = self.circe.guide,
                                     std_value_thread = std_value_thread,
@@ -92,8 +100,9 @@ class Find:
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread,
                                     grns = loaded_grns)
-        self.ulysses.grns.save('data/grns_2.js')
+        # self.ulysses.grns.save('data/grns_2.js')
         print('Time to train out classifiers : ', time.time() - start)
+
         # interpret classifiers
         start = time.time()
         self.penelope = interpreter.Find(self.ulysses.models)

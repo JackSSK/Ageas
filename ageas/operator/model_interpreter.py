@@ -12,8 +12,7 @@ from warnings import warn
 from scipy.special import softmax
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
-import ageas.classifier.cnn as cnn
-import ageas.classifier.rnn as rnn
+from ageas.classifier import reshape_tensor
 import ageas.operator as operator
 
 
@@ -54,7 +53,7 @@ class Find:
             modType = str(type(model))
             print(modType)
             # Handling SVM cases
-            if re.search(r'SVM', modType):
+            if re.search(r'svm', modType):
                 # Handle linear kernel SVC here
                 if model.param['kernel'] == 'linear':
                     featureImpts = softmax(abs(model.clf.coef_[0]))
@@ -72,25 +71,25 @@ class Find:
                     featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
 
             # Hybrid CNN cases and 1D CNN cases
-            elif re.search(r'Hybrid', modType) or re.search(r'1D', modType):
+            elif re.search(r'cnn_', modType):
                 # Use DeepExplainer when in limited mode
                 if re.search(r'Limited', modType):
                     explainer = shap.DeepExplainer(model,
-                            data = cnn.Make.reshapeData(bases.values.tolist()))
+                                data = reshape_tensor(bases.values.tolist()))
                 # Use GradientExplainer when in unlimited mode
                 elif re.search(r'Unlimited', modType):
                     explainer = shap.GradientExplainer(model,
-                            data = cnn.Make.reshapeData(bases.values.tolist()))
+                                data = reshape_tensor(bases.values.tolist()))
                 else:
                     raise operator.Error('Unrecogonized CNN model: ', modType)
                 # Calculate shapley values
                 shapVals = explainer.shap_values(
-                            cnn.Make.reshapeData(usefullData.values.tolist()))
+                                    reshape_tensor(usefullData.values.tolist()))
                 # Get feature importances based on shapley value
                 featureImpts = softmax(sum(np.abs(shapVals).mean(0))[0])
 
             # XGB's GBM cases
-            elif re.search(r'XGB', modType):
+            elif re.search(r'xgb', modType):
                 # explainer = shap.TreeExplainer(model.clf,
                 #                     feature_perturbation = 'interventional',
                 #                     check_additivity = False,
@@ -99,16 +98,18 @@ class Find:
                 # featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
                 featureImpts = softmax(model.clf.feature_importances_)
 
-            elif re.search(r'rnn', modType):
+            elif (re.search(r'rnn', modType) or
+                    re.search(r'lstm', modType) or
+                    re.search(r'gru', modType)):
                 # Use DeepExplainer
                 # explainer = shap.DeepExplainer(model,
-                #             data = rnn.Make.reshapeData(bases.values.tolist()))
+                #               data = reshape_tensor(bases.values.tolist()))
                 # Use GradientExplainer
                 explainer = shap.GradientExplainer(model,
-                            data = rnn.Make.reshapeData(bases.values.tolist()))
+                                data = reshape_tensor(bases.values.tolist()))
                 # Calculate shapley values
                 shapVals = explainer.shap_values(
-                            rnn.Make.reshapeData(usefullData.values.tolist()))
+                                    reshape_tensor(usefullData.values.tolist()))
                 # Get feature importances based on shapley value
                 featureImpts = softmax(sum(np.abs(shapVals).mean(0))[0])
 
