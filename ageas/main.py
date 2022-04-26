@@ -77,7 +77,7 @@ class Find:
                         mww_thread,
                         log2fc_thread,
                         std_value_thread)
-                        
+
         # Let kirke casts GRN construction guidance first
         # self.circe = grn_guidance.Guide(load_path = 'data/guide_2.js')
         self.circe = grn_guidance.Guide(gem_data = gem_data,
@@ -96,7 +96,6 @@ class Find:
                                     grn_guidance = self.circe.guide,
                                     std_value_thread = std_value_thread,
                                     correlation_thread = correlation_thread,
-                                    iteration = iteration,
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread,
                                     grns = loaded_grns)
@@ -105,7 +104,7 @@ class Find:
 
         # interpret classifiers
         start = time.time()
-        self.penelope = interpreter.Find(self.ulysses.models)
+        self.penelope = interpreter.Find(self.ulysses)
         print('Time to interpret classifiers : ', time.time() - start)
         # final part: extract key factors
         start = time.time()

@@ -12,21 +12,21 @@ import pickle
 import difflib
 import numpy as np
 import pandas as pd
-import ageas.operator as operator
-import ageas.lib.pcgrn_caster as grn
+import ageas.classifier as clf
+import ageas.classifier.xgb as xgb
 import ageas.classifier.svm as svm
 import ageas.classifier.cnn_1d as cnn_1d
 import ageas.classifier.cnn_hybrid as cnn_hybrid
 import ageas.classifier.rnn as rnn
 import ageas.classifier.lstm as lstm
 import ageas.classifier.gru as gru
-import ageas.classifier.xgb as xgb
-import ageas.classifier as classifier
+import ageas.operator as operator
+import ageas.lib.pcgrn_caster as grn
 from ageas.database_setup.binary_class import Process
 
 
 
-class Train:
+class Train(clf.Make_Template):
     """
     Train out well performing classification models
     """
@@ -41,7 +41,6 @@ class Train:
                 correlation_thread = 0.2,
                 distrThred = None,
                 # Model casting params
-                iteration = 1,
                 testSetRatio = 0.3,
                 random_state = None,
                 clf_keep_ratio = 1.0,
@@ -49,6 +48,13 @@ class Train:
                 grns = None):
         # Initialization
         self.grns = grns
+        self.models = None
+        self.model_config = model_config
+        self.all_grp_ids = {}
+        self.allData = None
+        self.allLabel = None
+        self.testSizeRatio = testSetRatio
+
         # Generate pcGRNs if not avaliable
         if self.grns is None:
             # if reading in GEMs, we need to construct pseudo-cGRNs first
@@ -67,49 +73,13 @@ class Train:
                 raise operator.Error('Unrecogonized database type: ',
                                         database_info.type)
         assert self.grns is not None
+
         # Train out models and find the best ones
-        self.models = Cast_Models(database_info = database_info,
-                                    model_config = model_config,
-                                    grnData = self.grns,
-                                    iteration = iteration,
-                                    testSetRatio = testSetRatio,
-                                    random_state = random_state,
-                                    clf_keep_ratio = clf_keep_ratio,
-                                    clf_accuracy_thread = clf_accuracy_thread)
-
-    # Save result models in given path
-    def save_models(self, path):
-        with open(path, 'wb') as file: pickle.dump(self.models, file)
-
-
-
-class Cast_Models(classifier.Make_Template):
-    """
-    Find best models in each type of models
-    """
-
-    def __init__(self, database_info,
-                        model_config,
-                        grnData = None,
-                        iteration = None,
-                        testSetRatio = None,
-                        random_state = None,
-                        clf_keep_ratio = None,
-                        clf_accuracy_thread = None):
-        # Initialize and perform iterative training
-        self.models = None
-        self.model_config = model_config
-        self.all_grp_ids = {}
-        self.allData = None
-        self.allLabel = None
-        self.testSizeRatio = testSetRatio
-        self.__iterative_training(database_info,
-                                    grnData,
-                                    iteration,
-                                    testSetRatio,
-                                    random_state,
-                                    clf_keep_ratio,
-                                    clf_accuracy_thread)
+        self.__training_process(database_info,
+                                testSetRatio,
+                                random_state,
+                                clf_keep_ratio,
+                                clf_accuracy_thread)
 
         # Concat models together based on performace
         temp = []
@@ -119,9 +89,9 @@ class Cast_Models(classifier.Make_Template):
         temp.sort(key = lambda x:x[-1], reverse = True)
         self.models = temp
 
-        # Keep best performancing models
+        # Keep best performancing models in local test
         self._filterModels(clf_keep_ratio, clf_accuracy_thread)
-        # Filter based on all data performace
+        # Filter based on global test performace
         self.models = self.get_clf_accuracy(clf_list = self.models,
                                                 data = self.allData,
                                                 label = self.allLabel)
@@ -130,6 +100,40 @@ class Cast_Models(classifier.Make_Template):
         print('Keeping ', len(self.models), ' models')
         self.allData = pd.DataFrame(self.allData, columns = self.all_grp_ids)
         del self.all_grp_ids
+
+    # Generate training data and testing data iteratively
+    # Then train out models in model sets
+    # Only keep top performancing models in each set
+    def __training_process(self,
+                            database_info,
+                            testSetRatio,
+                            random_state,
+                            clf_keep_ratio,
+                            clf_accuracy_thread):
+        # # Change random state for each iteration
+        # if random_state is not None: random_state = i * random_state
+        data = Process(database_info,
+                        self.grns,
+                        testSetRatio,
+                        random_state,
+                        self.all_grp_ids,
+                        self.allData,
+                        self.allLabel)
+        data.auto_inject_fake_grps()
+
+        # Update allGRP_IDs, allData, allLabel after first iteration
+        # to try to avoid redundant calculation
+        if self.allData is None and self.allLabel is None:
+            print('Total GRP amount: ', len(data.all_grp_ids))
+            self.all_grp_ids = data.all_grp_ids
+            self.allData = data.dataTrain + data.dataTest
+            self.allLabel = np.concatenate((data.labelTrain, data.labelTest))
+            assert len(self.allData) == len(self.allLabel)
+
+        # Do trainings
+        self.models = self.__initialize_classifiers(self.model_config)
+        for modelSet in self.models:
+            modelSet.train(data, clf_keep_ratio, clf_accuracy_thread)
 
     # Make model sets based on given config
     def __initialize_classifiers(self, config):
@@ -151,51 +155,6 @@ class Cast_Models(classifier.Make_Template):
             list.append(gru.Make(config = config['GRU']))
         return list
 
-    # Generate training data and testing data iteratively
-    # Then train out models in model sets
-    # Only keep top performancing models in each set
-    def __iterative_training(self,
-                            database_info,
-                            grnData,
-                            iteration,
-                            testSetRatio,
-                            random_state,
-                            clf_keep_ratio,
-                            clf_accuracy_thread):
-        for i in range(iteration):
-            # Change random state for each iteration
-            if random_state is not None: random_state = i * random_state
-            dataSets = Process(database_info,
-                                grnData,
-                                testSetRatio,
-                                random_state,
-                                self.all_grp_ids,
-                                self.allData,
-                                self.allLabel)
-            dataSets.auto_inject_fake_grps()
-
-            # Update allGRP_IDs, allData, allLabel after first iteration
-            # to try to avoid redundant calculation
-            if i == 0 and self.allData is None and self.allLabel is None:
-                print('Total GRP amount: ', len(dataSets.all_grp_ids))
-                self.all_grp_ids = dataSets.all_grp_ids
-                self.allData = dataSets.dataTrain + dataSets.dataTest
-                self.allLabel = np.concatenate((dataSets.labelTrain,
-                                            dataSets.labelTest))
-                self.models = self.__initialize_classifiers(self.model_config)
-                # Clear redundant data
-                database_info = None
-                grnData = None
-                if len(self.allData) !=  len(self.allLabel):
-                    raise operator.Error('Full data extraction Error')
-            elif i == 0:
-                self.models = self.__initialize_classifiers(self.model_config)
-
-            # Do trainings
-            for modelSet in self.models:
-                modelSet.train(dataSets, clf_keep_ratio, clf_accuracy_thread)
-            print('Finished iterative trainig: ', i)
-
     # Re-assign accuracy based on all data performance
     def get_clf_accuracy(self, clf_list, data, label):
         i = 0
@@ -216,7 +175,7 @@ class Cast_Models(classifier.Make_Template):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():
-                    pred_result = model(classifier.reshape_tensor(data))
+                    pred_result = model(clf.reshape_tensor(data))
                 pred_accuracy, pred_result = self.__evaluate_NN(pred_result,
                                                                 label)
             # RNN type handling
@@ -226,7 +185,7 @@ class Cast_Models(classifier.Make_Template):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():
-                    pred_result = model(classifier.reshape_tensor(data))
+                    pred_result = model(clf.reshape_tensor(data))
                 pred_accuracy, pred_result = self.__evaluate_NN(pred_result,
                                                                 label)
             else:
@@ -241,7 +200,6 @@ class Cast_Models(classifier.Make_Template):
         clf_list.sort(key = lambda x:x[-1], reverse = True)
         return clf_list
 
-
     # Evaluate Neural Network based methods'accuracies
     def __evaluate_NN(self, result, label):
         modifiedResult = []
@@ -253,3 +211,8 @@ class Cast_Models(classifier.Make_Template):
             modifiedResult.append(predict)
         accuracy = correct / len(label)
         return accuracy, modifiedResult
+
+    # Save result models in given path
+    def save_models(self, path):
+        with open(path, 'wb') as file:
+            pickle.dump(self.models, file)
