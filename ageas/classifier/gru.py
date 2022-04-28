@@ -43,7 +43,7 @@ class GRU(nn.Module):
 
 
 
-class Make(classifier.Make_Template):
+class Make(classifier.rnn.Make):
     """
     Analysis the performances of CNN based approaches
     with different hyperparameters
@@ -55,10 +55,7 @@ class Make(classifier.Make_Template):
     def train(self, dataSets, keepRatio, keepThread):
         num_features = len(dataSets.dataTest[0])
         vanilla_models = self.__set_vanilla_models(num_features)
-        self.__torch_train_process(dataSets,
-                                    keepRatio,
-                                    keepThread,
-                                    vanilla_models)
+        self.__train_process(dataSets, keepRatio, keepThread, vanilla_models)
 
     # Generate blank models for training
     def __set_vanilla_models(self, num_features):

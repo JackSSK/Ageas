@@ -167,7 +167,7 @@ class Unlimited(nn.Module):
 
 
 
-class Make(classifier.Make_Template):
+class Make(classifier.cnn_1d.Make):
     """
     Analysis the performances of CNN based approaches
     with different hyperparameters
@@ -182,10 +182,7 @@ class Make(classifier.Make_Template):
     # and keep given ratio of top performing classifiers
     def train(self, dataSets, keepRatio, keepThread):
         vanilla_models = self.__set_vanilla_models()
-        self.__torch_train_process(dataSets,
-                                    keepRatio,
-                                    keepThread,
-                                    vanilla_models)
+        self.__train_process(dataSets, keepRatio, keepThread, vanilla_models)
 
     # Generate blank models for training
     def __set_vanilla_models(self,):
