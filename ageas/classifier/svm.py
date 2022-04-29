@@ -45,6 +45,6 @@ class Make(classifier.Make_Template):
             testResult = candidate.clf.predict(dataSets.dataTest)
             accuracy = difflib.SequenceMatcher(None,
                 testResult, dataSets.labelTest).ratio()
-            self.models.append([candidate, accuracy])
-        self.models.sort(key = lambda x:x[1], reverse = True)
-        self._filterModels(keepRatio, keepThread)
+            self.models.append([candidate, id, accuracy])
+        self.models.sort(key = lambda x:x[-1], reverse = True)
+        self._filter_models(keepRatio, keepThread)

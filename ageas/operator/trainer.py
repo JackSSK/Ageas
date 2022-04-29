@@ -75,11 +75,11 @@ class Train(clf.Make_Template):
         assert self.grns is not None
 
         # Train out models and find the best ones
-        self.__training_process(database_info,
-                                testSetRatio,
-                                random_state,
-                                clf_keep_ratio,
-                                clf_accuracy_thread)
+        self.__train_process(database_info,
+                            testSetRatio,
+                            random_state,
+                            clf_keep_ratio,
+                            clf_accuracy_thread)
 
         # Concat models together based on performace
         temp = []
@@ -90,13 +90,13 @@ class Train(clf.Make_Template):
         self.models = temp
 
         # Keep best performancing models in local test
-        self._filterModels(clf_keep_ratio, clf_accuracy_thread)
+        self._filter_models(clf_keep_ratio, clf_accuracy_thread)
         # Filter based on global test performace
         self.models = self.get_clf_accuracy(clf_list = self.models,
                                                 data = self.allData,
                                                 label = self.allLabel)
         self.models.sort(key = lambda x:x[-1], reverse = True)
-        self._filterModels(clf_keep_ratio, clf_accuracy_thread)
+        self._filter_models(clf_keep_ratio, clf_accuracy_thread)
         print('Keeping ', len(self.models), ' models')
         self.allData = pd.DataFrame(self.allData, columns = self.all_grp_ids)
         del self.all_grp_ids
@@ -104,12 +104,12 @@ class Train(clf.Make_Template):
     # Generate training data and testing data iteratively
     # Then train out models in model sets
     # Only keep top performancing models in each set
-    def __training_process(self,
-                            database_info,
-                            testSetRatio,
-                            random_state,
-                            clf_keep_ratio,
-                            clf_accuracy_thread):
+    def __train_process(self,
+                        database_info,
+                        testSetRatio,
+                        random_state,
+                        clf_keep_ratio,
+                        clf_accuracy_thread):
         # # Change random state for each iteration
         # if random_state is not None: random_state = i * random_state
         data = Process(database_info,

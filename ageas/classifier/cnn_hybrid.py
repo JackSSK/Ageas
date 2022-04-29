@@ -31,6 +31,7 @@ from torch.utils.data import DataLoader
 import ageas.classifier as classifier
 
 
+
 class Limited(nn.Module):
     """
     Defining a CNN model treating input as 2D data
@@ -167,7 +168,7 @@ class Unlimited(nn.Module):
 
 
 
-class Make(classifier.cnn_1d.Make):
+class Make(classifier.Make_Template):
     """
     Analysis the performances of CNN based approaches
     with different hyperparameters
@@ -181,17 +182,17 @@ class Make(classifier.cnn_1d.Make):
     # Perform classifier training process for given times
     # and keep given ratio of top performing classifiers
     def train(self, dataSets, keepRatio, keepThread):
-        vanilla_models = self.__set_vanilla_models()
-        self.__train_process(dataSets, keepRatio, keepThread, vanilla_models)
+        vanilla_models = self.__set_vanilla_models(configs = self.configs)
+        self._train_torch(dataSets, keepRatio, keepThread, vanilla_models)
 
     # Generate blank models for training
-    def __set_vanilla_models(self,):
+    def __set_vanilla_models(self, configs):
         result = []
-        for id in self.configs['Config']:
-            if self.configs['Config'][id]['num_layers'] < 3:
-                model = Limited(self.configs['Config'][id])
+        for id in configs['Config']:
+            if configs['Config'][id]['num_layers'] < 3:
+                model = Limited(configs['Config'][id])
             else:
-                model = Unlimited(self.configs['Config'][id])
+                model = Unlimited(configs['Config'][id])
             result.append(model)
         return result
 

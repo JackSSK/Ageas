@@ -35,8 +35,12 @@ class LSTM(nn.Module):
 
     def forward(self, x):
         # Set initial hidden and cell states
-        h0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(self.device)
-        c0 = torch.zeros(self.num_layers,x.size(0),self.hidden_size).to(self.device)
+        h0 = torch.zeros(self.num_layers,
+                        x.size(0),
+                        self.hidden_size).to(self.device)
+        c0 = torch.zeros(self.num_layers,
+                        x.size(0),
+                        self.hidden_size).to(self.device)
         # Forward propagate LSTM
         out, _ = self.lstm(x, (h0, c0))
         # out: tensor of shape (batch_size, seq_length, hidden_size)
@@ -46,7 +50,7 @@ class LSTM(nn.Module):
 
 
 
-class Make(classifier.rnn.Make):
+class Make(classifier.Make_Template):
     """
     Analysis the performances of CNN based approaches
     with different hyperparameters
@@ -57,14 +61,15 @@ class Make(classifier.rnn.Make):
     # and keep given ratio of top performing classifiers
     def train(self, dataSets, keepRatio, keepThread):
         num_features = len(dataSets.dataTest[0])
-        vanilla_models = self.__set_vanilla_models(num_features)
-        self.__train_process(dataSets, keepRatio, keepThread, vanilla_models)
+        vanilla_models = self.__set_vanilla_models(configs = self.configs,
+                                                    num_features = num_features)
+        self._train_torch(dataSets, keepRatio, keepThread, vanilla_models)
 
     # Generate blank models for training
-    def __set_vanilla_models(self, num_features):
+    def __set_vanilla_models(self, configs, num_features):
         result = []
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        for id in self.configs['Config']:
-            model = LSTM(device, num_features, self.configs['Config'][id])
+        for id in configs['Config']:
+            model = LSTM(device, num_features, configs['Config'][id])
             result.append(model)
         return result
