@@ -10,11 +10,11 @@ import ageas.tool as tool
 import ageas.tool.json as json
 import ageas.lib.pcgrn_caster as grn
 import ageas.lib.grp_predictor as grp
-import ageas.operator as operator
+import ageas.lib as lib
 
 
 
-class Guide:
+class Cast:
     """
     Make GRN Guide based on GEMs
     """
@@ -23,7 +23,7 @@ class Guide:
                 prediction_thread = None,
                 correlation_thread = 0.2,
                 load_path = None):
-        super(Guide, self).__init__()
+        super(Cast, self).__init__()
         # Initialization
         self.guide = {}
         self.tfs_no_interaction_rec = {}
@@ -59,7 +59,7 @@ class Guide:
                                             genes,
                                             correlation_thread)
         print('Total length of guide:', len(self.guide))
-        # else: raise operator.Error('Sorry, such mode is not supported yet!')
+        # else: raise lib.Error('Sorry, such mode is not supported yet!')
         """ ToDo: if more than 1 guide can be casted, make agreement """
 
     # Make GRN casting guide
@@ -96,7 +96,7 @@ class Guide:
                 if source not in self.tfs_no_interaction_rec:
                     self.tfs_no_interaction_rec[source] = ''
                 else:
-                    raise operator.Error('Duplicat source TF when __with_grtd')
+                    raise lib.Error('Duplicat source TF when __with_grtd')
                 break
 
             # Iterate target gene candidates for GRP

@@ -11,7 +11,7 @@ import ageas.tool as tool
 import ageas.tool.gem as gem
 import ageas.tool.json as json
 import ageas.tool.grtd as grtd
-import ageas.operator as operator
+import ageas.lib as lib
 import ageas.tool.transfac as transfac
 from ageas.lib.deg_finder import Find
 from ageas.database_setup import get_specie_path
@@ -77,7 +77,7 @@ class Load:
         # Decide which seperation mark to use
         if re.search(r'csv', path): sep = ','
         elif re.search(r'txt', path): sep = '\t'
-        else: raise operator.Error('Unsupported File Type: ', path)
+        else: raise lib.Error('Unsupported File Type: ', path)
         # Decide which compression method to use
         if re.search(r'.gz', path): compression = 'gzip'
         else: compression = 'infer'

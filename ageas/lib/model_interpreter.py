@@ -13,7 +13,7 @@ from scipy.special import softmax
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 from ageas.classifier import reshape_tensor
-import ageas.operator as operator
+import ageas.lib as lib
 
 
 class Find:
@@ -81,7 +81,7 @@ class Find:
                     explainer = shap.GradientExplainer(model,
                                 data = reshape_tensor(bases.values.tolist()))
                 else:
-                    raise operator.Error('Unrecogonized CNN model: ', modType)
+                    raise lib.Error('Unrecogonized CNN model: ', modType)
                 # Calculate shapley values
                 shapVals = explainer.shap_values(
                                     reshape_tensor(usefullData.values.tolist()))
@@ -114,7 +114,7 @@ class Find:
                 featureImpts = softmax(sum(np.abs(shapVals).mean(0))[0])
 
             else:
-                raise operator.Error('Unrecogonized model type: ', modType)
+                raise lib.Error('Unrecogonized model type: ', modType)
 
             # Update sumFeatureImpts
             if sumFeatureImpts is None:

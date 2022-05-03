@@ -8,10 +8,10 @@ author: jy, nkmtmsys
 
 import itertools
 from collections import deque
-import ageas.operator as operator
+import ageas.lib as lib
 
 
-class Sklearn_SVM(operator.Config_Maker_Template):
+class Sklearn_SVM(lib.Config_Maker_Template):
     """
     config maker for sklearn based SVMs
     """
@@ -27,8 +27,9 @@ class Sklearn_SVM(operator.Config_Maker_Template):
                 value = ele[i]
                 temp[key] = value
             temp = self.__verify_config(temp)
-            if temp is not None and temp not in deq:
-                deq.appendleft(temp)
+            if temp is not None:
+                record = {'config':temp}
+                if record not in deq: deq.appendleft(record)
         self.configs = {self.header + str(i) : deq[i] for i in range(len(deq))}
 
     # verify a SVC config before adding it to set
@@ -40,7 +41,7 @@ class Sklearn_SVM(operator.Config_Maker_Template):
 
 
 
-class XGBoost_GBM(operator.Config_Maker_Template):
+class XGBoost_GBM(lib.Config_Maker_Template):
     """
     config maker for XGBoost based GBMs
     """
@@ -56,8 +57,9 @@ class XGBoost_GBM(operator.Config_Maker_Template):
                 value = ele[i]
                 temp[key] = value
             temp = self.__verify_config(temp)
-            if temp is not None and temp not in deq:
-                deq.appendleft(temp)
+            if temp is not None:
+                record = {'config':temp}
+                if record not in deq: deq.appendleft(record)
         self.configs = {self.header + str(i) : deq[i] for i in range(len(deq))}
 
     # verify a GBM config before adding it to set
@@ -68,7 +70,7 @@ class XGBoost_GBM(operator.Config_Maker_Template):
 
 
 
-class Pytorch_CNN_Hybrid(operator.Config_Maker_Template):
+class Pytorch_CNN_Hybrid(lib.Config_Maker_Template):
     """
     config maker for Pytorch based Hybrid-CNN
     """
@@ -92,8 +94,16 @@ class Pytorch_CNN_Hybrid(operator.Config_Maker_Template):
                 value = ele[i]
                 temp[key] = value
             temp = self.__verify_config(temp)
-            if temp is not None and temp not in deq:
-                deq.appendleft(temp)
+            if temp is not None:
+                # add up epoch and batch_size
+                for epoch in self.epoch:
+                    for batch_size in self.batch_size:
+                        record = {
+                            'config':temp,
+                            'epoch':epoch,
+                            'batch_size':batch_size
+                        }
+                        if record not in deq: deq.appendleft(record)
         return {self.header + str(i) : deq[i] for i in range(len(deq))}
 
     # this should vary with different classes
@@ -152,46 +162,15 @@ class Pytorch_GRU(Pytorch_CNN_Hybrid):
 # if __name__ == "__main__":
 #     import ageas.tool.json as json
 #     a = json.decode("../data/config/list_config.js")
-#     svm = Sklearn_SVM(header = 'sklearn_svc_', config = a['SVM'])
-#     gbm = XGBoost_GBM(header = 'xgboost_gbm_', config = a['GBM'])
-#     hybrid = Pytorch_CNN_Hybrid(header = 'pytorch_cnn_hybrid_',
-#                             config = a['CNN_Hybrid'])
-#     d1 = Pytorch_CNN_1D(header = 'pytorch_cnn_1d_', config = a['CNN_1D'])
-#     rnn = Pytorch_RNN(header = 'pytorch_rnn_', config = a['RNN'])
-#     lstm = Pytorch_LSTM(header = 'pytorch_lstm_', config = a['LSTM'])
-#     gru = Pytorch_GRU(header = 'pytorch_gru_', config = a['GRU'])
 #     result = {
-#         'SVM':{
-#             'Config':svm.configs
-#         },
-#         'GBM':{
-#             'Config':gbm.configs
-#         },
-#         'CNN_1D':{
-#             'Epoch':d1.epoch,
-#             'Batch_Size':d1.batch_size,
-#             'Config': d1.configs
-#         },
-#         'CNN_Hybrid':{
-#             'Epoch':hybrid.epoch,
-#             'Batch_Size':hybrid.batch_size,
-#             'Config':hybrid.configs
-#         },
-#         'RNN':{
-#             'Epoch':rnn.epoch,
-#             'Batch_Size':rnn.batch_size,
-#             'Config': rnn.configs
-#         },
-#         'LSTM':{
-#             'Epoch':lstm.epoch,
-#             'Batch_Size':lstm.batch_size,
-#             'Config':lstm.configs
-#         },
-#         'GRU':{
-#             'Epoch':gru.epoch,
-#             'Batch_Size':gru.batch_size,
-#             'Config':gru.configs
-#         },
+#         'SVM':Sklearn_SVM(header = 'sklearn_svc_', config = a['SVM']).configs,
+#         'GBM':XGBoost_GBM(header = 'xgboost_gbm_', config = a['GBM']).configs,
+#         'CNN_1D':Pytorch_CNN_1D(header = 'pytorch_cnn_1d_',
+#                                 config = a['CNN_1D']).configs,
+#         'CNN_Hybrid':Pytorch_CNN_Hybrid(header = 'pytorch_cnn_hybrid_',
+#                                         config = a['CNN_Hybrid']).configs,
+#         'RNN':Pytorch_RNN(header = 'pytorch_rnn_', config = a['RNN']).configs,
+#         'LSTM':Pytorch_LSTM(header='pytorch_lstm_', config=a['LSTM']).configs,
+#         'GRU':Pytorch_GRU(header = 'pytorch_gru_', config = a['GRU']).configs,
 #     }
-#     # print(result)
 #     json.encode(result, 'sample_config.js')

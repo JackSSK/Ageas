@@ -129,10 +129,10 @@ class Process(object):
         # standardize feature data
         # to make sure all training and testing samples
         # will be in same dimmension
-        self._updateTrainTest(grnData.class1_pcGRNs,
+        self.__update_train_test(grnData.class1_pcGRNs,
                                 train_set = class1Result[0],
                                 test_set = class1Result[1])
-        self._updateTrainTest(grnData.class2_pcGRNs,
+        self.__update_train_test(grnData.class2_pcGRNs,
                                 train_set = class2Result[0],
                                 test_set = class2Result[1])
         # Add zeros for position holding
@@ -144,7 +144,7 @@ class Process(object):
         del database_info
 
     # Update training and testing set based on given expression data
-    def _updateTrainTest(self, grns, train_set, test_set):
+    def __update_train_test(self, grns, train_set, test_set):
         for sample in grns:
             grn = grns[sample]
             grn_copy = {ele:'' for ele in grn}

@@ -50,7 +50,7 @@ class Make_Template:
     Analysis the performances of models with different hyperparameters
     Find the top settings to build models
     """
-    def __init__(self, config):
+    def __init__(self, config = None):
         super(Make_Template, self).__init__()
         self.configs = config
         self.models = []
@@ -62,6 +62,7 @@ class Make_Template:
 
     # Filter models based on checking accuracy (or ranking)
     def _filter_models(self, keepRatio, keepThread):
+        self.models.sort(key = lambda x:x[-1], reverse = True)
         if len(self.models) > 1:
             if keepRatio is not None:
                 self.models = self.models[:int(len(self.models) * keepRatio)]
@@ -74,48 +75,27 @@ class Make_Template:
                 self.models = self.models[:lowBound]
 
     # generalized pytorch model training process
-    def _train_torch(self, dataSets, keepRatio, keepThread, vanilla_models):
-        testData = reshape_tensor(dataSets.dataTest)
-        testLabel = dataSets.labelTest
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        # Try out each batch size setting
-        for batchSize in self.configs['Batch_Size']:
-            tempModels = vanilla_models
-            for ep in range(self.configs['Epoch']):
-                index_set = DataLoader(dataset = range(len(dataSets.dataTrain)),
-                                        batch_size = batchSize,
-                                        shuffle = True)
-                for index in index_set:
-                    index = index.tolist()
-                    data = [dataSets.dataTrain[i] for i in index]
-                    label = [dataSets.labelTrain[i] for i in index]
-                    batchData = reshape_tensor(data).to(device)
-                    batchLabel = torch.tensor(label).to(device)
-                    for model in tempModels:
-                        model.to(device)
-                        model.train()
-                        model.optimizer.zero_grad()
-                        outputs = model(batchData)
-                        loss = model.lossFunc(outputs, batchLabel)
-                        loss.backward()
-                        model.optimizer.step()
-
-            for model in tempModels:
-                accuracy = self.__evaluate_torch(model, testData, testLabel)
-                self.models.append([model, id, batchSize, accuracy])
-
-            self.models.sort(key = lambda x:x[-1], reverse = True)
-            self._filter_models(keepRatio, keepThread)
-
-        # Clear data
-        del tempModels
-        del vanilla_models
-        del testData
-        del testLabel
-        del dataSets
+    def _train_torch(self, device, epoch, batch_size, model, dataSets):
+        for ep in range(epoch):
+            index_set = DataLoader(dataset = range(len(dataSets.dataTrain)),
+                                    batch_size = batch_size,
+                                    shuffle = True)
+            for index in index_set:
+                index = index.tolist()
+                data = [dataSets.dataTrain[i] for i in index]
+                label = [dataSets.labelTrain[i] for i in index]
+                batch_data = reshape_tensor(data).to(device)
+                batch_label = torch.tensor(label).to(device)
+            model.to(device)
+            model.train()
+            model.optimizer.zero_grad()
+            outputs = model(batch_data)
+            loss = model.lossFunc(outputs, batch_label)
+            loss.backward()
+            model.optimizer.step()
 
     # Evaluate  the accuracy of given model with testing data
-    def __evaluate_torch(self, model, testData, testLabel):
+    def _evaluate_torch(self, model, testData, testLabel):
         model.eval()
         with torch.no_grad():
             outputs = model(testData)

@@ -51,7 +51,9 @@
       ]
   },
   "CNN_Hybrid":{
-      "epoch": 2,
+      "epoch": [
+        2
+      ],
       "batch_size": [
           5,
           10
@@ -83,7 +85,9 @@
       ]
   },
   "CNN_1D": {
-      "epoch": 2,
+      "epoch": [
+        2
+      ],
       "batch_size": [
           5,
           10
@@ -112,7 +116,9 @@
       ]
   },
   "RNN": {
-      "epoch": 2,
+      "epoch": [
+        2
+      ],
       "batch_size": [
           5,
           10
@@ -130,7 +136,9 @@
       ]
   },
   "LSTM": {
-      "epoch": 2,
+      "epoch": [
+        2
+      ],
       "batch_size": [
           5,
           10
@@ -148,7 +156,9 @@
       ]
   },
   "GRU": {
-      "epoch": 2,
+      "epoch": [
+        2
+      ],
       "batch_size": [
           5,
           10

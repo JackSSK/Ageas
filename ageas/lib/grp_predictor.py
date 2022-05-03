@@ -9,7 +9,7 @@ author: jy, nkmtmsys
 import ageas.tool as tool
 from xgboost import XGBRegressor
 from collections import OrderedDict
-import ageas.operator as operator
+import ageas.lib as lib
 
 
 
@@ -30,7 +30,7 @@ class Predict:
         elif thread == 'auto':
             self.thread = self.__auto_set_thread(sample_grps)
         else:
-            raise operator.Error('Predictor thread setting is wrong')
+            raise lib.Error('Predictor thread setting is wrong')
 
     # Expand GRN guide by applying GRNBoost2-like algo on source TFs without
     # documented targets

@@ -30,16 +30,14 @@ class Make(classifier.Make_Template):
     Find the top settings to build XGB
     """
     # Perform classifier training process for given times
-    # and keep given ratio of top performing classifiers
-    def train(self, dataSets, keepRatio, keepThread):
-        for id in self.configs['Config']:
+    def train(self, dataSets):
+        for id in self.configs:
             # Initialize XGB model
-            candidate = XGB(self.configs['Config'][id])
+            candidate = XGB(self.configs[id]['config'])
             candidate.train(dataSets.dataTrain, dataSets.labelTrain)
             # Check performance
             testResult = candidate.clf.predict(dataSets.dataTest)
             accuracy = difflib.SequenceMatcher(None,
-                testResult, dataSets.labelTest).ratio()
+                                                testResult,
+                                                dataSets.labelTest).ratio()
             self.models.append([candidate, id, accuracy])
-        self.models.sort(key = lambda x:x[-1], reverse = True)
-        self._filter_models(keepRatio, keepThread)

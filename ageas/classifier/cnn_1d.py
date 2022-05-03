@@ -129,18 +129,19 @@ class Make(classifier.Make_Template):
     """
 
     # Perform classifier training process for given times
-    # and keep given ratio of top performing classifiers
-    def train(self, dataSets, keepRatio, keepThread):
-        vanilla_models = self.__set_vanilla_models(configs = self.configs)
-        self._train_torch(dataSets, keepRatio, keepThread, vanilla_models)
-
-    # Generate blank models for training
-    def __set_vanilla_models(self, configs):
-        result = []
-        for id in configs['Config']:
-            if configs['Config'][id]['num_layers'] < 3:
-                model = Limited(configs['Config'][id])
+    def train(self, dataSets):
+        testData = classifier.reshape_tensor(dataSets.dataTest)
+        testLabel = dataSets.labelTest
+        num_features = len(dataSets.dataTest[0])
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        for id in self.configs:
+            if self.configs[id]['config']['num_layers'] < 3:
+                model = Limited(self.configs[id]['config'])
             else:
-                model = Unlimited(configs['Config'][id])
-            result.append(model)
-        return result
+                model = Unlimited(self.configs[id]['config'])
+            epoch = self.configs[id]['epoch']
+            batch_size = self.configs[id]['batch_size']
+            self._train_torch(device, epoch, batch_size, model, dataSets)
+            # local test
+            accuracy = self._evaluate_torch(model, testData, testLabel)
+            self.models.append([model, id, accuracy])
