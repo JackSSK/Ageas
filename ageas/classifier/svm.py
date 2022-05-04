@@ -8,7 +8,6 @@ author: jy, nkmtmsys
 """
 
 
-import difflib
 import itertools
 import ageas.classifier as classifier
 from sklearn import svm
@@ -35,14 +34,13 @@ class Make(classifier.Make_Template):
     """
 
     # Perform classifier training process for given times
-    def train(self, dataSets):
+    def train(self, dataSets, test_split_set):
         for id in self.configs:
             # Initialize SVM model
             model = SVM(self.configs[id]['config'])
             model.train(dataSets.dataTrain, dataSets.labelTrain)
-            # Check performance
-            testResult = model.clf.predict(dataSets.dataTest)
-            accuracy = difflib.SequenceMatcher(None,
-                                                testResult,
-                                                dataSets.labelTest).ratio()
+            accuracy = self._evaluate_sklearn(model,
+                                                dataSets.dataTest,
+                                                dataSets.labelTest,
+                                                test_split_set)
             self.models.append([model, id, accuracy])

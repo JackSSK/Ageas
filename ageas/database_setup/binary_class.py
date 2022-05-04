@@ -96,14 +96,14 @@ class Process(object):
     """
     def __init__(self, database_info = None,
                         grnData = None,
-                        test_set_ratio = 0.3,
+                        train_size = 0.7,
                         ramdom_state = None,
                         all_grp_ids = {},
                         fullData = None,
                         fullLabel = None,):
         super(Process, self).__init__()
         # Initialization
-        self.test_set_ratio = test_set_ratio
+        self.train_size = train_size
         self.random_state = ramdom_state
         self.all_grp_ids = all_grp_ids
         # Go through database_info based protocol
@@ -169,7 +169,7 @@ class Process(object):
     def __iterating_protocool(self, fullData, fullLabel):
             data = train_test_split(fullData,
                                     fullLabel,
-                                    test_size = self.test_set_ratio,
+                                    train_size = self.train_size,
                                     random_state = self.random_state)
             self.dataTrain = data[0]
             self.dataTest = data[1]
@@ -189,7 +189,7 @@ class Process(object):
             label_sample.append(label)
         return train_test_split(data_sample,
                                 label_sample,
-                                test_size = self.test_set_ratio,
+                                train_size = self.train_size,
                                 random_state = self.random_state)
 
     # add zeros to each preprocessed samples

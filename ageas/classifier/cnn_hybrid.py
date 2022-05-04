@@ -180,7 +180,7 @@ class Make(classifier.Make_Template):
         self.models = []
 
     # Perform classifier training process for given times
-    def train(self, dataSets):
+    def train(self, dataSets, test_split_set):
         testData = classifier.reshape_tensor(dataSets.dataTest)
         testLabel = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
@@ -193,8 +193,10 @@ class Make(classifier.Make_Template):
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(device, epoch, batch_size, model, dataSets)
-            # local test
-            accuracy = self._evaluate_torch(model, testData, testLabel)
+            accuracy = self._evaluate_torch(model,
+                                            testData,
+                                            testLabel,
+                                            test_split_set)
             self.models.append([model, id, accuracy])
 
     # Check whether matrix sizes are reasonable or not

@@ -12,6 +12,7 @@ import pickle
 import difflib
 import numpy as np
 import pandas as pd
+from warnings import warn
 import ageas.lib as lib
 import ageas.classifier as clf
 import ageas.classifier.xgb as xgb
@@ -33,41 +34,28 @@ class Train(clf.Make_Template):
                 pcGRNs = None,
                 database_info = None,
                 model_config = None,
-                test_set_ratio = 0.3,
                 random_state = None,
-                clf_keep_ratio = 1.0,
-                clf_accuracy_thread = 0.9,):
+                test_split_set = False,):
         super(Train, self).__init__()
         # Initialization
         self.grns = pcGRNs
         self.models = None
-        self.model_config = model_config
-        self.all_grp_ids = {}
         self.allData = None
         self.allLabel = None
-
-        # Train out models and find the best ones
-        self.process(database_info,
-                    test_set_ratio,
-                    random_state,
-                    clf_keep_ratio,
-                    clf_accuracy_thread)
+        self.all_grp_ids = {}
+        self.random_state = random_state
+        self.model_config = model_config
+        self.database_info = database_info
+        self.test_split_set = test_split_set
 
     # Generate training data and testing data iteratively
     # Then train out models in model sets
     # Only keep top performancing models in each set
-    def process(self,
-                database_info,
-                test_set_ratio,
-                random_state,
-                clf_keep_ratio,
-                clf_accuracy_thread):
-        # # Change random state for each iteration
-        # if random_state is not None: random_state = i * random_state
-        data = binary_class.Process(database_info,
+    def general_process(self, train_size, clf_keep_ratio, clf_accuracy_thread):
+        data = binary_class.Process(self.database_info,
                                     self.grns,
-                                    test_set_ratio,
-                                    random_state,
+                                    train_size,
+                                    self.random_state,
                                     self.all_grp_ids,
                                     self.allData,
                                     self.allLabel)
@@ -85,8 +73,9 @@ class Train(clf.Make_Template):
         # Do trainings
         self.models = self.__initialize_classifiers(self.model_config)
         for modelSet in self.models:
-            modelSet.train(data)
-            modelSet._filter_models(clf_keep_ratio, clf_accuracy_thread)
+            modelSet.train(data, self.test_split_set)
+            if self.test_split_set:
+                modelSet._filter_models(clf_keep_ratio, clf_accuracy_thread)
 
         # Concat models together based on performace
         temp = []
@@ -95,7 +84,8 @@ class Train(clf.Make_Template):
                 temp.append(model)
         self.models = temp
         # Keep best performancing models in local test
-        self._filter_models(clf_keep_ratio, clf_accuracy_thread)
+        if self.test_split_set and clf_keep_ratio is not None:
+            self._filter_models(clf_keep_ratio, clf_accuracy_thread)
         # Filter based on global test performace
         self.models = self.get_clf_accuracy(clf_list = self.models,
                                             data = self.allData,
@@ -105,6 +95,30 @@ class Train(clf.Make_Template):
         self.allData = pd.DataFrame(self.allData, columns = self.all_grp_ids)
         del self.all_grp_ids
 
+    """
+    Train out models in Successive Halving manner
+
+    Amount of training data is set as limited resouce
+    While accuracy is set as evaluation standard
+    """
+    def successive_halving_process(self,
+                                    iteration,
+                                    clf_keep_ratio = 0.5,
+                                    clf_accuracy_thread = 0.9,
+                                    last_train_size = 0.9,):
+        assert last_train_size < 1.0
+        if self.test_split_set:
+            warn('Trainer Warning: test_split_set is True! Changing to False.')
+            self.test_split_set = False
+        # initialize training data set
+        train_size = float(1 / pow(2, iteration))
+        for i in range(iteration):
+            breaking = False
+            train_size = float(train_size * pow(2, i))
+            if train_size >= last_train_size:
+                train_size = last_train_size
+                breaking = True
+            if breaking: break
 
     # Make model sets based on given config
     def __initialize_classifiers(self, config):
@@ -186,31 +200,3 @@ class Train(clf.Make_Template):
     def save_models(self, path):
         with open(path, 'wb') as file:
             pickle.dump(self.models, file)
-
-
-class Successive_Halving(Train):
-    """
-    Train out models in Successive Halving manner
-
-    Amount of training data is set as limited resouce
-    While accuracy is set as evaluation standard
-    """
-
-    def __init__(self,
-                pcGRNs = None,
-                database_info = None,
-                model_config = None,
-                iteration = 4,
-                random_state = None,
-                clf_keep_ratio = 1.0,
-                clf_accuracy_thread = 0.9,):
-        super(Successive_Halving, self).__init__()
-        self.grns = pcGRNs
-        self.models = None
-        self.model_config = model_config
-        self.all_grp_ids = {}
-        self.allData = None
-        self.allLabel = None
-        self.init_train_ratio = float(1 / pow(2, iteration))
-        for i in range(iteration):
-            test_set_ratio = float(1 - self.init_train_ratio * pow(2, i))

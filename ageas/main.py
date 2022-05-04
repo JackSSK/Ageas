@@ -50,7 +50,7 @@ class Find:
                 iteration = 1,
                 patient = None,
                 noChangeThread = 0.1,
-                clf_keep_ratio = 1.0,
+                clf_keep_ratio = None,
                 clf_accuracy_thread = 0.9,
                 topGRP = 100,
                 warning = False):
@@ -93,9 +93,11 @@ class Find:
         start = time.time()
         self.ulysses = trainer.Train(pcGRNs = pcGRNs,
                                     database_info = self.database_info,
-                                    model_config = self.model_config,
+                                    model_config = self.model_config,)
+        self.ulysses.general_process(train_size = 0.7,
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread)
+        self.ulysses.successive_halving_process(iteration = 4)
         print('Time to train out classifiers : ', time.time() - start)
 
         """ interpret classifiers """
