@@ -42,7 +42,6 @@ class Train(clf.Make_Template):
         self.models = None
         self.allData = None
         self.allLabel = None
-        self.all_grp_ids = {}
         self.random_state = random_state
         self.model_config = model_config
         self.database_info = database_info
@@ -51,12 +50,14 @@ class Train(clf.Make_Template):
     # Generate training data and testing data iteratively
     # Then train out models in model sets
     # Only keep top performancing models in each set
-    def general_process(self, train_size, clf_keep_ratio, clf_accuracy_thread):
+    def general_process(self,
+                        train_size = 0.3,
+                        clf_keep_ratio = None,
+                        clf_accuracy_thread = None):
         data = binary_class.Process(self.database_info,
                                     self.grns,
                                     train_size,
                                     self.random_state,
-                                    self.all_grp_ids,
                                     self.allData,
                                     self.allLabel)
         data.auto_inject_fake_grps()
@@ -65,10 +66,10 @@ class Train(clf.Make_Template):
         # to try to avoid redundant calculation
         if self.allData is None and self.allLabel is None:
             print('Total GRP amount: ', len(data.all_grp_ids))
-            self.all_grp_ids = data.all_grp_ids
             self.allData = data.dataTrain + data.dataTest
             self.allLabel = np.concatenate((data.labelTrain, data.labelTest))
             assert len(self.allData) == len(self.allLabel)
+            self.allData = pd.DataFrame(self.allData, columns= data.all_grp_ids)
 
         # Do trainings
         self.models = self.__initialize_classifiers(self.model_config)
@@ -86,14 +87,13 @@ class Train(clf.Make_Template):
         # Keep best performancing models in local test
         if self.test_split_set and clf_keep_ratio is not None:
             self._filter_models(clf_keep_ratio, clf_accuracy_thread)
+
         # Filter based on global test performace
         self.models = self.get_clf_accuracy(clf_list = self.models,
-                                            data = self.allData,
+                                            data = self.allData.to_numpy(),
                                             label = self.allLabel)
         self._filter_models(clf_keep_ratio, clf_accuracy_thread)
         print('Keeping ', len(self.models), ' models')
-        self.allData = pd.DataFrame(self.allData, columns = self.all_grp_ids)
-        del self.all_grp_ids
 
     """
     Train out models in Successive Halving manner
@@ -103,42 +103,32 @@ class Train(clf.Make_Template):
     """
     def successive_halving_process(self,
                                     iteration,
-                                    clf_keep_ratio = 0.5,
                                     clf_accuracy_thread = 0.9,
                                     last_train_size = 0.9,):
         assert last_train_size < 1.0
         if self.test_split_set:
             warn('Trainer Warning: test_split_set is True! Changing to False.')
             self.test_split_set = False
+
         # initialize training data set
-        train_size = float(1 / pow(2, iteration))
+        init_train_size = float(1 / pow(2, iteration))
         for i in range(iteration):
             breaking = False
-            train_size = float(train_size * pow(2, i))
+            train_size = float(init_train_size * pow(2, i))
+            # about last round, we set train size to the max resouce
             if train_size >= last_train_size:
                 train_size = last_train_size
                 breaking = True
+            print('Iteration:', i, ' with training size:', train_size)
+            self.general_process(train_size = train_size, clf_keep_ratio = 0.5)
+            self.__update_model_config(id_keep = {x[1]:'' for x in self.models})
             if breaking: break
 
-    # Make model sets based on given config
-    def __initialize_classifiers(self, config):
-        list = []
-        if 'GBM' in config:
-            list.append(xgb.Make(config = config['GBM']))
-        if 'SVM' in config:
-            list.append(svm.Make(config = config['SVM']))
-        if 'CNN_1D' in config:
-            list.append(cnn_1d.Make(config = config['CNN_1D']))
-        if 'CNN_Hybrid' in config:
-            list.append(cnn_hybrid.Make(config = config['CNN_Hybrid'],
-                                        grp_amount = len(self.all_grp_ids)))
-        if 'RNN' in config:
-            list.append(rnn.Make(config = config['RNN']))
-        if 'LSTM' in config:
-            list.append(lstm.Make(config = config['LSTM']))
-        if 'GRU' in config:
-            list.append(gru.Make(config = config['GRU']))
-        return list
+        if train_size < last_train_size:
+            print('Iteration Last: with training size:', last_train_size)
+            self.general_process(train_size = last_train_size,
+                                clf_accuracy_thread = clf_accuracy_thread)
+        else: self._filter_models(clf_accuracy_thread = clf_accuracy_thread)
 
     # Re-assign accuracy based on all data performance
     def get_clf_accuracy(self, clf_list, data, label):
@@ -184,6 +174,41 @@ class Train(clf.Make_Template):
         clf_list.sort(key = lambda x:x[-1], reverse = True)
         return clf_list
 
+    # Save result models in given path
+    def save_models(self, path):
+        with open(path, 'wb') as file:
+            pickle.dump(self.models, file)
+
+    # Make model sets based on given config
+    def __initialize_classifiers(self, config):
+        list = []
+        if 'GBM' in config:
+            list.append(xgb.Make(config = config['GBM']))
+        if 'SVM' in config:
+            list.append(svm.Make(config = config['SVM']))
+        if 'CNN_1D' in config:
+            list.append(cnn_1d.Make(config = config['CNN_1D']))
+        if 'CNN_Hybrid' in config:
+            list.append(cnn_hybrid.Make(config = config['CNN_Hybrid'],
+                                        grp_amount = len(self.allData.columns)))
+        if 'RNN' in config:
+            list.append(rnn.Make(config = config['RNN']))
+        if 'LSTM' in config:
+            list.append(lstm.Make(config = config['LSTM']))
+        if 'GRU' in config:
+            list.append(gru.Make(config = config['GRU']))
+        return list
+
+    # delete model configs not on while list(dict)
+    def __update_model_config(self, id_keep):
+        result = {}
+        for genra in self.model_config:
+            temp = {}
+            for id in self.model_config[genra]:
+                if id in id_keep: temp[id] = self.model_config[genra][id]
+            if len(temp) > 0: result[genra] = temp
+        self.model_config = result
+
     # Evaluate Neural Network based methods'accuracies
     def __evaluate_NN(self, result, label):
         modifiedResult = []
@@ -195,8 +220,3 @@ class Train(clf.Make_Template):
             modifiedResult.append(predict)
         accuracy = correct / len(label)
         return accuracy, modifiedResult
-
-    # Save result models in given path
-    def save_models(self, path):
-        with open(path, 'wb') as file:
-            pickle.dump(self.models, file)

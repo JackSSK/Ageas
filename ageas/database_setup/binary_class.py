@@ -98,19 +98,18 @@ class Process(object):
                         grnData = None,
                         train_size = 0.7,
                         ramdom_state = None,
-                        all_grp_ids = {},
                         fullData = None,
                         fullLabel = None,):
         super(Process, self).__init__()
         # Initialization
         self.train_size = train_size
         self.random_state = ramdom_state
-        self.all_grp_ids = all_grp_ids
+        self.all_grp_ids = {}
         # Go through database_info based protocol
         if fullData is None or fullLabel is None:
             self.__init_protocol(database_info, grnData)
         elif fullData is not None and fullLabel is not None:
-            self.__iterating_protocool(fullData, fullLabel)
+            self.__iterating_protocool(fullData.to_numpy(), fullLabel)
         else:
             raise db_setup.Error('Preprocessor Error: case not catched')
 
@@ -175,9 +174,6 @@ class Process(object):
             self.dataTest = data[1]
             self.labelTrain = data[2]
             self.labelTest = data[3]
-            # check whether allIDs and test_set_size are avaliable or not
-            if len(self.all_grp_ids) == 0:
-                raise db_setup.Error('allIDs not provided in fullData mode')
 
     # seperate files in given path into training
     # and testing sets based on ratio

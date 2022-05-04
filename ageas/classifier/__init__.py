@@ -61,7 +61,7 @@ class Make_Template:
         return self
 
     # Filter models based on checking accuracy (or ranking)
-    def _filter_models(self, clf_keep_ratio, clf_accuracy_thread):
+    def _filter_models(self, clf_keep_ratio = None, clf_accuracy_thread = None):
         # nothing to do
         if ((clf_keep_ratio is None and clf_accuracy_thread is None)
             or (len(self.models) <= 1)): return
