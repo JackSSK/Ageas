@@ -35,9 +35,11 @@ class Limited(nn.Module):
     with given hyperparameters
     Layer set number limited to max == 3
     """
-    def __init__(self, param):
+    def __init__(self, id, param):
         # Initialization
         super().__init__()
+        self.id = id
+        self.model_type = 'CNN_1D_Limited'
         self.num_layers = param['num_layers']
         self.lossFunc = nn.CrossEntropyLoss()
         # Layer set 1
@@ -87,9 +89,11 @@ class Unlimited(nn.Module):
     Defining a CNN model treating input as 1D data
     with given hyperparameters
     """
-    def __init__(self, param):
+    def __init__(self, id, param):
         # Initialization
         super().__init__()
+        self.id = id
+        self.model_type = 'CNN_1D_Unlimited'
         self.num_layers = param['num_layers']
         self.lossFunc = nn.CrossEntropyLoss()
         self.conv = nn.Conv1d(1, param['conv_kernel_num'],
@@ -136,9 +140,9 @@ class Make(classifier.Make_Template):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
             if self.configs[id]['config']['num_layers'] < 3:
-                model = Limited(self.configs[id]['config'])
+                model = Limited(id, self.configs[id]['config'])
             else:
-                model = Unlimited(self.configs[id]['config'])
+                model = Unlimited(id, self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(device, epoch, batch_size, model, dataSets)
@@ -146,4 +150,4 @@ class Make(classifier.Make_Template):
                                             testData,
                                             testLabel,
                                             test_split_set)
-            self.models.append([model, id, accuracy])
+            self.models.append([model, accuracy])

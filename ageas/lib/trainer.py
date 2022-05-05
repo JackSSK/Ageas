@@ -47,13 +47,15 @@ class Train(clf.Make_Template):
         self.database_info = database_info
         self.test_split_set = test_split_set
 
-    # Generate training data and testing data iteratively
-    # Then train out models in model sets
-    # Only keep top performancing models in each set
     def general_process(self,
                         train_size = 0.3,
                         clf_keep_ratio = None,
                         clf_accuracy_thread = None):
+        """
+        Generate training data and testing data iteratively
+        Then train out models in model sets
+        Only keep top performancing models in each set
+        """
         data = binary_class.Process(self.database_info,
                                     self.grns,
                                     train_size,
@@ -95,16 +97,16 @@ class Train(clf.Make_Template):
         self._filter_models(clf_keep_ratio, clf_accuracy_thread)
         print('Keeping ', len(self.models), ' models')
 
-    """
-    Train out models in Successive Halving manner
 
-    Amount of training data is set as limited resouce
-    While accuracy is set as evaluation standard
-    """
     def successive_halving_process(self,
                                     iteration,
                                     clf_accuracy_thread = 0.9,
                                     last_train_size = 0.9,):
+        """
+        Train out models in Successive Halving manner
+        Amount of training data is set as limited resouce
+        While accuracy is set as evaluation standard
+        """
         assert last_train_size < 1.0
         if self.test_split_set:
             warn('Trainer Warning: test_split_set is True! Changing to False.')
@@ -121,7 +123,7 @@ class Train(clf.Make_Template):
                 breaking = True
             print('Iteration:', i, ' with training size:', train_size)
             self.general_process(train_size = train_size, clf_keep_ratio = 0.5)
-            self.__update_model_config(id_keep = {x[1]:'' for x in self.models})
+            self.__update_model_config(id_keep={x[0].id:''for x in self.models})
             if breaking: break
 
         if train_size < last_train_size:

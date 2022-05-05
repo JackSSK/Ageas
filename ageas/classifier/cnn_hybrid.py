@@ -39,10 +39,12 @@ class Limited(nn.Module):
     then using 2 1D convolution kernels to generate layers
     Layer set number limited to max == 3
     """
-    def __init__(self, param):
+    def __init__(self, id, param):
         super().__init__()
 
         # Initialization
+        self.id = id
+        self.model_type = 'CNN_Hybrid_Limited'
         self.matrixSize = param['matrix_size']
         self.num_layers = param['num_layers']
         self.lossFunc = nn.CrossEntropyLoss()
@@ -117,9 +119,11 @@ class Unlimited(nn.Module):
     with given hyperparameters
     then using 2 1D convolution kernels to generate layers
     """
-    def __init__(self, param):
+    def __init__(self, id, param):
         super().__init__()
         # Initialization
+        self.id = id
+        self.model_type = 'CNN_Hybrid_Unlimited'
         self.mat_size = param['matrix_size']
         self.num_layers = param['num_layers']
         self.lossFunc = nn.CrossEntropyLoss()
@@ -187,9 +191,9 @@ class Make(classifier.Make_Template):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
             if self.configs[id]['config']['num_layers'] < 3:
-                model = Limited(self.configs[id]['config'])
+                model = Limited(id, self.configs[id]['config'])
             else:
-                model = Unlimited(self.configs[id]['config'])
+                model = Unlimited(id, self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(device, epoch, batch_size, model, dataSets)
@@ -197,7 +201,7 @@ class Make(classifier.Make_Template):
                                             testData,
                                             testLabel,
                                             test_split_set)
-            self.models.append([model, id, accuracy])
+            self.models.append([model, accuracy])
 
     # Check whether matrix sizes are reasonable or not
     def __check_input_matrix_size(self, grp_amount):

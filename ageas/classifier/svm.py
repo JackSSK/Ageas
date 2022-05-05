@@ -22,7 +22,9 @@ class SVM(classifier.Sklearn_Template):
     https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
     """
     # Set clf to default level
-    def initial(self): self.clf = svm.SVC(**self.param)
+    def initial(self):
+        self.model_type = 'SVM'
+        self.clf = svm.SVC(**self.param)
 
 
 
@@ -37,10 +39,10 @@ class Make(classifier.Make_Template):
     def train(self, dataSets, test_split_set):
         for id in self.configs:
             # Initialize SVM model
-            model = SVM(self.configs[id]['config'])
+            model = SVM(id, self.configs[id]['config'])
             model.train(dataSets.dataTrain, dataSets.labelTrain)
             accuracy = self._evaluate_sklearn(model,
                                                 dataSets.dataTest,
                                                 dataSets.labelTest,
                                                 test_split_set)
-            self.models.append([model, id, accuracy])
+            self.models.append([model, accuracy])

@@ -16,9 +16,11 @@ import ageas.classifier as classifier
 
 
 class RNN(nn.Module):
-    def __init__(self, device, input_size, param):
+    def __init__(self, id, device, input_size, param):
         super(RNN, self).__init__()
+        self.id = id
         self.device = device
+        self.model_type = 'RNN'
         self.num_layers = param['num_layers']
         self.hidden_size = param['hidden_size']
         self.rnn = nn.RNN(input_size,
@@ -59,7 +61,7 @@ class Make(classifier.Make_Template):
         num_features = len(dataSets.dataTest[0])
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
-            model = RNN(device, num_features, self.configs[id]['config'])
+            model = RNN(id, device, num_features, self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(device, epoch, batch_size, model, dataSets)
@@ -68,4 +70,4 @@ class Make(classifier.Make_Template):
                                             testData,
                                             testLabel,
                                             test_split_set)
-            self.models.append([model, id, accuracy])
+            self.models.append([model, accuracy])

@@ -32,8 +32,9 @@ class Sklearn_Template:
     Build up sklearn-style general classifier based on given parameters
     Gaussian Naive Bayes is used as example here
     """
-    def __init__(self, param):
+    def __init__(self, id, param):
         super(Sklearn_Template, self).__init__()
+        self.id = id
         self.param = param
         self.initial()
 
