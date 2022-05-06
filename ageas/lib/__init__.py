@@ -44,8 +44,9 @@ class Config_Maker_Template(object):
                 value = ele[i]
                 temp[key] = value
             temp = self.__verify_config(temp)
-            if temp is not None and temp not in deq:
-                deq.appendleft(temp)
+            if temp is not None:
+                record = {'config':temp}
+                if record not in deq: deq.appendleft(record)
         return {self.header + str(i) : deq[i] for i in range(len(deq))}
 
     # this should vary with different classes

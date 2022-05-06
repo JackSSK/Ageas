@@ -10,10 +10,12 @@ import ageas.tool.json as json
 
 
 
-def Process(datapath, facNameType):
-    if facNameType == 'gn': return json.decode(datapath + 'GSName2UniID.js.gz')
-    elif facNameType == 'ens': return json.decode(datapath + 'ENS2UniID.js.gz')
-    else: raise tool.Error(facNameType, ' such id is not supported yet!')
+def Process(datapath, factor_name_type):
+    if factor_name_type == 'gene_name':
+        return json.decode(datapath + 'GSName2UniID.js.gz')
+    elif factor_name_type == 'ens_id':
+        return json.decode(datapath + 'ENS2UniID.js.gz')
+    else: raise tool.Error(factor_name_type, ' such id is not supported yet!')
 
 
 

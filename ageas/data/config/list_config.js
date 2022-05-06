@@ -1,7 +1,33 @@
 {
+  "RFC": {
+      "n_estimators": [
+          100,
+          50
+      ],
+      "criterion": [
+        "gini",
+        "entropy"
+      ],
+      "max_features":[
+        0.01,
+        "auto",
+        "log2",
+        null
+      ]
+  },
+  "GNB": {
+      "var_smoothing": [
+          1e-9,
+          1e-6,
+          1e-3,
+          1
+      ]
+  },
   "SVM": {
       "kernel": [
-          "linear"
+          "linear",
+          "rbf",
+          "poly"
       ],
       "gamma": [
           "scale",

@@ -1,6 +1,182 @@
 {
+    "RFC": {
+        "sklearn_rfc_0": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "entropy",
+                "max_features": null
+            }
+        },
+        "sklearn_rfc_1": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "entropy",
+                "max_features": "log2"
+            }
+        },
+        "sklearn_rfc_2": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "entropy",
+                "max_features": "auto"
+            }
+        },
+        "sklearn_rfc_3": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "entropy",
+                "max_features": 0.01
+            }
+        },
+        "sklearn_rfc_4": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "gini",
+                "max_features": null
+            }
+        },
+        "sklearn_rfc_5": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "gini",
+                "max_features": "log2"
+            }
+        },
+        "sklearn_rfc_6": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "gini",
+                "max_features": "auto"
+            }
+        },
+        "sklearn_rfc_7": {
+            "config": {
+                "n_estimators": 50,
+                "criterion": "gini",
+                "max_features": 0.01
+            }
+        },
+        "sklearn_rfc_8": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "entropy",
+                "max_features": null
+            }
+        },
+        "sklearn_rfc_9": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "entropy",
+                "max_features": "log2"
+            }
+        },
+        "sklearn_rfc_10": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "entropy",
+                "max_features": "auto"
+            }
+        },
+        "sklearn_rfc_11": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "entropy",
+                "max_features": 0.01
+            }
+        },
+        "sklearn_rfc_12": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "gini",
+                "max_features": null
+            }
+        },
+        "sklearn_rfc_13": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "gini",
+                "max_features": "log2"
+            }
+        },
+        "sklearn_rfc_14": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "gini",
+                "max_features": "auto"
+            }
+        },
+        "sklearn_rfc_15": {
+            "config": {
+                "n_estimators": 100,
+                "criterion": "gini",
+                "max_features": 0.01
+            }
+        }
+    },
+    "GNB": {
+        "sklearn_gnb_0": {
+            "config": {
+                "var_smoothing": 1
+            }
+        },
+        "sklearn_gnb_1": {
+            "config": {
+                "var_smoothing": 0.001
+            }
+        },
+        "sklearn_gnb_2": {
+            "config": {
+                "var_smoothing": 1e-06
+            }
+        },
+        "sklearn_gnb_3": {
+            "config": {
+                "var_smoothing": 1e-09
+            }
+        }
+    },
     "SVM": {
         "sklearn_svc_0": {
+            "config": {
+                "kernel": "poly",
+                "gamma": "auto",
+                "C": 1.0,
+                "degree": 3,
+                "cache_size": 500,
+                "probability": true
+            }
+        },
+        "sklearn_svc_1": {
+            "config": {
+                "kernel": "poly",
+                "gamma": "scale",
+                "C": 1.0,
+                "degree": 3,
+                "cache_size": 500,
+                "probability": true
+            }
+        },
+        "sklearn_svc_2": {
+            "config": {
+                "kernel": "rbf",
+                "gamma": "auto",
+                "C": 1.0,
+                "degree": 0,
+                "cache_size": 500,
+                "probability": true
+            }
+        },
+        "sklearn_svc_3": {
+            "config": {
+                "kernel": "rbf",
+                "gamma": "scale",
+                "C": 1.0,
+                "degree": 0,
+                "cache_size": 500,
+                "probability": true
+            }
+        },
+        "sklearn_svc_4": {
             "config": {
                 "kernel": "linear",
                 "gamma": "auto",
@@ -10,7 +186,7 @@
                 "probability": true
             }
         },
-        "sklearn_svc_1": {
+        "sklearn_svc_5": {
             "config": {
                 "kernel": "linear",
                 "gamma": "scale",

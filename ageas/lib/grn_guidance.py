@@ -38,7 +38,10 @@ class Cast:
     def __cast(self, gem_data, prediction_thread, correlation_thread):
         # proces guidance casting process based on avaliable information
         if gem_data.interactions is not None:
-            self.__with_grtd(gem_data, correlation_thread)
+            if gem_data.database_info.interaction_db == 'grtd':
+                self.__with_grtd(gem_data, correlation_thread)
+            elif gem_data.database_info.interaction_db == 'biogrid':
+                print('ToDo bioGRID')
         else:
             self.__no_interaction(gem_data, correlation_thread)
         self.tfs_no_interaction_rec = [x for x in self.tfs_no_interaction_rec]

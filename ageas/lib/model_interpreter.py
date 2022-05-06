@@ -36,11 +36,14 @@ class Find:
 
     # Calculate importances of each feature
     def _findPaths(self, odysseusModels, bases):
+        shap_explainer = SHAP_Explainer(bases)
         sumFeatureImpts = None
         # sumFIs = None
         for records in odysseusModels.models:
+            # get model and data to explain
             model = records[0]
             accuracy = records[-1]
+            print('     Interpreting:',model.id,' which reached ACC:',accuracy)
             usefullData = ''
             # Get sample index when test result consist with ground truth
             for i in range(len(records[-2])):
@@ -49,77 +52,58 @@ class Find:
             usefullData =  list(map(int, usefullData.split(';')[:-1]))
             # usefullLabel = odysseusModels.allLabel[usefullData]
             usefullData = odysseusModels.allData.iloc[usefullData,:]
-            # Switch method based on model type
-            modType = str(type(model))
-            print(modType)
+
+            # Handling RFC cases
+            if model.model_type == 'RFC':
+                featureImpts = shap_explainer.get_tree_explain(
+                                                        model.clf,
+                                                        usefullData)
+
+            # Handling GNB cases
+            elif model.model_type == 'GNB':
+                featureImpts = shap_explainer.get_kernel_explain(
+                                                        model.clf.predict_proba,
+                                                        usefullData)
+
             # Handling SVM cases
-            if re.search(r'svm', modType):
+            elif model.model_type == 'SVM':
                 # Handle linear kernel SVC here
                 if model.param['kernel'] == 'linear':
                     featureImpts = softmax(abs(model.clf.coef_[0]))
                 # Handle other cases here
                 else:
-                    warn('SVM with kernel other than linear ' +
-                            'could result in unacceptable running time now.')
-                    warn('Pleaase consider other methods instead!')
-                    warn('Skipping this SVM now')
-                    continue
-                    explainer = shap.KernelExplainer(model.clf.predict_proba,
-                                                        data = bases,)
-                    shapVals = explainer.shap_values(usefullData)
-                    # Get feature importances based on shapley value
-                    featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
-
+                    featureImpts = shap_explainer.get_kernel_explain(
+                                                        model.clf.predict_proba,
+                                                        usefullData)
             # Hybrid CNN cases and 1D CNN cases
-            elif re.search(r'cnn_', modType):
+            elif re.search(r'CNN', model.model_type):
                 # Use DeepExplainer when in limited mode
-                if re.search(r'Limited', modType):
-                    explainer = shap.DeepExplainer(model,
-                                data = reshape_tensor(bases.values.tolist()))
+                if re.search(r'Limited', model.model_type):
+                    featureImpts = shap_explainer.get_deep_explain(model,
+                                                                    usefullData)
                 # Use GradientExplainer when in unlimited mode
-                elif re.search(r'Unlimited', modType):
-                    explainer = shap.GradientExplainer(model,
-                                data = reshape_tensor(bases.values.tolist()))
+                elif re.search(r'Unlimited', model.model_type):
+                    featureImpts = shap_explainer.get_gradient_explain(model,
+                                                                    usefullData)
                 else:
-                    raise lib.Error('Unrecogonized CNN model: ', modType)
-                # Calculate shapley values
-                shapVals = explainer.shap_values(
-                                    reshape_tensor(usefullData.values.tolist()))
-                # Get feature importances based on shapley value
-                featureImpts = softmax(sum(np.abs(shapVals).mean(0))[0])
-
+                    raise lib.Error('Unrecogonized CNN model:',model.model_type)
             # XGB's GBM cases
-            elif re.search(r'xgb', modType):
-                # explainer = shap.TreeExplainer(model.clf,
-                #                     feature_perturbation = 'interventional',
-                #                     check_additivity = False,
-                #                     data = bases,)
-                # shapVals = explainer.shap_values(usefullData,)
-                # featureImpts = softmax(sum(np.abs(shapVals).mean(0)))
+            elif model.model_type == 'XGB_GBM':
                 featureImpts = softmax(model.clf.feature_importances_)
-
-            elif (re.search(r'rnn', modType) or
-                    re.search(r'lstm', modType) or
-                    re.search(r'gru', modType)):
-                # Use DeepExplainer
-                # explainer = shap.DeepExplainer(model,
-                #               data = reshape_tensor(bases.values.tolist()))
-                # Use GradientExplainer
-                explainer = shap.GradientExplainer(model,
-                                data = reshape_tensor(bases.values.tolist()))
-                # Calculate shapley values
-                shapVals = explainer.shap_values(
-                                    reshape_tensor(usefullData.values.tolist()))
-                # Get feature importances based on shapley value
-                featureImpts = softmax(sum(np.abs(shapVals).mean(0))[0])
-
+            # RNN_base model cases
+            elif (model.model_type == 'RNN' or
+                    model.model_type == 'LSTM' or
+                    model.model_type == 'GRU'):
+                featureImpts = shap_explainer.get_gradient_explain(model,
+                                                                    usefullData)
             else:
-                raise lib.Error('Unrecogonized model type: ', modType)
+                raise lib.Error('Unrecogonized model type: ', model.model_type)
 
             # Update sumFeatureImpts
-            if sumFeatureImpts is None:
+            if sumFeatureImpts is None and featureImpts is not None:
                 sumFeatureImpts = pd.array((featureImpts*accuracy) ,dtype=float)
-            else: sumFeatureImpts += (featureImpts * accuracy)
+            elif featureImpts is not None:
+                sumFeatureImpts += (featureImpts * accuracy)
 
         # Make feature importnace matrix
         featureImpts = pd.DataFrame()
@@ -140,3 +124,49 @@ class Find:
 
     # Save feature importances to given path
     def save(self, path): self.featureImpts.to_csv(path, sep='\t')
+
+
+
+class SHAP_Explainer(object):
+    """docstring for SHAP_Explainer."""
+
+    def __init__(self, basement_data = None):
+        super(SHAP_Explainer, self).__init__()
+        self.basement_data = basement_data
+
+    # Use KernelExplainer
+    def get_kernel_explain(self, model, data: pd.DataFrame):
+        print('Kernel Explainer is too slow! Skipping now!')
+        return None
+        # explainer = shap.KernelExplainer(model, data = self.basement_data,)
+        # shap_vals = explainer.shap_values(data)
+        # return softmax(sum(np.abs(shap_vals).mean(0)))
+
+    # Use GradientExplainer
+    def get_gradient_explain(self, model, data: pd.DataFrame):
+        # reshape basement data to tensor type
+        base = reshape_tensor(self.basement_data.values.tolist())
+        explainer = shap.GradientExplainer(model, data = base)
+        # Calculate shapley values
+        shap_vals = explainer.shap_values(reshape_tensor(data.values.tolist()))
+        # Get feature importances based on shapley value
+        return softmax(sum(np.abs(shap_vals).mean(0))[0])
+
+    # Use DeepExplainer
+    def get_deep_explain(self, model, data: pd.DataFrame):
+        # reshape basement data to tensor type
+        base = reshape_tensor(self.basement_data.values.tolist())
+        explainer = shap.DeepExplainer(model, data = base)
+        # Calculate shapley values
+        shap_vals = explainer.shap_values(reshape_tensor(data.values.tolist()))
+        # Get feature importances based on shapley value
+        return softmax(sum(np.abs(shap_vals).mean(0))[0])
+
+    # Use TreeExplainer
+    def get_tree_explain(self, model, data: pd.DataFrame):
+        explainer = shap.TreeExplainer(model,
+                                        feature_perturbation = 'interventional',
+                                        check_additivity = False,
+                                        data = self.basement_data,)
+        shap_vals = explainer.shap_values(data)
+        return softmax(sum(np.abs(shap_vals).mean(0)))

@@ -7,8 +7,36 @@ author: jy, nkmtmsys
 
 
 import itertools
-from collections import deque
 import ageas.lib as lib
+from collections import deque
+import ageas.tool.json as json
+
+
+# Paternize default list_config
+def Default_Config(path):
+    config_list = json.decode(path)
+    result = {
+        'RFC':Sklearn_RFC(header = 'sklearn_rfc_',
+                            config = config_list['RFC']).configs,
+        'GNB':Sklearn_GNB(header = 'sklearn_gnb_',
+                            config = config_list['GNB']).configs,
+        'SVM':Sklearn_SVM(header = 'sklearn_svc_',
+                            config = config_list['SVM']).configs,
+        'GBM':XGBoost_GBM(header = 'xgboost_gbm_',
+                            config = config_list['GBM']).configs,
+        'CNN_1D':Pytorch_CNN_1D(header = 'pytorch_cnn_1d_',
+                            config = config_list['CNN_1D']).configs,
+        'CNN_Hybrid':Pytorch_CNN_Hybrid(header = 'pytorch_cnn_hybrid_',
+                            config = config_list['CNN_Hybrid']).configs,
+        'RNN':Pytorch_RNN(header = 'pytorch_rnn_',
+                            config = config_list['RNN']).configs,
+        'LSTM':Pytorch_LSTM(header='pytorch_lstm_',
+                            config = config_list['LSTM']).configs,
+        'GRU':Pytorch_GRU(header = 'pytorch_gru_',
+                            config = config_list['GRU']).configs,
+    }
+    return result
+
 
 
 class Sklearn_SVM(lib.Config_Maker_Template):
@@ -37,6 +65,37 @@ class Sklearn_SVM(lib.Config_Maker_Template):
         if 'kernel' in query and query['kernel'] != 'poly':
             if 'degree' in query:
                 query['degree'] = 0
+        return query
+
+
+
+class Sklearn_GNB(lib.Config_Maker_Template):
+    """
+    config maker for sklearn based GNBs
+    """
+    def __init__(self, header = None, config = None):
+        self.header = header
+        deq = deque()
+        combs = list(itertools.product(*config.values()))
+        for ele in combs:
+            assert len(config.keys()) == len(ele)
+            temp = {}
+            for i in range(len(ele)):
+                key = list(config.keys())[i]
+                value = ele[i]
+                temp[key] = value
+            if temp is not None:
+                record = {'config':temp}
+                if record not in deq: deq.appendleft(record)
+        self.configs = {self.header + str(i) : deq[i] for i in range(len(deq))}
+
+
+
+class Sklearn_RFC(Sklearn_GNB):
+    """
+    config maker for sklearn based RFs
+    """
+    def __verify_config(self, query):
         return query
 
 
@@ -160,17 +219,7 @@ class Pytorch_GRU(Pytorch_CNN_Hybrid):
 
 """ For test """
 # if __name__ == "__main__":
-#     import ageas.tool.json as json
-#     a = json.decode("../data/config/list_config.js")
-#     result = {
-#         'SVM':Sklearn_SVM(header = 'sklearn_svc_', config = a['SVM']).configs,
-#         'GBM':XGBoost_GBM(header = 'xgboost_gbm_', config = a['GBM']).configs,
-#         'CNN_1D':Pytorch_CNN_1D(header = 'pytorch_cnn_1d_',
-#                                 config = a['CNN_1D']).configs,
-#         'CNN_Hybrid':Pytorch_CNN_Hybrid(header = 'pytorch_cnn_hybrid_',
-#                                         config = a['CNN_Hybrid']).configs,
-#         'RNN':Pytorch_RNN(header = 'pytorch_rnn_', config = a['RNN']).configs,
-#         'LSTM':Pytorch_LSTM(header='pytorch_lstm_', config=a['LSTM']).configs,
-#         'GRU':Pytorch_GRU(header = 'pytorch_gru_', config = a['GRU']).configs,
-#     }
-#     json.encode(result, 'sample_config.js')
+#     path = "../data/config/list_config.js"
+#     result = Default_Config(path)
+#     print(result)
+#     # json.encode(result, 'sample_config.js')

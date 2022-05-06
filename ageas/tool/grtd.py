@@ -22,10 +22,10 @@ class Processor:
     """
     Process summarized GRTD file
     """
-    def __init__(self, datPth, facNameType, path):
-        self.path = datPth + path
-        self.nameType = facNameType
-        self.idmap = uniprot_id_map.Process(datPth, facNameType)
+    def __init__(self, specie_path, factor_name_type, path):
+        self.path = specie_path + path
+        self.nameType = factor_name_type
+        self.idmap = uniprot_id_map.Process(specie_path, factor_name_type)
         self.data = json.decode(self.path)
 
 

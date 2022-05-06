@@ -11,6 +11,7 @@ import time
 import warnings
 from pkg_resources import resource_filename
 import ageas.tool.json as json
+import ageas.lib.config_maker as config_maker
 import ageas.lib.pcgrn_caster as grn
 import ageas.lib.trainer as trainer
 from ageas.lib.gem_db_loader import Load
@@ -37,7 +38,8 @@ class Find:
                 sliding_window_size = 10,
                 sliding_window_stride = None,
                 # supportive data location related args
-                facNameType = 'gn',
+                factor_name_type = 'gene_name',
+                interaction_db = 'grtd',
                 model_config_path = None,
                 # filter thread related args
                 std_value_thread = 100,
@@ -50,7 +52,7 @@ class Find:
                 iteration = 2,
                 patient = None,
                 noChangeThread = 0.1,
-                clf_keep_ratio = None,
+                clf_keep_ratio = 0.5,
                 clf_accuracy_thread = 0.9,
                 topGRP = 100,
                 warning = False):
@@ -67,16 +69,19 @@ class Find:
                                             class1_path,
                                             class2_path,
                                             specie,
+                                            factor_name_type,
+                                            interaction_db,
                                             sliding_window_size,
                                             sliding_window_stride)
         # load standard config file if not further specified
         if model_config_path is None:
-            model_config_path = resource_filename(__name__,
-                                            'data/config/sample_config.js')
-        self.model_config = json.decode(model_config_path)
+            path = resource_filename(__name__, 'data/config/list_config.js')
+            self.model_config = config_maker.Default_Config(path)
+        else:
+            self.model_config = json.decode(model_config_path)
         print('Time to initialize : ', time.time() - start)
 
-        self.circe, pcGRNs = self.get_pcGRNs(facNameType = facNameType,
+        self.circe, pcGRNs = self.get_pcGRNs(database_info = self.database_info,
                                         std_value_thread = std_value_thread,
                                         std_ratio_thread = std_ratio_thread,
                                         mww_thread = mww_thread,
@@ -98,6 +103,7 @@ class Find:
         #                             clf_keep_ratio = clf_keep_ratio,
         #                             clf_accuracy_thread = clf_accuracy_thread)
         self.ulysses.successive_halving_process(iteration = iteration,
+                                    clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread,
                                     last_train_size = 0.9)
         print('Time to train out classifiers : ', time.time() - start)
@@ -117,7 +123,7 @@ class Find:
 
     # get pseudo-cGRNs from GEMs or GRNs
     def get_pcGRNs(self,
-                    facNameType = 'gn',
+                    database_info = None,
                     std_value_thread = 100,
                     std_ratio_thread = None,
                     mww_thread = 0.05,
@@ -128,9 +134,8 @@ class Find:
         start = time.time()
         guide = None
         # if reading in GEMs, we need to construct pseudo-cGRNs first
-        if re.search(r'gem' , self.database_info.type):
-            gem_data = Load(self.database_info,
-                            facNameType,
+        if re.search(r'gem' , database_info.type):
+            gem_data = Load(database_info,
                             mww_thread,
                             log2fc_thread,
                             std_value_thread)
@@ -141,7 +146,7 @@ class Find:
                                         correlation_thread = correlation_thread,
                                         load_path = guide_load_path)
             print('Time to cast GRN Guidnace : ', time.time() - start1)
-            pcGRNs = grn.Make(database_info = self.database_info,
+            pcGRNs = grn.Make(database_info = database_info,
                                 std_value_thread = std_value_thread,
                                 std_ratio_thread = std_ratio_thread,
                                 correlation_thread = correlation_thread,

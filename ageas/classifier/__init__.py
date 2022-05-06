@@ -78,6 +78,10 @@ class Make_Template:
             else:
                 accuracy_thread = max(accuracy_thread, clf_accuracy_thread)
         # now we partition
+        if accuracy_thread > self.models[0][-1]:
+            print('accuracy_thread is too high! Returning the best we can get')
+            accuracy_thread = self.models[0][-1]
+        print('accuracy_thread is set to:', accuracy_thread)
         low_bound = len(self.models)
         for i in reversed(range(low_bound)):
             accuracy = self.models[i][-1]

@@ -15,6 +15,8 @@ import pandas as pd
 from warnings import warn
 import ageas.lib as lib
 import ageas.classifier as clf
+import ageas.classifier.gnb as gnb
+import ageas.classifier.rfc as rfc
 import ageas.classifier.xgb as xgb
 import ageas.classifier.svm as svm
 import ageas.classifier.rnn as rnn
@@ -99,7 +101,8 @@ class Train(clf.Make_Template):
 
 
     def successive_halving_process(self,
-                                    iteration,
+                                    iteration = 2,
+                                    clf_keep_ratio = 0.5,
                                     clf_accuracy_thread = 0.9,
                                     last_train_size = 0.9,):
         """
@@ -122,7 +125,8 @@ class Train(clf.Make_Template):
                 train_size = last_train_size
                 breaking = True
             print('Iteration:', i, ' with training size:', train_size)
-            self.general_process(train_size = train_size, clf_keep_ratio = 0.5)
+            self.general_process(train_size = train_size,
+                                clf_keep_ratio = clf_keep_ratio)
             self.__update_model_config(id_keep={x[0].id:''for x in self.models})
             if breaking: break
 
@@ -137,27 +141,22 @@ class Train(clf.Make_Template):
         i = 0
         for record in clf_list:
             model = record[0]
-            clf_type = str(type(model))
             i+=1
             # Handel SVM and XGB cases
             # Or maybe any sklearn-style case
-            if re.search(r'svm', clf_type) or re.search(r'xgb', clf_type):
+            if (model.model_type == 'SVM' or
+                model.model_type == 'GNB' or
+                model.model_type == 'RFC' or
+                model.model_type == 'XGB_GBM'):
                 pred_result = model.clf.predict(data)
                 pred_accuracy = difflib.SequenceMatcher(None,
                                                         pred_result,
                                                         label).ratio()
-            # CNN cases
-            elif re.search(r'cnn_', clf_type):
-                # Enter eval mode and turn off gradient calculation
-                model.eval()
-                with torch.no_grad():
-                    pred_result = model(clf.reshape_tensor(data))
-                pred_accuracy, pred_result = self.__evaluate_NN(pred_result,
-                                                                label)
-            # RNN type handling
-            elif (re.search(r'rnn', clf_type) or
-                    re.search(r'lstm', clf_type) or
-                    re.search(r'gru', clf_type)):
+            # RNN type handling + CNN cases
+            elif (model.model_type == 'RNN' or
+                    model.model_type == 'LSTM' or
+                    model.model_type == 'GRU' or
+                    re.search(r'CNN', model.model_type)):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():
@@ -165,12 +164,12 @@ class Train(clf.Make_Template):
                 pred_accuracy, pred_result = self.__evaluate_NN(pred_result,
                                                                 label)
             else:
-                raise lib.Error('Cannot handle classifier: ', clf_type)
+                raise lib.Error('Cannot handle classifier: ', model.model_type)
             record[-1] = pred_result
             record.append(pred_accuracy)
             # For debug purpose
             # print('Performined all data test on model', i,
-            #         ' type:', clf_type, '\n',
+            #         ' type:', model.model_type, '\n',
             #         'test set accuracy:', round(accuracy, 2),
             #         ' all data accuracy: ', round(pred_accuracy, 2), '\n')
         clf_list.sort(key = lambda x:x[-1], reverse = True)
@@ -184,6 +183,10 @@ class Train(clf.Make_Template):
     # Make model sets based on given config
     def __initialize_classifiers(self, config):
         list = []
+        if 'RFC' in config:
+            list.append(rfc.Make(config = config['RFC']))
+        if 'GNB' in config:
+            list.append(gnb.Make(config = config['GNB']))
         if 'GBM' in config:
             list.append(xgb.Make(config = config['GBM']))
         if 'SVM' in config:
@@ -207,7 +210,10 @@ class Train(clf.Make_Template):
         for genra in self.model_config:
             temp = {}
             for id in self.model_config[genra]:
-                if id in id_keep: temp[id] = self.model_config[genra][id]
+                if id in id_keep:
+                    temp[id] = self.model_config[genra][id]
+                else:
+                    print('     Pruning:', id)
             if len(temp) > 0: result[genra] = temp
         self.model_config = result
 

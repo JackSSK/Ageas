@@ -15,11 +15,11 @@ class Reader(tool.Reader_Template):
     May need to be override if TF database in different format
     """
 
-    def __init__(self, filename, type = 'gn'):
+    def __init__(self, filename, type = 'gene_name'):
         self.load(filename)
         self.tfs = {}
-        if type == 'gn': self._process(position = 3)
-        elif type == 'ens': self._process(position = 4)
+        if type == 'gene_name': self._process(position = 3)
+        elif type == 'ens_id': self._process(position = 4)
         else: raise tool.Error('Unsupported factor name type!')
         self.close()
 

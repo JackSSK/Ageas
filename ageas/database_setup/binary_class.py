@@ -27,6 +27,8 @@ class Setup:
                 class1_path = 'CT1',
                 class2_path = 'CT2',
                 specie = 'mouse',
+                factor_name_type = 'gene_name',
+                interaction_db = 'grtd',
                 sliding_window_size = None,
                 sliding_window_stride = None):
         super(Setup, self).__init__()
@@ -44,6 +46,8 @@ class Setup:
         self.db_path = database_path
         self.type = database_type
         self.specie = specie
+        self.factor_name_type = factor_name_type
+        self.interaction_db = interaction_db
         self.sliding_window_size = sliding_window_size
         self.sliding_window_stride = sliding_window_stride
         # Get classes'correspond folder paths

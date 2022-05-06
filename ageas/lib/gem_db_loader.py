@@ -24,7 +24,6 @@ class Load:
     """
     def __init__(self,
                 database_info,
-                facNameType = 'gn',
                 mww_thread = 0.05,
                 log2fc_thread = 0.1,
                 std_value_thread = 100,
@@ -36,11 +35,15 @@ class Load:
         specie = get_specie_path(__name__, self.database_info.specie)
         # Load TRANSFAC databases
         self.tf_list = transfac.Reader(specie + 'Tranfac201803_MotifTFsF.txt',
-                                        facNameType).tfs
-        # Load GRTD database
-        self.interactions = grtd.Processor(specie,
-                                            facNameType,
+                                        self.database_info.factor_name_type).tfs
+        # Load interaction database
+        if self.database_info.interaction_db == 'grtd':
+            self.interactions = grtd.Processor(specie,
+                                            self.database_info.factor_name_type,
                                             path = 'wholeGene.js.gz')
+        elif self.database_info.interaction_db == 'biogrid':
+            assert self.database_info.factor_name_type == 'gene_name'
+            print('ToDo:bioGRID')
         # process file or folder based on database type
         if self.database_info.type == 'gem_folder':
             class1, class2 = self.__process_gem_folder(std_value_thread,
