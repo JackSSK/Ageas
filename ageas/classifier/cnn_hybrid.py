@@ -39,7 +39,7 @@ class Limited(nn.Module):
     then using 2 1D convolution kernels to generate layers
     Layer set number limited to max == 3
     """
-    def __init__(self, id, param):
+    def __init__(self, id, param, n_class = 2):
         super().__init__()
 
         # Initialization
@@ -84,7 +84,7 @@ class Limited(nn.Module):
         # flattenLength = int(featureNum / pow(maxpool_kernel_size, num_layers))
         # self.dense = nn.Linear(flattenLength, densed_size)
         self.dense = nn.LazyLinear(param['densed_size'])
-        self.decision = nn.Linear(param['densed_size'], 2)
+        self.decision = nn.Linear(param['densed_size'], n_class)
         self.optimizer = optim.SGD(self.parameters(), param['learning_rate'])
 
     # Overwrite the forward function in nn.Module
@@ -144,7 +144,7 @@ class Unlimited(nn.Module):
         # self.dense = nn.Linear(flattenLength, densed_size)
 
         self.dense = nn.LazyLinear(param['densed_size'])
-        self.decision = nn.Linear(param['densed_size'], 2)
+        self.decision = nn.Linear(param['densed_size'], n_class)
         self.optimizer = optim.SGD(self.parameters(), param['learning_rate'])
 
     # Overwrite the forward function in nn.Module

@@ -25,9 +25,9 @@
   },
   "SVM": {
       "kernel": [
-          "linear",
           "rbf",
-          "poly"
+          "poly",
+          "linear"
       ],
       "gamma": [
           "scale",
@@ -107,7 +107,7 @@
           2
       ],
       "learning_rate": [
-          0.01
+          0.1
       ]
   },
   "CNN_1D": {
@@ -138,7 +138,7 @@
           2
       ],
       "learning_rate": [
-          0.01
+          0.1
       ]
   },
   "RNN": {

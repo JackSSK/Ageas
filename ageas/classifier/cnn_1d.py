@@ -35,7 +35,7 @@ class Limited(nn.Module):
     with given hyperparameters
     Layer set number limited to max == 3
     """
-    def __init__(self, id, param):
+    def __init__(self, id, param, n_class = 2):
         # Initialization
         super().__init__()
         self.id = id
@@ -66,7 +66,7 @@ class Limited(nn.Module):
         ### -------------------------------------------------------- ###
 
         self.dense = nn.LazyLinear(param['densed_size'])
-        self.decision = nn.Linear(param['densed_size'], 2)
+        self.decision = nn.Linear(param['densed_size'], n_class)
         self.optimizer = optim.SGD(self.parameters(), param['learning_rate'])
 
     # Overwrite the forward function in nn.Module
@@ -89,7 +89,7 @@ class Unlimited(nn.Module):
     Defining a CNN model treating input as 1D data
     with given hyperparameters
     """
-    def __init__(self, id, param):
+    def __init__(self, id, param, n_class = 2):
         # Initialization
         super().__init__()
         self.id = id
@@ -110,7 +110,7 @@ class Unlimited(nn.Module):
         ### -------------------------------------------------------- ###
 
         self.dense = nn.LazyLinear(param['densed_size'])
-        self.decision = nn.Linear(param['densed_size'], 2)
+        self.decision = nn.Linear(param['densed_size'], n_class)
         self.optimizer = optim.SGD(self.parameters(), param['learning_rate'])
 
     # Overwrite the forward function in nn.Module

@@ -16,7 +16,7 @@ import ageas.classifier as classifier
 
 
 class GRU(nn.Module):
-    def __init__(self, id, device, input_size, param):
+    def __init__(self, id, device, input_size, param, n_class = 2):
         super(GRU, self).__init__()
         self.id = id
         self.model_type = 'GRU'
@@ -27,7 +27,7 @@ class GRU(nn.Module):
                             self.hidden_size,
                             self.num_layers,
                             batch_first=True)
-        self.fc = nn.Linear(self.hidden_size, 2)
+        self.fc = nn.Linear(self.hidden_size, n_class)
         self.optimizer = torch.optim.Adam(self.parameters(),
                                             lr = param['learning_rate'])
         self.lossFunc = nn.CrossEntropyLoss()
