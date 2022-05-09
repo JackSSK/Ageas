@@ -221,5 +221,4 @@ class Pytorch_GRU(Pytorch_CNN_Hybrid):
 # if __name__ == "__main__":
 #     path = "../data/config/list_config.js"
 #     result = Default_Config(path)
-#     print(result)
-#     # json.encode(result, 'sample_config.js')
+#     json.encode(result, 'sample_config.js')

@@ -138,16 +138,36 @@
     "SVM": {
         "sklearn_svc_0": {
             "config": {
-                "kernel": "poly",
+                "kernel": "linear",
                 "gamma": "auto",
                 "C": 1.0,
-                "degree": 3,
+                "degree": 0,
                 "cache_size": 500,
                 "probability": true
             }
         },
         "sklearn_svc_1": {
             "config": {
+                "kernel": "linear",
+                "gamma": "scale",
+                "C": 1.0,
+                "degree": 0,
+                "cache_size": 500,
+                "probability": true
+            }
+        },
+        "sklearn_svc_2": {
+            "config": {
+                "kernel": "poly",
+                "gamma": "auto",
+                "C": 1.0,
+                "degree": 3,
+                "cache_size": 500,
+                "probability": true
+            }
+        },
+        "sklearn_svc_3": {
+            "config": {
                 "kernel": "poly",
                 "gamma": "scale",
                 "C": 1.0,
@@ -156,29 +176,9 @@
                 "probability": true
             }
         },
-        "sklearn_svc_2": {
-            "config": {
-                "kernel": "rbf",
-                "gamma": "auto",
-                "C": 1.0,
-                "degree": 0,
-                "cache_size": 500,
-                "probability": true
-            }
-        },
-        "sklearn_svc_3": {
-            "config": {
-                "kernel": "rbf",
-                "gamma": "scale",
-                "C": 1.0,
-                "degree": 0,
-                "cache_size": 500,
-                "probability": true
-            }
-        },
         "sklearn_svc_4": {
             "config": {
-                "kernel": "linear",
+                "kernel": "rbf",
                 "gamma": "auto",
                 "C": 1.0,
                 "degree": 0,
@@ -188,7 +188,7 @@
         },
         "sklearn_svc_5": {
             "config": {
-                "kernel": "linear",
+                "kernel": "rbf",
                 "gamma": "scale",
                 "C": 1.0,
                 "degree": 0,
@@ -407,7 +407,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -419,7 +419,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -431,7 +431,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -443,7 +443,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -455,7 +455,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -467,7 +467,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -479,7 +479,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -491,7 +491,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -503,7 +503,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -515,7 +515,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -527,7 +527,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -539,7 +539,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -551,7 +551,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -563,7 +563,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -575,7 +575,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -587,7 +587,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -599,7 +599,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -611,7 +611,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -623,7 +623,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -635,7 +635,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -647,7 +647,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -659,7 +659,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -671,7 +671,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -683,7 +683,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -695,7 +695,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -707,7 +707,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -719,7 +719,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -731,7 +731,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -743,7 +743,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -755,7 +755,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -767,7 +767,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -779,7 +779,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -796,7 +796,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -811,7 +811,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -826,7 +826,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -841,7 +841,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -856,7 +856,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -871,7 +871,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -886,7 +886,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -901,7 +901,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -916,7 +916,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -931,7 +931,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -946,7 +946,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -961,7 +961,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -976,7 +976,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -991,7 +991,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1006,7 +1006,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1021,7 +1021,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1036,7 +1036,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1051,7 +1051,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1066,7 +1066,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1081,7 +1081,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1096,7 +1096,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1111,7 +1111,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1126,7 +1126,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1141,7 +1141,7 @@
                 "maxpool_kernel_size": 3,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1156,7 +1156,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1171,7 +1171,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1186,7 +1186,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1201,7 +1201,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 128,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1216,7 +1216,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1231,7 +1231,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1246,7 +1246,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1261,7 +1261,7 @@
                 "maxpool_kernel_size": 2,
                 "densed_size": 64,
                 "num_layers": 1,
-                "learning_rate": 0.01
+                "learning_rate": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1272,7 +1272,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1281,7 +1282,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1290,7 +1292,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1299,7 +1302,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1308,7 +1312,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1317,7 +1322,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1326,7 +1332,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1335,7 +1342,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1346,7 +1354,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1355,7 +1364,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1364,7 +1374,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1373,7 +1384,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1382,7 +1394,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1391,7 +1404,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1400,7 +1414,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1409,7 +1424,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1420,7 +1436,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1429,7 +1446,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1438,7 +1456,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1447,7 +1466,8 @@
             "config": {
                 "hidden_size": 256,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1456,7 +1476,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1465,7 +1486,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 3,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -1474,7 +1496,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -1483,7 +1506,8 @@
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
-                "learning_rate": 0.01
+                "learning_rate": 0.01,
+                "dropout_prob": 0.1
             },
             "epoch": 2,
             "batch_size": 5

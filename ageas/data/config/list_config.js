@@ -159,6 +159,9 @@
       ],
       "learning_rate":[
           0.01
+      ],
+      "dropout_prob":[
+          0.2
       ]
   },
   "LSTM": {
@@ -179,6 +182,9 @@
       ],
       "learning_rate":[
           0.01
+      ],
+      "dropout_prob":[
+          0.2
       ]
   },
   "GRU": {
@@ -199,6 +205,9 @@
       ],
       "learning_rate":[
           0.01
+      ],
+      "dropout_prob":[
+          0.2
       ]
   }
 }

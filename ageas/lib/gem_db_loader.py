@@ -11,6 +11,7 @@ import ageas.tool as tool
 import ageas.tool.gem as gem
 import ageas.tool.json as json
 import ageas.tool.grtd as grtd
+import ageas.tool.biogrid as biogrid
 import ageas.lib as lib
 import ageas.tool.transfac as transfac
 from ageas.lib.deg_finder import Find
@@ -43,7 +44,7 @@ class Load:
                                             path = 'wholeGene.js.gz')
         elif self.database_info.interaction_db == 'biogrid':
             assert self.database_info.factor_name_type == 'gene_name'
-            print('ToDo:bioGRID')
+            self.interactions = biogrid.Processor(specie_path = specie)
         # process file or folder based on database type
         if self.database_info.type == 'gem_folder':
             class1, class2 = self.__process_gem_folder(std_value_thread,

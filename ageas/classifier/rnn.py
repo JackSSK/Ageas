@@ -23,6 +23,7 @@ class RNN(nn.Module):
         self.model_type = 'RNN'
         self.num_layers = param['num_layers']
         self.hidden_size = param['hidden_size']
+        self.dropout = nn.Dropout(p = param['dropout_prob'])
         self.rnn = nn.RNN(input_size,
                             self.hidden_size,
                             self.num_layers,
@@ -32,14 +33,13 @@ class RNN(nn.Module):
                                             lr = param['learning_rate'])
         self.lossFunc = nn.CrossEntropyLoss()
 
-    def forward(self, x):
+    def forward(self, input):
+        input = self.dropout(input)
         # Set initial hidden states (and cell states for LSTM)
-        # -> x needs to be: (batch_size, seq, input_size)
         h0 = torch.zeros(self.num_layers,
-                        x.size(0),
+                        input.size(0),
                         self.hidden_size).to(self.device)
-        # Forward propagate RNN
-        out, _ = self.rnn(x, h0)
+        out, _ = self.rnn(input, h0)
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         # Decode the hidden state of the last time step
         out = self.fc(out[:, -1, :])

@@ -23,6 +23,7 @@ class GRU(nn.Module):
         self.device = device
         self.num_layers = param['num_layers']
         self.hidden_size = param['hidden_size']
+        self.dropout = nn.Dropout(p = param['dropout_prob'])
         self.gru = nn.GRU(input_size,
                             self.hidden_size,
                             self.num_layers,
@@ -31,15 +32,15 @@ class GRU(nn.Module):
         self.optimizer = torch.optim.Adam(self.parameters(),
                                             lr = param['learning_rate'])
         self.lossFunc = nn.CrossEntropyLoss()
-
-    def forward(self, x):
+    
+    def forward(self, input):
+        input = self.dropout(input)
         # Set initial hidden states (and cell states for LSTM)
-        # -> x needs to be: (batch_size, seq, input_size)
+        # input needs to be: (batch_size, seq, input_size)
         h0 = torch.zeros(self.num_layers,
-                        x.size(0),
+                        input.size(0),
                         self.hidden_size).to(self.device)
-        # Forward propagate RNN
-        out, _ = self.gru(x, h0)
+        out, _ = self.gru(input, h0)
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         # Decode the hidden state of the last time step
         out = self.fc(out[:, -1, :])
