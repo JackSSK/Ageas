@@ -15,8 +15,18 @@
         null
       ]
   },
+  "GNB": {
+      "var_smoothing": [
+          1e-9,
+          1e-6,
+          1e-3,
+          1
+      ]
+  },
   "SVM": {
       "kernel": [
+          "rbf",
+          "poly",
           "linear"
       ],
       "gamma": [

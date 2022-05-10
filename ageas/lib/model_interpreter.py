@@ -14,116 +14,129 @@ from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 from ageas.classifier import reshape_tensor
 import ageas.lib as lib
+import ageas.tool as tool
 
 
-class Find:
+class Interpret:
     """
     Apply various methods to interpret correct predictions made by models
     Then, assign an importance score to every feature
     """
-    def __init__(self, odysseusModels):
-        super(Find, self).__init__()
+    def __init__(self, trainer_data):
+        super(Interpret, self).__init__()
         # make background example based on mean of every sample
         # ToDo:
         # Background generation may need to be revised
         # We may just use grn generated based on universal exp matrix
-        bases = pd.DataFrame().append(odysseusModels.allData.mean(axis = 0),
+        bases = pd.DataFrame().append(trainer_data.allData.mean(axis = 0),
                                                             ignore_index = True)
-        self.featureImpts = self._findPaths(odysseusModels, bases)
-        # Delete redundant data
-        del bases
-        del odysseusModels
+        self.feature_score = self.__interpret_process(trainer_data, bases)
+        self.feature_score = self.__subtract_feature_score(self.feature_score)
 
     # Calculate importances of each feature
-    def _findPaths(self, odysseusModels, bases):
+    def __interpret_process(self, trainer_data, bases):
         shap_explainer = SHAP_Explainer(bases)
-        sumFeatureImpts = None
+        feature_score_sum = None
         # sumFIs = None
-        for records in odysseusModels.models:
+        for records in trainer_data.models:
             # get model and data to explain
             model = records[0]
             accuracy = records[-1]
             print('     Interpreting:',model.id,' which reached ACC:',accuracy)
-            usefullData = ''
+            test_data = ''
             # Get sample index when test result consist with ground truth
             for i in range(len(records[-2])):
-                if odysseusModels.allLabel[i] == records[-2][i]:
-                    usefullData += str(i) + ';'
-            usefullData =  list(map(int, usefullData.split(';')[:-1]))
-            # usefullLabel = odysseusModels.allLabel[usefullData]
-            usefullData = odysseusModels.allData.iloc[usefullData,:]
-
+                if trainer_data.allLabel[i] == records[-2][i]:
+                    test_data += str(i) + ';'
+            test_data =  list(map(int, test_data.split(';')[:-1]))
+            # usefullLabel = trainer_data.allLabel[test_data]
+            test_data = trainer_data.allData.iloc[test_data,:]
             # Handling RFC cases
             if model.model_type == 'RFC':
-                featureImpts = shap_explainer.get_tree_explain(
-                                                        model.clf,
-                                                        usefullData)
-
+                feature_score = shap_explainer.get_tree_explain(model.clf,
+                                                                test_data)
             # Handling GNB cases
             elif model.model_type == 'GNB':
-                featureImpts = shap_explainer.get_kernel_explain(
+                feature_score = shap_explainer.get_kernel_explain(
                                                         model.clf.predict_proba,
-                                                        usefullData)
-
+                                                        test_data)
             # Handling SVM cases
             elif model.model_type == 'SVM':
                 # Handle linear kernel SVC here
                 if model.param['kernel'] == 'linear':
-                    featureImpts = softmax(abs(model.clf.coef_[0]))
+                    feature_score = softmax(abs(model.clf.coef_[0]))
                 # Handle other cases here
                 else:
-                    featureImpts = shap_explainer.get_kernel_explain(
+                    feature_score = shap_explainer.get_kernel_explain(
                                                         model.clf.predict_proba,
-                                                        usefullData)
+                                                        test_data)
             # Hybrid CNN cases and 1D CNN cases
             elif re.search(r'CNN', model.model_type):
                 # Use DeepExplainer when in limited mode
                 if re.search(r'Limited', model.model_type):
-                    featureImpts = shap_explainer.get_deep_explain(model,
-                                                                    usefullData)
+                    feature_score = shap_explainer.get_deep_explain(model,
+                                                                    test_data)
                 # Use GradientExplainer when in unlimited mode
                 elif re.search(r'Unlimited', model.model_type):
-                    featureImpts = shap_explainer.get_gradient_explain(model,
-                                                                    usefullData)
+                    feature_score = shap_explainer.get_gradient_explain(model,
+                                                                    test_data)
                 else:
                     raise lib.Error('Unrecogonized CNN model:',model.model_type)
             # XGB's GBM cases
             elif model.model_type == 'XGB_GBM':
-                featureImpts = softmax(model.clf.feature_importances_)
+                feature_score = softmax(model.clf.feature_importances_)
             # RNN_base model cases
             elif (model.model_type == 'RNN' or
                     model.model_type == 'LSTM' or
                     model.model_type == 'GRU'):
-                featureImpts = shap_explainer.get_gradient_explain(model,
-                                                                    usefullData)
+                feature_score = shap_explainer.get_gradient_explain(model,
+                                                                    test_data)
             else:
                 raise lib.Error('Unrecogonized model type: ', model.model_type)
 
-            # Update sumFeatureImpts
-            if sumFeatureImpts is None and featureImpts is not None:
-                sumFeatureImpts = pd.array((featureImpts*accuracy) ,dtype=float)
-            elif featureImpts is not None:
-                sumFeatureImpts += (featureImpts * accuracy)
+            # Update feature_score_sum
+            if feature_score_sum is None and feature_score is not None:
+                feature_score_sum = pd.array((feature_score * accuracy),
+                                            dtype = float)
+            elif feature_score is not None:
+                feature_score_sum += (feature_score * accuracy)
 
         # Make feature importnace matrix
-        featureImpts = pd.DataFrame()
-        featureImpts.index = bases.columns
-        featureImpts['importance'] = sumFeatureImpts
-        featureImpts = featureImpts.sort_values('importance', ascending = False)
-        return featureImpts
+        feature_score = pd.DataFrame()
+        feature_score.index = bases.columns
+        feature_score['importance'] = feature_score_sum
+        feature_score = feature_score.sort_values('importance', ascending=False)
+        return feature_score
+
+    # clear out Fake GRPs if there is any
+    # also subtract DataFrame based on standardized Z score
+    def __subtract_feature_score(self, df):
+        df['importance'] = df['importance'] - df['importance'][-1]
+        remove_list = []
+        for ele in df.index:
+            if re.search('FAKE', ele):
+                if df.loc[ele]['importance'] != 0.0:
+                    raise lib.Error('Fake GRP got attention!: ', ele)
+                remove_list.append(ele)
+        df = df.drop(index = remove_list)
+        df = tool.Z_Score_Standardize(df = df, col = 'importance')
+        # validation part
+        return df
 
     # Update feature importance matrix with newer matrix
     def add(self, df):
-        self.featureImpts = self.featureImpts.add(df, axis = 0, fill_value = 0
+        self.feature_score = self.feature_score.add(df, axis = 0, fill_value = 0
                                 ).sort_values('importance', ascending = False)
 
-    # Just to stratify feature importances to top n scale
-    # need to revise this part to support stratify by value
-    def stratify(self, top_GRP_amount, importance_thread):
-        return self.featureImpts[:top_GRP_amount]
+    # stratify GRPs based on Z score thread
+    def stratify(self, z_score_thread):
+        for thread in range(len(self.feature_score.index)):
+            value = self.feature_score.iloc[thread]['importance']
+            if value < z_score_thread: break
+        return self.feature_score[:thread]
 
     # Save feature importances to given path
-    def save(self, path): self.featureImpts.to_csv(path, sep='\t')
+    def save(self, path): self.feature_score.to_csv(path, sep='\t')
 
 
 
@@ -136,11 +149,11 @@ class SHAP_Explainer(object):
 
     # Use KernelExplainer
     def get_kernel_explain(self, model, data: pd.DataFrame):
-        print('Kernel Explainer is too slow! Skipping now!')
-        return None
-        # explainer = shap.KernelExplainer(model, data = self.basement_data,)
-        # shap_vals = explainer.shap_values(data)
-        # return softmax(sum(np.abs(shap_vals).mean(0)))
+        # print('Kernel Explainer is too slow! Skipping now!')
+        # return None
+        explainer = shap.KernelExplainer(model, data = self.basement_data,)
+        shap_vals = explainer.shap_values(data)
+        return softmax(sum(np.abs(shap_vals).mean(0)))
 
     # Use GradientExplainer
     def get_gradient_explain(self, model, data: pd.DataFrame):

@@ -119,8 +119,8 @@ class Cast:
         for source in data.genes:
 
             # Go through tf_list filter if avaliable
-            # if data.tf_list is not None and source not in data.tf_list:
-            #     continue
+            if data.tf_list is not None and source not in data.tf_list:
+                continue
 
             reg_target = {}
             if source in data.interactions.data:

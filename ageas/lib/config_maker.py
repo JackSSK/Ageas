@@ -18,8 +18,8 @@ def Default_Config(path):
     result = {
         'RFC':Sklearn_RFC(header = 'sklearn_rfc_',
                             config = config_list['RFC']).configs,
-        'GNB':Sklearn_GNB(header = 'sklearn_gnb_',
-                            config = config_list['GNB']).configs,
+        # 'GNB':Sklearn_GNB(header = 'sklearn_gnb_',
+        #                     config = config_list['GNB']).configs,
         'SVM':Sklearn_SVM(header = 'sklearn_svc_',
                             config = config_list['SVM']).configs,
         'GBM':XGBoost_GBM(header = 'xgboost_gbm_',

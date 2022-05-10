@@ -127,7 +127,7 @@ class Train(clf.Make_Template):
             print('Iteration:', i, ' with training size:', train_size)
             self.general_process(train_size = train_size,
                                 clf_keep_ratio = clf_keep_ratio)
-            self.__update_model_config(id_keep={x[0].id:''for x in self.models})
+            self.__prune_model_config(id_keep={x[0].id:''for x in self.models})
             if breaking: break
 
         if train_size < last_train_size:
@@ -175,6 +175,13 @@ class Train(clf.Make_Template):
         clf_list.sort(key = lambda x:x[-1], reverse = True)
         return clf_list
 
+    # clear stored data
+    def clear_data(self):
+        self.grns = None
+        self.models = None
+        self.allData = None
+        self.allLabel = None
+
     # Save result models in given path
     def save_models(self, path):
         with open(path, 'wb') as file:
@@ -205,7 +212,7 @@ class Train(clf.Make_Template):
         return list
 
     # delete model configs not on while list(dict)
-    def __update_model_config(self, id_keep):
+    def __prune_model_config(self, id_keep):
         result = {}
         for genra in self.model_config:
             temp = {}

@@ -96,10 +96,10 @@ def STD_Filter(df, std_value_thread = None, std_ratio_thread = None):
     data.columns = data.columns.str.upper()
     return data.transpose()
 
-# update dict for counting
-def Update_Counting_Dict(dict, ele):
-    if ele not in dict: dict[ele] = 1
-    else: dict[ele] += 1
+# standardize feature scores applying Z score
+def Z_Score_Standardize(df, col):
+    df[col] = (df[col] - df[col].mean()) / df[col].std(ddof=0)
+    return df
 
 
 

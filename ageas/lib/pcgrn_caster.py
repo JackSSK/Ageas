@@ -189,6 +189,17 @@ class Make:
             result[filename] = temp.data
         return result
 
+    # as named
+    def update_with_remove_list(self, remove_list):
+        for sample in self.class1_pcGRNs:
+            for id in remove_list:
+                if id in self.class1_pcGRNs[sample]:
+                    del self.class1_pcGRNs[sample][id]
+        for sample in self.class2_pcGRNs:
+            for id in remove_list:
+                if id in self.class2_pcGRNs[sample]:
+                    del self.class2_pcGRNs[sample][id]
+
     # temporal pcGRN saving method
     """ need to be revised later to save pcGRNs file by file"""
     def save(self, save_path):
@@ -200,6 +211,8 @@ class Make:
     def __load_pcGRNs(self, load_path):
         data = json.decode(load_path)
         return data['class1'], data['class2']
+
+
 
     # OLD: Save GRN files as js.gz in new folder
     # def save_GRN(self, data, save_path):

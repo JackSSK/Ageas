@@ -17,14 +17,12 @@ class Extract(object):
 
     def __init__(self,
                 grp_importances,
-                top_GRP_amount = 100,
-                importance_thread = None,
-                occurrence_thread = 2):
+                score_thread = None,
+                score_sum_thread = 5):
         super(Extract, self).__init__()
-        stratified_grps = grp_importances.stratify(top_GRP_amount,
-                                                    importance_thread)
-        self.key_genes = self.__extract_by_occurence(stratified_grps,
-                                                    occurrence_thread)
+        stratified_grps = grp_importances.stratify(score_thread)
+        self.key_genes = self.__extract_by_score_thread(stratified_grps,
+                                                        score_sum_thread)
         self.common_reg_source = None
         self.common_reg_target = None
 
@@ -47,7 +45,8 @@ class Extract(object):
                         'influence': 1
                     }
                 else:
-                    dict[target]['relate'].append({record[known]:self.__makeEle(record)})
+                    dict[target]['relate'].append(
+                                        {record[known]:self.__makeEle(record)})
                     dict[target]['influence'] += 1
         dict = {ele:dict[ele]
                 for ele in dict
@@ -65,14 +64,17 @@ class Extract(object):
         json.encode(self.common_reg_target, folder_path + 'common_target.js')
 
     # extract genes based on whether occurence in important GRPs passing thread
-    def __extract_by_occurence(self, stratified_grps, occurrence_thread):
+    def __extract_by_score_thread(self, stratified_grps, score_sum_thread):
         dict = {}
         for ele in stratified_grps.index.tolist():
+            score = stratified_grps.loc[ele]['importance']
             ele = ele.strip().split('_')    # get source and target from GRP ID
-            tool.Update_Counting_Dict(dict, ele[0])
-            tool.Update_Counting_Dict(dict, ele[1])
-        # filter by occurrence_thread
-        answer = [[e, dict[e]] for e in dict if dict[e] >= occurrence_thread]
+            if ele[0] not in dict: dict[ele[0]] = score
+            else: dict[ele[0]] += score
+            if ele[1] not in dict: dict[ele[1]] = score
+            else: dict[ele[1]] += score
+        # filter by score_sum_thread
+        answer = [[e, dict[e]] for e in dict if dict[e] >= score_sum_thread]
         answer.sort(key = lambda x:x[-1], reverse = True)
         return answer
 
