@@ -69,11 +69,9 @@ class Cast:
     def __with_grtd(self, data, correlation_thread):
         # Iterate source TF candidates for GRP
         for source in data.genes:
-
             # Go through tf_list filter if avaliable
             if data.tf_list is not None and source not in data.tf_list:
                 continue
-
             # Get Uniprot ID to use GRTD
             uniprot_ids = []
             try:
@@ -82,7 +80,6 @@ class Cast:
                          uniprot_ids.append(id)
             except:
                 warnings.warn(source, 'not in Uniprot ID Map.')
-                pass
 
             # pass this TF if no recorded interactions in GRTD
             if len(uniprot_ids) == 0:
@@ -98,9 +95,9 @@ class Cast:
             if len(reg_target) == 0:
                 if source not in self.tfs_no_interaction_rec:
                     self.tfs_no_interaction_rec[source] = ''
+                    continue
                 else:
                     raise lib.Error('Duplicat source TF when __with_grtd')
-                break
 
             # Iterate target gene candidates for GRP
             for target in data.genes:
@@ -138,7 +135,7 @@ class Cast:
             if len(reg_target) == 0:
                 if source not in self.tfs_no_interaction_rec:
                     self.tfs_no_interaction_rec[source] = ''
-                    break
+                    continue
                 else:
                     raise lib.Error('Duplicat source TF when __with_biogrid')
 
@@ -160,7 +157,6 @@ class Cast:
                                             data.class1,
                                             data.class2,
                                             correlation_thread)
-
 
     # Kinda like GRTD version but only with correlation_thread and
     def __no_interaction(self, data, correlation_thread):

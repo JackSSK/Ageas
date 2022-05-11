@@ -114,9 +114,11 @@ class Train(clf.Make_Template):
         if self.test_split_set:
             warn('Trainer Warning: test_split_set is True! Changing to False.')
             self.test_split_set = False
-
+        # set iteration to 0 if not doing model selection
+        if iteration is None: iteration = 0
         # initialize training data set
         init_train_size = float(1 / pow(2, iteration))
+        train_size = 0
         for i in range(iteration):
             breaking = False
             train_size = float(init_train_size * pow(2, i))
@@ -135,6 +137,12 @@ class Train(clf.Make_Template):
             self.general_process(train_size = last_train_size,
                                 clf_accuracy_thread = clf_accuracy_thread)
         else: self._filter_models(clf_accuracy_thread = clf_accuracy_thread)
+
+        self.__prune_model_config(id_keep={x[0].id:''for x in self.models})
+        total_model = 0
+        for genra in self.model_config:
+            total_model += len(self.model_config[genra])
+        print('Selecting ', total_model, ' Models after Model Selection')
 
     # Re-assign accuracy based on all data performance
     def get_clf_accuracy(self, clf_list, data, label):
@@ -161,8 +169,7 @@ class Train(clf.Make_Template):
                 model.eval()
                 with torch.no_grad():
                     pred_result = model(clf.reshape_tensor(data))
-                pred_accuracy, pred_result = self.__evaluate_NN(pred_result,
-                                                                label)
+                pred_accuracy, pred_result=self.__evaluate_NN(pred_result,label)
             else:
                 raise lib.Error('Cannot handle classifier: ', model.model_type)
             record[-1] = pred_result

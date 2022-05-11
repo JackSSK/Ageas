@@ -28,38 +28,40 @@ class Find:
     and write report files into given folder
     """
     def __init__(self,
-                database_path = None,
-                database_type = 'gem_file',
+                correlation_thread = 0.2,
                 class1_path = None,
                 class2_path = None,
+                clf_keep_ratio = 0.5,
+                clf_accuracy_thread = 0.9,
+                database_path = None,
+                database_type = 'gem_file',
+                factor_name_type = 'gene_name',
+                feature_dropout_ratio = 0.2,
+                feature_select_iteration = 2,
+                interaction_db = 'grtd',
+                key_gene_change_thread = 0.1,
+                log2fc_thread = 0.1,
+                model_config_path = None,
+                model_select_iteration = 2,
+                mww_thread = 0.05,
+                patient = 3,
+                prediction_thread = 'auto',
                 specie = 'mouse',
                 sliding_window_size = 10,
                 sliding_window_stride = None,
-                factor_name_type = 'gene_name',
-                interaction_db = 'grtd',
-                model_config_path = None,
                 std_value_thread = 100,
                 std_ratio_thread = None,
-                mww_thread = 0.05,
-                log2fc_thread = 0.1,
-                prediction_thread = 'auto',
-                correlation_thread = 0.2,
-                model_select_iteration = 2,
-                feature_select_iteration = 2,
-                patient = 3,
-                key_gene_change_thread = 0.1,
-                train_size = 0.7,
-                clf_keep_ratio = 0.5,
-                clf_accuracy_thread = 0.9,
-                z_score_extract_thread = 2,
-                z_score_keep_thread = -1,
                 score_sum_thread = 5,
                 stabilize_iteration = None,
-                warning = False):
+                train_size = 0.9,
+                warning = False,
+                z_score_extract_thread = 0,):
         super(Find, self).__init__()
+
         """ Initialization """
         start = time.time()
         if not warning: warnings.filterwarnings('ignore')
+        self.far_out_grps = []
         self.patient = patient
         self.model_select_iteration = model_select_iteration
         self.feature_select_iteration = feature_select_iteration
@@ -130,7 +132,7 @@ class Find:
                 start = time.time()
                 prev_key_genes = self.factors.key_genes
                 rm = self.__get_grp_remove_list(self.penelope.feature_score,
-                                                z_score_keep_thread)
+                                                feature_dropout_ratio)
                 pcGRNs.update_with_remove_list(rm)
                 clfs.clear_data()
                 clfs.grns = pcGRNs
@@ -156,6 +158,7 @@ class Find:
 
         """ final part, get common source and common targets """
         start = time.time()
+        # print(self.far_out_grps)
         self.factors.extract_common(self.circe.guide, type='regulatory_source')
         self.factors.extract_common(self.circe.guide, type='regulatory_target')
         print('Time to do everything else : ', time.time() - start)
@@ -199,14 +202,21 @@ class Find:
             raise lib.Error('Unrecogonized database type: ', database_info.type)
         return guide, pcGRNs
 
-    # take out some GRPs based on Z score keeping thread
-    def __get_grp_remove_list(self, feature_score, z_score_keep_thread):
-        remove_list = []
-        for i in reversed(range(len(feature_score.index))):
-            grp_id = feature_score.index[i]
-            z_score = feature_score.iloc[i]['importance']
-            if z_score < z_score_keep_thread:
-                remove_list.append(grp_id)
+    # take out some GRPs based on feature dropout ratio
+    def __get_grp_remove_list(self, feature_score, feature_dropout_ratio):
+        total_grp = len(feature_score.index)
+        gate_index = int(total_grp * (1 - feature_dropout_ratio))
+        remove_list = list(feature_score.index[gate_index:])
+        q3_value = feature_score.iloc[int(total_grp * 0.25)]['importance']
+        q1_value = feature_score.iloc[int(total_grp * 0.75)]['importance']
+        # set far out thread according to interquartile_range (IQR)
+        far_out_thread = 3 * (q3_value - q1_value)
+        # remove outliers as well
+        for i in range(len(feature_score.index)):
+            score = feature_score.iloc[i]['importance']
+            if score >= far_out_thread:
+                self.far_out_grps.append([feature_score.index[i], score])
+                remove_list.append(feature_score.index[i])
             else: break
         return remove_list
 
@@ -231,9 +241,8 @@ class Find:
             self.no_change_iteration_num = 0
             return False
 
-
     # Write report files in give folder
-    def writeReport(self, reportPath = 'report/'):
+    def write_report(self, reportPath = 'report/'):
         if reportPath[-1] != '/': reportPath += '/'
         # Make path if not exist
         if not os.path.exists(reportPath): os.makedirs(reportPath)
