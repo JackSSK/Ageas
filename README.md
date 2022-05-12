@@ -8,8 +8,8 @@ This is an AutoML-based Genetic Feature Extraction System for finding Cellular P
 
 # Disclaimer
 
+Rebuilt from [Odysseia Project](https://www.biorxiv.org/content/10.1101/2022.02.17.480852v1)
 The current development is highly volatile and not fully ready for public consumption.
-
 
 # Install
 
