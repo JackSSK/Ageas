@@ -60,6 +60,9 @@ class Interpret:
                 feature_score = shap_explainer.get_kernel_explain(
                                                         model.clf.predict_proba,
                                                         test_data)
+            # Handling LogisticRegression cases
+            elif model.model_type == 'Logit':
+                feature_score = softmax(abs(model.clf.coef_[0]))
             # Handling SVM cases
             elif model.model_type == 'SVM':
                 # Handle linear kernel SVC here
@@ -88,7 +91,8 @@ class Interpret:
             # RNN_base model cases
             elif (model.model_type == 'RNN' or
                     model.model_type == 'LSTM' or
-                    model.model_type == 'GRU'):
+                    model.model_type == 'GRU' or
+                    model.model_type == 'Transformer'):
                 feature_score = shap_explainer.get_gradient_explain(model,
                                                                     test_data)
             else:
@@ -146,6 +150,13 @@ class SHAP_Explainer(object):
     def __init__(self, basement_data = None):
         super(SHAP_Explainer, self).__init__()
         self.basement_data = basement_data
+
+    # Use LinearExplainer
+    """ May need to revise """
+    def get_linear_explain(self, model, data: pd.DataFrame):
+        explainer = shap.LinearExplainer(model, self.basement_data,)
+        shap_vals = explainer.shap_values(data)
+        return softmax(sum(np.abs(shap_vals).mean(0)))
 
     # Use KernelExplainer
     def get_kernel_explain(self, model, data: pd.DataFrame):

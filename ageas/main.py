@@ -28,11 +28,11 @@ class Find:
     and write report files into given folder
     """
     def __init__(self,
-                correlation_thread = 0.2,
                 class1_path = None,
                 class2_path = None,
                 clf_keep_ratio = 0.5,
                 clf_accuracy_thread = 0.9,
+                correlation_thread = 0.2,
                 database_path = None,
                 database_type = 'gem_file',
                 factor_name_type = 'gene_name',
@@ -40,10 +40,11 @@ class Find:
                 feature_select_iteration = 2,
                 interaction_db = 'grtd',
                 key_gene_change_thread = 0.1,
-                log2fc_thread = 0.1,
+                log2fc_thread = None,
                 model_config_path = None,
                 model_select_iteration = 2,
                 mww_thread = 0.05,
+                outlier_thread = 3,
                 patient = 3,
                 prediction_thread = 'auto',
                 specie = 'mouse',
@@ -81,7 +82,7 @@ class Find:
         # load standard config file if not further specified
         if model_config_path is None:
             path = resource_filename(__name__, 'data/config/list_config.js')
-            self.model_config = config_maker.Default_Config(path)
+            self.model_config = config_maker.List_Config_Reader(path)
         else:
             self.model_config = json.decode(model_config_path)
         print('Time to initialize : ', time.time() - start)
@@ -132,7 +133,8 @@ class Find:
                 start = time.time()
                 prev_key_genes = self.factors.key_genes
                 rm = self.__get_grp_remove_list(self.penelope.feature_score,
-                                                feature_dropout_ratio)
+                                                feature_dropout_ratio,
+                                                outlier_thread)
                 pcGRNs.update_with_remove_list(rm)
                 clfs.clear_data()
                 clfs.grns = pcGRNs
@@ -158,7 +160,7 @@ class Find:
 
         """ final part, get common source and common targets """
         start = time.time()
-        # print(self.far_out_grps)
+        print(self.far_out_grps)
         self.factors.extract_common(self.circe.guide, type='regulatory_source')
         self.factors.extract_common(self.circe.guide, type='regulatory_target')
         print('Time to do everything else : ', time.time() - start)
@@ -203,7 +205,9 @@ class Find:
         return guide, pcGRNs
 
     # take out some GRPs based on feature dropout ratio
-    def __get_grp_remove_list(self, feature_score, feature_dropout_ratio):
+    def __get_grp_remove_list(self, feature_score = None,
+                                    feature_dropout_ratio = 0.2,
+                                    outlier_thread = 3):
         total_grp = len(feature_score.index)
         gate_index = int(total_grp * (1 - feature_dropout_ratio))
         remove_list = list(feature_score.index[gate_index:])
@@ -212,16 +216,18 @@ class Find:
         # set far out thread according to interquartile_range (IQR)
         far_out_thread = 3 * (q3_value - q1_value)
         # remove outliers as well
+        prev_score = outlier_thread * 4
         for i in range(len(feature_score.index)):
             score = feature_score.iloc[i]['importance']
-            if score >= far_out_thread:
+            if score >= max(far_out_thread, (prev_score / 4), outlier_thread):
                 self.far_out_grps.append([feature_score.index[i], score])
                 remove_list.append(feature_score.index[i])
+                prev_score = score
             else: break
         return remove_list
 
     # Stop iteration if key genes are not really changing
-    def __early_stop(self, prev_key_genes, cur_key_genes):
+    def __early_stop(self, prev_key_genes = None, cur_key_genes = None):
         # just keep going if patient not set
         if self.patient is None: return False
         prev_key_genes = [x[0] for x in prev_key_genes]

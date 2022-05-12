@@ -80,6 +80,5 @@ class Extract(object):
 
     # Add correlation in class 1 and class 2 into regulon record
     def __makeEle(self, rec):
-        return {k:rec[k] for k in rec if k not in ['id',
-                                                    'regulatory_source',
-                                                    'regulatory_target']}
+        return {k:rec[k] for k in rec if k not in ['id','regulatory_source',
+                                                        'regulatory_target']}

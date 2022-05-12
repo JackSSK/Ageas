@@ -22,6 +22,8 @@ import ageas.classifier.svm as svm
 import ageas.classifier.rnn as rnn
 import ageas.classifier.gru as gru
 import ageas.classifier.lstm as lstm
+import ageas.classifier.logit as logit
+import ageas.classifier.transformer as transformer
 import ageas.classifier.cnn_1d as cnn_1d
 import ageas.classifier.cnn_hybrid as cnn_hybrid
 import ageas.database_setup.binary_class as binary_class
@@ -153,6 +155,7 @@ class Train(clf.Make_Template):
             # Handel SVM and XGB cases
             # Or maybe any sklearn-style case
             if (model.model_type == 'SVM' or
+                model.model_type == 'Logit' or
                 model.model_type == 'GNB' or
                 model.model_type == 'RFC' or
                 model.model_type == 'XGB_GBM'):
@@ -164,12 +167,14 @@ class Train(clf.Make_Template):
             elif (model.model_type == 'RNN' or
                     model.model_type == 'LSTM' or
                     model.model_type == 'GRU' or
+                    model.model_type == 'Transformer' or
                     re.search(r'CNN', model.model_type)):
                 # Enter eval mode and turn off gradient calculation
                 model.eval()
                 with torch.no_grad():
                     pred_result = model(clf.reshape_tensor(data))
-                pred_accuracy, pred_result=self.__evaluate_NN(pred_result,label)
+                pred_accuracy, pred_result = self.__evaluate_torch(pred_result,
+                                                                    label)
             else:
                 raise lib.Error('Cannot handle classifier: ', model.model_type)
             record[-1] = pred_result
@@ -197,6 +202,10 @@ class Train(clf.Make_Template):
     # Make model sets based on given config
     def __initialize_classifiers(self, config):
         list = []
+        if 'Logit' in config:
+            list.append(logit.Make(config = config['Logit']))
+        if 'Transformer' in config:
+            list.append(transformer.Make(config = config['Transformer']))
         if 'RFC' in config:
             list.append(rfc.Make(config = config['RFC']))
         if 'GNB' in config:
@@ -231,8 +240,8 @@ class Train(clf.Make_Template):
             if len(temp) > 0: result[genra] = temp
         self.model_config = result
 
-    # Evaluate Neural Network based methods'accuracies
-    def __evaluate_NN(self, result, label):
+    # Evaluate pytorch based methods'accuracies
+    def __evaluate_torch(self, result, label):
         modifiedResult = []
         correct = 0
         for i in range(len(result)):

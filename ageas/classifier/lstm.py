@@ -19,22 +19,29 @@ class LSTM(nn.Module):
     """
     Recurrent neural network (many-to-one)
     """
-    def __init__(self, id, device, input_size, param, n_class = 2):
+    def __init__(self,
+                id,
+                device,
+                input_size,
+                num_layers,
+                hidden_size,
+                dropout,
+                learning_rate,
+                n_class = 2):
         super(LSTM, self).__init__()
         self.id = id
-        self.model_type = 'LSTM'
         self.device = device
-        self.hidden_size = param['hidden_size']
-        self.num_layers = param['num_layers']
-        self.dropout = nn.Dropout(p = param['dropout_prob'])
+        self.model_type = 'LSTM'
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.dropout = nn.Dropout(p = dropout)
         self.lstm = nn.LSTM(input_size,
                             self.hidden_size,
                             self.num_layers,
                             batch_first = True)
         self.fc = nn.Linear(self.hidden_size, n_class)
-        self.optimizer = torch.optim.Adam(self.parameters(),
-                                            lr = param['learning_rate'])
-        self.lossFunc = nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.Adam(self.parameters(), lr = learning_rate)
+        self.loss_func = nn.CrossEntropyLoss()
 
     def forward(self, input):
         input = self.dropout(input)
@@ -67,7 +74,10 @@ class Make(classifier.Make_Template):
         num_features = len(dataSets.dataTest[0])
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
-            model = LSTM(id, device, num_features, self.configs[id]['config'])
+            model = LSTM(id,
+                        device,
+                        num_features,
+                        **self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(device, epoch, batch_size, model, dataSets)

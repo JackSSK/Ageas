@@ -1,4 +1,38 @@
 {
+  "Transformer": {
+      "epoch": [
+        2
+      ],
+      "batch_size": [
+          5,
+          10
+      ],
+      "has_mask": [
+          true,
+          false
+      ],
+      "emsize": [
+        512,
+        1024
+      ],
+      "nhead":[
+        8,
+        4
+      ],
+      "nhid":[
+        200
+      ],
+      "nlayers":[
+        2,
+        4
+      ],
+      "learning_rate":[
+          0.01
+      ],
+      "dropout":[
+          0.2
+      ]
+  },
   "RFC": {
       "n_estimators": [
           100,
@@ -21,6 +55,22 @@
           1e-6,
           1e-3,
           1
+      ]
+  },
+  "Logit": {
+      "penalty": [
+          "l2",
+          "l1",
+          "elasticnet",
+          "none"
+      ],
+      "solver": [
+        "newton-cg",
+        "lbfgs",
+        "liblinear"
+      ],
+      "C": [
+          1.0
       ]
   },
   "SVM": {
@@ -160,7 +210,7 @@
       "learning_rate":[
           0.01
       ],
-      "dropout_prob":[
+      "dropout":[
           0.2
       ]
   },
@@ -183,7 +233,7 @@
       "learning_rate":[
           0.01
       ],
-      "dropout_prob":[
+      "dropout":[
           0.2
       ]
   },
@@ -206,7 +256,7 @@
       "learning_rate":[
           0.01
       ],
-      "dropout_prob":[
+      "dropout":[
           0.2
       ]
   }

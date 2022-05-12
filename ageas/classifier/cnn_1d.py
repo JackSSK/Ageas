@@ -41,7 +41,7 @@ class Limited(nn.Module):
         self.id = id
         self.model_type = 'CNN_1D_Limited'
         self.num_layers = param['num_layers']
-        self.lossFunc = nn.CrossEntropyLoss()
+        self.loss_func = nn.CrossEntropyLoss()
         # Layer set 1
         self.pool = nn.MaxPool1d(param['maxpool_kernel_size'])
         self.conv = nn.Conv1d(1, param['conv_kernel_num'],
@@ -95,7 +95,7 @@ class Unlimited(nn.Module):
         self.id = id
         self.model_type = 'CNN_1D_Unlimited'
         self.num_layers = param['num_layers']
-        self.lossFunc = nn.CrossEntropyLoss()
+        self.loss_func = nn.CrossEntropyLoss()
         self.conv = nn.Conv1d(1, param['conv_kernel_num'],
                                     param['conv_kernel_size'])
         self.convMore = nn.Conv1d(param['conv_kernel_num'],

@@ -104,11 +104,11 @@ class Make_Template:
                 batch_label = torch.tensor(label).to(device)
             model.to(device)
             model.train()
-            model.optimizer.zero_grad()
+            if model.optimizer is not None: model.optimizer.zero_grad()
             outputs = model(batch_data)
-            loss = model.lossFunc(outputs, batch_label)
+            loss = model.loss_func(outputs, batch_label)
             loss.backward()
-            model.optimizer.step()
+            if model.optimizer is not None: model.optimizer.step()
 
     # Evaluate the accuracy of given model with testing data
     def _evaluate_torch(self, model, testData, testLabel, do_test):

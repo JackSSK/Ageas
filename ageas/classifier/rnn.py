@@ -16,22 +16,29 @@ import ageas.classifier as classifier
 
 
 class RNN(nn.Module):
-    def __init__(self, id, device, input_size, param, n_class = 2):
+    def __init__(self,
+                id,
+                device,
+                input_size,
+                num_layers,
+                hidden_size,
+                dropout,
+                learning_rate,
+                n_class = 2):
         super(RNN, self).__init__()
         self.id = id
         self.device = device
         self.model_type = 'RNN'
-        self.num_layers = param['num_layers']
-        self.hidden_size = param['hidden_size']
-        self.dropout = nn.Dropout(p = param['dropout_prob'])
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.dropout = nn.Dropout(p = dropout)
         self.rnn = nn.RNN(input_size,
                             self.hidden_size,
                             self.num_layers,
                             batch_first=True)
         self.fc = nn.Linear(self.hidden_size, n_class)
-        self.optimizer = torch.optim.Adam(self.parameters(),
-                                            lr = param['learning_rate'])
-        self.lossFunc = nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.Adam(self.parameters(), lr = learning_rate)
+        self.loss_func = nn.CrossEntropyLoss()
 
     def forward(self, input):
         input = self.dropout(input)
@@ -49,9 +56,9 @@ class RNN(nn.Module):
 
 class Make(classifier.Make_Template):
     """
-    Analysis the performances of CNN based approaches
+    Analysis the performances of RNN based approaches
     with different hyperparameters
-    Find the top settings to build CNN
+    Find the top settings to build
     """
 
     # Perform classifier training process for given times
@@ -61,7 +68,10 @@ class Make(classifier.Make_Template):
         num_features = len(dataSets.dataTest[0])
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
-            model = RNN(id, device, num_features, self.configs[id]['config'])
+            model = RNN(id,
+                        device,
+                        num_features,
+                        **self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(device, epoch, batch_size, model, dataSets)

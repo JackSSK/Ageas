@@ -9,235 +9,160 @@ author: jy, nkmtmsys
 
 import math
 import torch
-import copy
-import time
-from typing import Tuple
-from torch import nn, Tensor
-import torch.nn.functional as F
+import torch.nn as nn
+import torch.nn.functional as func
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
-from torch.utils.data import dataset
-from torchtext.datasets import WikiText2
-from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator
+import ageas.classifier as classifier
 
 
-class TransformerModel(nn.Module):
+class Positional_Encoding(nn.Module):
+    """
+    Inject some information about the relative or absolute position
+    of the tokens in the sequence.
+    The positional encodings have the same dimension as the embeddings,
+    so that the two can be summed.
+    Here, we use sine and cosine functions of different frequencies.
+    .. math:
+        \text{PosEncoder}(pos, 2i) = sin(pos/10000^(2i/d_model))
+        \text{PosEncoder}(pos, 2i+1) = cos(pos/10000^(2i/d_model))
+        \text{where pos is the word position and i is the embed idx)
+    Args:
+        d_model: the embed dim (required).
+        dropout: the dropout value (default=0.1).
+    Examples:
+        >>> pos_encoder = Positional_Encoding(d_model)
+    """
 
-    def __init__(self,
-                ntoken: int,
-                d_model: int,
-                nhead: int,
-                d_hid: int,
-                nlayers: int,
-                dropout: float = 0.5):
-        super().__init__()
-        self.model_type = 'Transformer'
-        self.d_model = d_model
-        self.pos_encoder = PositionalEncoding(d_model, dropout)
-        encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
-        self.encoder = nn.Embedding(ntoken, d_model)
-        self.decoder = nn.Linear(d_model, ntoken)
-
-        self.init_weights()
-
-    def init_weights(self, initrange: float = 0.1) -> None:
-        self.encoder.weight.data.uniform_(-initrange, initrange)
-        self.decoder.bias.data.zero_()
-        self.decoder.weight.data.uniform_(-initrange, initrange)
-
-    def forward(self, src: Tensor, src_mask: Tensor) -> Tensor:
-        """
-        Args:
-            src: Tensor, shape [seq_len, batch_size]
-            src_mask: Tensor, shape [seq_len, seq_len]
-
-        Returns:
-            output Tensor of shape [seq_len, batch_size, ntoken]
-        """
-        src = self.encoder(src) * math.sqrt(self.d_model)
-        src = self.pos_encoder(src)
-        output = self.transformer_encoder(src, src_mask)
-        output = self.decoder(output)
-        return output
-
-
-def generate_square_subsequent_mask(sz: int) -> Tensor:
-    """Generates an upper-triangular matrix of -inf, with zeros on diag."""
-    return torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
-
-
-def evaluate(model: nn.Module, eval_data: Tensor) -> float:
-    model.eval()  # turn on evaluation mode
-    total_loss = 0.
-    src_mask = generate_square_subsequent_mask(bptt).to(device)
-    with torch.no_grad():
-        for i in range(0, eval_data.size(0) - 1, bptt):
-            data, targets = get_batch(eval_data, i)
-            batch_size = data.size(0)
-            if batch_size != bptt:
-                src_mask = src_mask[:batch_size, :batch_size]
-            output = model(data, src_mask)
-            output_flat = output.view(-1, ntokens)
-            total_loss += batch_size * criterion(output_flat, targets).item()
-    return total_loss / (len(eval_data) - 1)
-
-
-class PositionalEncoding(nn.Module):
-
-    def __init__(self,
-                d_model: int,
-                dropout: float = 0.1,
-                max_len: int = 5000):
-        super().__init__()
-        self.dropout = nn.Dropout(p = dropout)
-
-        position = torch.arange(max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
-        pe = torch.zeros(max_len, 1, d_model)
-        pe[:, 0, 0::2] = torch.sin(position * div_term)
-        pe[:, 0, 1::2] = torch.cos(position * div_term)
+    def __init__(self, d_model, dropout = 0.1):
+        super(Positional_Encoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+        pe = torch.zeros(d_model, d_model)
+        position = torch.arange(0, d_model, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() *
+                                    (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer('pe', pe)
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x):
         """
         Args:
-            x: Tensor, shape [seq_len, batch_size, embedding_dim]
+            x: the sequence fed to the positional encoder model (required).
+        Shape:
+            x: [sequence length, batch size, embed dim]
+            output: [sequence length, batch size, embed dim]
+        Examples:
+            >>> output = pos_encoder(x)
         """
-        x = x + self.pe[:x.size(0)]
+        x = x + self.pe[:x.size(0), :]
         return self.dropout(x)
 
 
-def data_process(raw_text_iter: dataset.IterableDataset) -> Tensor:
-    """Converts raw text into a flat Tensor."""
-    data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
-    return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-
-def batchify(data: Tensor, bsz: int) -> Tensor:
-    """Divides the data into bsz separate sequences, removing extra elements
-    that wouldn't cleanly fit.
-
-    Args:
-        data: Tensor, shape [N]
-        bsz: int, batch size
-
-    Returns:
-        Tensor of shape [N // bsz, bsz]
+class Transformer(nn.Module):
     """
-    seq_len = data.size(0) // bsz
-    data = data[:seq_len * bsz]
-    data = data.view(bsz, seq_len).t().contiguous()
-    return data.to(device)
-
-
-def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
+    Container module with an encoder, a transformer module, and a decoder.
     """
-    Args:
-        source: Tensor, shape [full_seq_len, batch_size]
-        i: int
+    def __init__(self,
+                id, # model id
+                device, # device using
+                num_features, # the number of expected features
+                has_mask = True, # whether using mask or not
+                emsize = 512, # size of embeddings
+                nhead = 8, # number of heads in the multiheadattention models
+                nhid = 200, # number of hidden units per layer
+                nlayers = 2, # number of layers
+                dropout = 0.5, # dropout ratio
+                learning_rate = 0.1,
+                n_class = 2, ): # number of class for classification
+        super(Transformer, self).__init__()
+        self.id = id
+        self.has_mask = has_mask
+        self.model_type = 'Transformer'
+        self.num_features = num_features
+        self.device = device
+        self.emsize = emsize
+        self.mask = None
+        self.encoder = nn.Linear(num_features, emsize)
+        self.pos_encoder = Positional_Encoding(emsize, dropout)
+        encoder_layers = TransformerEncoderLayer(emsize, nhead, nhid, dropout)
+        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
+        self.decoder = nn.Linear(emsize, n_class)
+        self.optimizer = torch.optim.AdamW(self.parameters(), lr=learning_rate)
+        self.loss_func = nn.CrossEntropyLoss()
+        # init_weights
+        initrange = 0.1
+        nn.init.zeros_(self.decoder.bias)
+        nn.init.uniform_(self.decoder.weight, -initrange, initrange)
 
-    Returns:
-        tuple (data, target), where data has shape [seq_len, batch_size] and
-        target has shape [seq_len * batch_size]
+    def _make_square_subsequent_mask(self, size):
+        mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
+        return mask.float().masked_fill(mask == 0,
+                                        float('-inf')).masked_fill(mask == 1,
+                                                                    float(0.0))
+
+    def forward(self, input):
+        if self.has_mask:
+            if self.mask is None or self.mask.size(0) != len(input):
+                mask = self._make_square_subsequent_mask(len(input))
+                self.mask = mask.to(self.device)
+        else:
+            self.mask = None
+        input = self.encoder(input)
+        input = self.pos_encoder(input)
+        output = self.transformer_encoder(input, self.mask)
+        output = torch.flatten(output, start_dim = 1)
+        output = func.softmax(self.decoder(output), dim = -1)
+        return output
+
+
+
+class Make(classifier.Make_Template):
     """
-    seq_len = min(bptt, len(source) - 1 - i)
-    data = source[i:i+seq_len]
-    target = source[i+1:i+1+seq_len].reshape(-1)
-    return data, target
+    Analysis the performances of Transformer based approaches
+    with different hyperparameters
+    Find the top settings to build
+    """
+    # Perform classifier training process for given times
+    def train(self, dataSets, test_split_set):
+        testData = classifier.reshape_tensor(dataSets.dataTest)
+        testLabel = dataSets.labelTest
+        num_features = len(dataSets.dataTest[0])
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        for id in self.configs:
+            model = Transformer(id,
+                                device,
+                                num_features,
+                                **self.configs[id]['config'])
+            epoch = self.configs[id]['epoch']
+            batch_size = self.configs[id]['batch_size']
+            self._train_torch(device, epoch, batch_size, model, dataSets)
+            # local test
+            accuracy = self._evaluate_torch(model,
+                                            testData,
+                                            testLabel,
+                                            test_split_set)
+            self.models.append([model, accuracy])
 
 
-
-# train_iter = WikiText2(split='train')
-# tokenizer = get_tokenizer('basic_english')
-# vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=['<unk>'])
-# vocab.set_default_index(vocab['<unk>'])
-# # train_iter was "consumed" by the process of building the vocab,
-# # so we have to create it again
-# train_iter, val_iter, test_iter = WikiText2()
-# train_data = data_process(train_iter)
-# val_data = data_process(val_iter)
-# test_data = data_process(test_iter)
-# # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# device = 'cpu'
-# batch_size = 20
-# eval_batch_size = 10
-# train_data = batchify(train_data, batch_size)  # shape [seq_len, batch_size]
-# val_data = batchify(val_data, eval_batch_size)
-# test_data = batchify(test_data, eval_batch_size)
-# bptt = 35
-#
-# ntokens = len(vocab)  # size of vocabulary
-# emsize = 200  # embedding dimension
-# d_hid = 200  # dimension of the feedforward network model in nn.TransformerEncoder
-# nlayers = 2  # number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-# nhead = 2  # number of heads in nn.MultiheadAttention
-# dropout = 0.2  # dropout probability
-# model = TransformerModel(ntokens,
-#                             emsize,
-#                             nhead,
-#                             d_hid,
-#                             nlayers,
-#                             dropout).to(device)
-# criterion = nn.CrossEntropyLoss()
-# lr = 5.0  # learning rate
-# optimizer = torch.optim.SGD(model.parameters(), lr = lr)
-# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
-# best_val_loss = float('inf')
-# epochs = 3
-# best_model = None
-#
-# for epoch in range(1, epochs + 1):
-#     epoch_start_time = time.time()
-#     model.train()  # turn on train mode
-#     total_loss = 0.
-#     log_interval = 200
-#     start_time = time.time()
-#     src_mask = generate_square_subsequent_mask(bptt).to(device)
-#
-#     num_batches = len(train_data) // bptt
-#     for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
-#         data, targets = get_batch(train_data, i)
-#         batch_size = data.size(0)
-#         if batch_size != bptt:  # only on last batch
-#             src_mask = src_mask[:batch_size, :batch_size]
-#         output = model(data, src_mask)
-#         loss = criterion(output.view(-1, ntokens), targets)
-#
-#         optimizer.zero_grad()
-#         loss.backward()
-#         torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
-#         optimizer.step()
-#
-#         total_loss += loss.item()
-#         if batch % log_interval == 0 and batch > 0:
-#             lr = scheduler.get_last_lr()[0]
-#             ms_per_batch = (time.time() - start_time) * 1000 / log_interval
-#             cur_loss = total_loss / log_interval
-#             ppl = math.exp(cur_loss)
-#             print(f'| epoch {epoch:3d} | {batch:5d}/{num_batches:5d} batches | '
-#                   f'lr {lr:02.2f} | ms/batch {ms_per_batch:5.2f} | '
-#                   f'loss {cur_loss:5.2f} | ppl {ppl:8.2f}')
-#             total_loss = 0
-#             start_time = time.time()
-#     val_loss = evaluate(model, val_data)
-#     val_ppl = math.exp(val_loss)
-#     elapsed = time.time() - epoch_start_time
-#     print('-' * 89)
-#     print(f'| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | '
-#           f'valid loss {val_loss:5.2f} | valid ppl {val_ppl:8.2f}')
-#     print('-' * 89)
-#
-#     if val_loss < best_val_loss:
-#         best_val_loss = val_loss
-#         best_model = copy.deepcopy(model)
-#
-#     scheduler.step()
-#
-#
-# test_loss = evaluate(best_model, test_data)
-# test_ppl = math.exp(test_loss)
-# print('=' * 89)
-# print(f'| End of training | test loss {test_loss:5.2f} | '
-#       f'test ppl {test_ppl:8.2f}')
-# print('=' * 89)
+""" For testing """
+# if __name__ == '__main__':
+#     param = {
+#                 'has_mask': True,
+#                 'emsize': 512,
+#                 'nhead': 8,
+#                 'nhid': 200,
+#                 'nlayers': 2,
+#                 'dropout': 0.5,
+#                 'learning_rate': 0.1
+#             }
+#     data = torch.rand((3,1,22090))
+#     model = Transformer(id = 'a', device = 'cpu', num_features = 22090, **param)
+#     model.train()
+#     model.optimizer.zero_grad()
+#     out = model(data)
+#     print(out)
+#     loss = model.loss_func(out, torch.randint(0,1,(3,)))
+#     loss.backward()
+#     model.optimizer.step()

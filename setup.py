@@ -5,8 +5,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name = "Ageas",
-    version = "v0.0.1-alpha1",
-    author = "nkmtmsys",
+    version = "v0.0.1-alpha4",
+    author = "nkmtmsys and JackSSK",
     author_email = "gyu17@alumni.jh.edu",
     description = "AutoML-based Genomic fEatrue extrAction System",
     long_description = long_description,

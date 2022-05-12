@@ -47,7 +47,7 @@ class Limited(nn.Module):
         self.model_type = 'CNN_Hybrid_Limited'
         self.matrixSize = param['matrix_size']
         self.num_layers = param['num_layers']
-        self.lossFunc = nn.CrossEntropyLoss()
+        self.loss_func = nn.CrossEntropyLoss()
 
         # Layer set 1
         self.poolVer = nn.MaxPool2d((1, param['maxpool_kernel_size']))
@@ -126,7 +126,7 @@ class Unlimited(nn.Module):
         self.model_type = 'CNN_Hybrid_Unlimited'
         self.mat_size = param['matrix_size']
         self.num_layers = param['num_layers']
-        self.lossFunc = nn.CrossEntropyLoss()
+        self.loss_func = nn.CrossEntropyLoss()
         self.pool0 = nn.MaxPool2d((1, param['maxpool_kernel_size']))
         self.pool1 = nn.MaxPool2d((param['maxpool_kernel_size'], 1))
         dividen = pow(param['maxpool_kernel_size'], self.num_layers)
