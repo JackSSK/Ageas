@@ -133,10 +133,19 @@ class Interpret:
                                 ).sort_values('importance', ascending = False)
 
     # stratify GRPs based on Z score thread
-    def stratify(self, z_score_thread):
+    def stratify(self, z_score_thread, top_grp_amount, num_prev_grps):
+        # change top top_grp_amount to int if value less or equal 1.0
+        if top_grp_amount <= 1.0:
+            top_grp_amount = int(len(self.feature_score.index) * top_grp_amount)
+        if num_prev_grps is not None:
+            top_grp_amount -= num_prev_grps
         for thread in range(len(self.feature_score.index)):
             value = self.feature_score.iloc[thread]['importance']
-            if value < z_score_thread: break
+            if value < z_score_thread or thread == top_grp_amount:
+                break
+        if thread < top_grp_amount:
+            print('Not enough GRP with Z score over thread, extract', thread)
+
         return self.feature_score[:thread]
 
     # Save feature importances to given path

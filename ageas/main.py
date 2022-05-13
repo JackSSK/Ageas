@@ -39,6 +39,7 @@ class Find:
                 feature_dropout_ratio = 0.2,
                 feature_select_iteration = 2,
                 interaction_db = 'grtd',
+                top_grp_amount = 0.05,
                 key_gene_change_thread = 0.1,
                 log2fc_thread = None,
                 model_config_path = None,
@@ -52,7 +53,6 @@ class Find:
                 sliding_window_stride = None,
                 std_value_thread = 100,
                 std_ratio_thread = None,
-                score_sum_thread = 5,
                 stabilize_iteration = None,
                 train_size = 0.9,
                 warning = False,
@@ -121,7 +121,8 @@ class Find:
         self.penelope = interpreter.Interpret(clfs)
         self.factors = extractor.Extract(self.penelope,
                                         z_score_extract_thread,
-                                        score_sum_thread)
+                                        self.far_out_grps,
+                                        top_grp_amount)
         print('Time to interpret 1st Gen classifiers : ', time.time() - start)
 
 
@@ -131,7 +132,7 @@ class Find:
             print('Entering Feature Selection')
             for i in range(self.feature_select_iteration):
                 start = time.time()
-                prev_key_genes = self.factors.key_genes
+                prev_grps = self.factors.grps.index
                 rm = self.__get_grp_remove_list(self.penelope.feature_score,
                                                 feature_dropout_ratio,
                                                 outlier_thread)
@@ -144,9 +145,10 @@ class Find:
                 self.penelope = interpreter.Interpret(clfs)
                 self.factors = extractor.Extract(self.penelope,
                                                 z_score_extract_thread,
-                                                score_sum_thread)
+                                                self.far_out_grps,
+                                                top_grp_amount)
                 print('Time to do a feature selection : ', time.time() - start)
-                if self.__early_stop(prev_key_genes, self.factors.key_genes):
+                if self.__early_stop(prev_grps, self.factors.grps.index):
                     self.stabilize_iteration = None
                     break
 
@@ -155,12 +157,23 @@ class Find:
         """ Stabilizing Output """
         if self.stabilize_iteration is not None:
             print('Stabilizing Output')
+            for i in range(self.stabilize_iteration):
+                prev_grps = self.factors.grps.index
+                clfs.general_process(train_size = train_size,
+                                    clf_keep_ratio = clf_keep_ratio,
+                                    clf_accuracy_thread = clf_accuracy_thread)
+                self.penelope.add(interpreter.Interpret(clfs).feature_score)
+                self.factors = extractor.Extract(self.penelope,
+                                                z_score_extract_thread,
+                                                self.far_out_grps,
+                                                top_grp_amount)
+                if self.__early_stop(prev_grps, self.factors.grps.index):
+                    break
 
 
 
         """ final part, get common source and common targets """
         start = time.time()
-        print(self.far_out_grps)
         self.factors.extract_common(self.circe.guide, type='regulatory_source')
         self.factors.extract_common(self.circe.guide, type='regulatory_target')
         print('Time to do everything else : ', time.time() - start)
@@ -211,32 +224,37 @@ class Find:
         total_grp = len(feature_score.index)
         gate_index = int(total_grp * (1 - feature_dropout_ratio))
         remove_list = list(feature_score.index[gate_index:])
-        q3_value = feature_score.iloc[int(total_grp * 0.25)]['importance']
-        q1_value = feature_score.iloc[int(total_grp * 0.75)]['importance']
+        for ele in self.__get_outliers(feature_score, outlier_thread):
+            self.far_out_grps.append(ele)
+            remove_list.append(ele[0])
+        return remove_list
+
+    # get outlier based on IQR value and outlier thread
+    def __get_outliers(self, df, outlier_thread):
+        result = []
+        q3_value = df.iloc[int(len(df.index) * 0.25)]['importance']
+        q1_value = df.iloc[int(len(df.index) * 0.75)]['importance']
         # set far out thread according to interquartile_range (IQR)
         far_out_thread = 3 * (q3_value - q1_value)
         # remove outliers as well
-        prev_score = outlier_thread * 4
-        for i in range(len(feature_score.index)):
-            score = feature_score.iloc[i]['importance']
-            if score >= max(far_out_thread, (prev_score / 4), outlier_thread):
-                self.far_out_grps.append([feature_score.index[i], score])
-                remove_list.append(feature_score.index[i])
+        prev_score = outlier_thread * 3
+        for i in range(len(df.index)):
+            score = df.iloc[i]['importance']
+            if score >= max(far_out_thread, (prev_score / 3), outlier_thread):
+                result.append([df.index[i], score])
                 prev_score = score
             else: break
-        return remove_list
+        return result
 
     # Stop iteration if key genes are not really changing
-    def __early_stop(self, prev_key_genes = None, cur_key_genes = None):
+    def __early_stop(self, prev_grps = None, cur_grps = None):
         # just keep going if patient not set
         if self.patient is None: return False
-        prev_key_genes = [x[0] for x in prev_key_genes]
-        cur_key_genes = [x[0] for x in cur_key_genes]
-        common = list(set(prev_key_genes).intersection(cur_key_genes))
-        change1 = (len(prev_key_genes) - len(common)) / len(prev_key_genes)
-        change2 = (len(cur_key_genes) - len(common)) / len(cur_key_genes)
+        common = len(list(set(prev_grps).intersection(set(cur_grps))))
+        change1 = (len(prev_grps) - common) / len(prev_grps)
+        change2 = (len(cur_grps) - common) / len(cur_grps)
         change = (change1 + change2) / 2
-        print('Average Key Genes Changing Portion:', change)
+        print('Average Key GRPs Changing Portion:', change)
         if change <= self.key_gene_change_thread:
             self.no_change_iteration_num += 1
             if self.no_change_iteration_num == self.patient:

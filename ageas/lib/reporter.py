@@ -35,8 +35,8 @@ def ageas_based_analysis(commonSource, factors):
 		if ele in factors:
 			result[ele] = [factors[ele], common[ele]['influence']]
 		else: result[ele] = [0, common[ele]['influence']]
-	for ele in factors:
-		if ele not in result: result[ele] = [factors[ele], 0]
+	# for ele in factors:
+	# 	if ele not in result: result[ele] = [factors[ele], 0]
 	result = [[k, result[k][0], result[k][1]] for k in result]
 	result = sorted(result, key = lambda x: x[1], reverse = True)
 	return result

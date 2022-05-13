@@ -16,15 +16,18 @@ class Extract(object):
     """
 
     def __init__(self,
-                grp_importances,
+                grp_importances = None,
                 score_thread = None,
-                score_sum_thread = 5):
+                outlier_grps = None,
+                top_grp_amount = None):
         super(Extract, self).__init__()
-        stratified_grps = grp_importances.stratify(score_thread)
-        self.key_genes = self.__extract_by_score_thread(stratified_grps,
-                                                        score_sum_thread)
+        self.key_genes = None
         self.common_reg_source = None
         self.common_reg_target = None
+        self.outlier_grps = outlier_grps
+        self.grps = grp_importances.stratify(score_thread,
+                                            top_grp_amount,
+                                            len(outlier_grps))
 
     # extract common regulaoty sources or targets of given genes
     def extract_common(self,
@@ -33,6 +36,7 @@ class Extract(object):
                         occurrence_thread = 2):
         if type == 'regulatory_source': known = 'regulatory_target'
         elif type == 'regulatory_target': known = 'regulatory_source'
+        self.key_genes = self.__extract_genes(self.grps, self.outlier_grps)
         genes = [x[0] for x in self.key_genes]
         dict = {}
         for grp in grn_guidance:
@@ -64,7 +68,7 @@ class Extract(object):
         json.encode(self.common_reg_target, folder_path + 'common_target.js')
 
     # extract genes based on whether occurence in important GRPs passing thread
-    def __extract_by_score_thread(self, stratified_grps, score_sum_thread):
+    def __extract_genes(self, stratified_grps, outlier_grps):
         dict = {}
         for ele in stratified_grps.index.tolist():
             score = stratified_grps.loc[ele]['importance']
@@ -73,8 +77,15 @@ class Extract(object):
             else: dict[ele[0]] += score
             if ele[1] not in dict: dict[ele[1]] = score
             else: dict[ele[1]] += score
-        # filter by score_sum_thread
-        answer = [[e, dict[e]] for e in dict if dict[e] >= score_sum_thread]
+        for ele in outlier_grps:
+            score = ele[1]
+            ele = ele[0].strip().split('_')
+            if ele[0] not in dict: dict[ele[0]] = score
+            else: dict[ele[0]] += score
+            if ele[1] not in dict: dict[ele[1]] = score
+            else: dict[ele[1]] += score
+        # filter by top_grp_amount
+        answer = [[e, dict[e]] for e in dict]
         answer.sort(key = lambda x:x[-1], reverse = True)
         return answer
 
