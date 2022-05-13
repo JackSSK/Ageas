@@ -130,6 +130,7 @@ class Train(clf.Make_Template):
                 breaking = True
             print('Iteration:', i, ' with training size:', train_size)
             self.general_process(train_size = train_size,
+                                clf_accuracy_thread = clf_accuracy_thread,
                                 clf_keep_ratio = clf_keep_ratio)
             self.__prune_model_config(id_keep={x[0].id:''for x in self.models})
             if breaking: break
