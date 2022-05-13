@@ -69,7 +69,7 @@ class Transformer(nn.Module):
                 device, # device using
                 num_features, # the number of expected features
                 has_mask = True, # whether using mask or not
-                emsize = 512, # size of embeddings
+                emsize = 512, # size after encoder
                 nhead = 8, # number of heads in the multiheadattention models
                 nhid = 200, # number of hidden units per layer
                 nlayers = 2, # number of layers
@@ -89,7 +89,8 @@ class Transformer(nn.Module):
         encoder_layers = TransformerEncoderLayer(emsize, nhead, nhid, dropout)
         self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
         self.decoder = nn.Linear(emsize, n_class)
-        self.optimizer = torch.optim.AdamW(self.parameters(), lr=learning_rate)
+        #self.optimizer = torch.optim.AdamW(self.parameters(), lr=learning_rate)
+        self.optimizer = None
         self.loss_func = nn.CrossEntropyLoss()
         # init_weights
         initrange = 0.1
@@ -160,9 +161,9 @@ class Make(classifier.Make_Template):
 #     data = torch.rand((3,1,22090))
 #     model = Transformer(id = 'a', device = 'cpu', num_features = 22090, **param)
 #     model.train()
-#     model.optimizer.zero_grad()
+#     if model.optimizer is not None: model.optimizer.zero_grad()
 #     out = model(data)
 #     print(out)
 #     loss = model.loss_func(out, torch.randint(0,1,(3,)))
 #     loss.backward()
-#     model.optimizer.step()
+#     if model.optimizer is not None: model.optimizer.step()
