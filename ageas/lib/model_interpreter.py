@@ -60,7 +60,7 @@ class Interpret:
                 feature_score = shap_explainer.get_kernel_explain(
                                                         model.clf.predict_proba,
                                                         test_data)
-            # Handling LogisticRegression cases
+            # Handling Logistic Regression cases
             elif model.model_type == 'Logit':
                 feature_score = softmax(abs(model.clf.coef_[0]))
             # Handling SVM cases
@@ -95,8 +95,7 @@ class Interpret:
                     model.model_type == 'Transformer'):
                 feature_score = shap_explainer.get_gradient_explain(model,
                                                                     test_data)
-            else:
-                raise lib.Error('Unrecogonized model type: ', model.model_type)
+            else:raise lib.Error('Unrecogonized model type: ', model.model_type)
 
             # Update feature_score_sum
             if feature_score_sum is None and feature_score is not None:
@@ -129,8 +128,10 @@ class Interpret:
 
     # Update feature importance matrix with newer matrix
     def add(self, df):
-        self.feature_score = self.feature_score.add(df, axis = 0, fill_value = 0
-                                ).sort_values('importance', ascending = False)
+        self.feature_score = self.feature_score.add(df, axis = 0,
+                                                    fill_value = 0).sort_values(
+                                                            'importance',
+                                                            ascending = False)
 
     # stratify GRPs based on Z score thread
     def stratify(self, z_score_thread, top_grp_amount, num_prev_grps):
@@ -145,11 +146,10 @@ class Interpret:
                 break
         if thread < top_grp_amount:
             print('Not enough GRP with Z score over thread, extract', thread)
-
         return self.feature_score[:thread]
 
     # Save feature importances to given path
-    def save(self, path): self.feature_score.to_csv(path, sep='\t')
+    def save(self, path): self.feature_score.to_csv(path, sep = '\t')
 
 
 

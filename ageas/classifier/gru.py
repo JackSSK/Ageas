@@ -18,7 +18,6 @@ import ageas.classifier as classifier
 class GRU(nn.Module):
     def __init__(self,
                 id,
-                device,
                 input_size,
                 num_layers,
                 hidden_size,
@@ -27,7 +26,6 @@ class GRU(nn.Module):
                 n_class = 2):
         super(GRU, self).__init__()
         self.id = id
-        self.device = device
         self.model_type = 'GRU'
         self.num_layers = num_layers
         self.hidden_size = hidden_size
@@ -44,9 +42,7 @@ class GRU(nn.Module):
         input = self.dropout(input)
         # Set initial hidden states (and cell states for LSTM)
         # input needs to be: (batch_size, seq, input_size)
-        h0 = torch.zeros(self.num_layers,
-                        input.size(0),
-                        self.hidden_size).to(self.device)
+        h0 = torch.zeros(self.num_layers, input.size(0), self.hidden_size)
         out, _ = self.gru(input, h0)
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         # Decode the hidden state of the last time step
@@ -66,15 +62,11 @@ class Make(classifier.Make_Template):
         testData = classifier.reshape_tensor(dataSets.dataTest)
         testLabel = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
-            model = GRU(id,
-                        device,
-                        num_features,
-                        **self.configs[id]['config'])
+            model = GRU(id, num_features, **self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
-            self._train_torch(device, epoch, batch_size, model, dataSets)
+            self._train_torch(epoch, batch_size, model, dataSets)
             accuracy = self._evaluate_torch(model,
                                             testData,
                                             testLabel,

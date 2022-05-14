@@ -91,7 +91,8 @@ class Make_Template:
         return
 
     # generalized pytorch model training process
-    def _train_torch(self, device, epoch, batch_size, model, dataSets):
+    def _train_torch(self, epoch, batch_size, model, dataSets):
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for ep in range(epoch):
             index_set = DataLoader(dataset = range(len(dataSets.dataTrain)),
                                     batch_size = batch_size,
@@ -102,7 +103,12 @@ class Make_Template:
                 label = [dataSets.labelTrain[i] for i in index]
                 batch_data = reshape_tensor(data).to(device)
                 batch_label = torch.tensor(label).to(device)
-            model.to(device)
+            # pass model to device
+            if torch.cuda.device_count() > 1:
+                model = torch.nn.DataParallel(model)
+            else:
+                model.to(device)
+            # set model to training model
             model.train()
             if model.optimizer is not None: model.optimizer.zero_grad()
             outputs = model(batch_data)

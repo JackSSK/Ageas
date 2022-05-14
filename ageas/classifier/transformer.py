@@ -66,7 +66,6 @@ class Transformer(nn.Module):
     """
     def __init__(self,
                 id, # model id
-                device, # device using
                 num_features, # the number of expected features
                 has_mask = True, # whether using mask or not
                 emsize = 512, # size after encoder
@@ -81,7 +80,6 @@ class Transformer(nn.Module):
         self.has_mask = has_mask
         self.model_type = 'Transformer'
         self.num_features = num_features
-        self.device = device
         self.emsize = emsize
         self.mask = None
         self.encoder = nn.Linear(num_features, emsize)
@@ -106,8 +104,7 @@ class Transformer(nn.Module):
     def forward(self, input):
         if self.has_mask:
             if self.mask is None or self.mask.size(0) != len(input):
-                mask = self._make_square_subsequent_mask(len(input))
-                self.mask = mask.to(self.device)
+                self.mask = self._make_square_subsequent_mask(len(input))
         else:
             self.mask = None
         input = self.encoder(input)
@@ -130,15 +127,11 @@ class Make(classifier.Make_Template):
         testData = classifier.reshape_tensor(dataSets.dataTest)
         testLabel = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
-            model = Transformer(id,
-                                device,
-                                num_features,
-                                **self.configs[id]['config'])
+            model = Transformer(id, num_features, **self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
-            self._train_torch(device, epoch, batch_size, model, dataSets)
+            self._train_torch(epoch, batch_size, model, dataSets)
             # local test
             accuracy = self._evaluate_torch(model,
                                             testData,
@@ -159,7 +152,7 @@ class Make(classifier.Make_Template):
 #                 'learning_rate': 0.1
 #             }
 #     data = torch.rand((3,1,22090))
-#     model = Transformer(id = 'a', device = 'cpu', num_features = 22090, **param)
+#     model = Transformer(id = 'a', num_features = 22090, **param)
 #     model.train()
 #     if model.optimizer is not None: model.optimizer.zero_grad()
 #     out = model(data)

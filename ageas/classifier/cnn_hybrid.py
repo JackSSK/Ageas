@@ -188,7 +188,6 @@ class Make(classifier.Make_Template):
         testData = classifier.reshape_tensor(dataSets.dataTest)
         testLabel = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for id in self.configs:
             if self.configs[id]['config']['num_layers'] < 3:
                 model = Limited(id, self.configs[id]['config'])
@@ -196,7 +195,7 @@ class Make(classifier.Make_Template):
                 model = Unlimited(id, self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
-            self._train_torch(device, epoch, batch_size, model, dataSets)
+            self._train_torch(epoch, batch_size, model, dataSets)
             accuracy = self._evaluate_torch(model,
                                             testData,
                                             testLabel,

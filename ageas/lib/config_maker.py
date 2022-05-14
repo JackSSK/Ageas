@@ -285,7 +285,7 @@ class Pytorch_Transformer(Pytorch_CNN_Hybrid):
 
 
 """ For test """
-# if __name__ == "__main__":
-#     path = "../data/config/list_config.js"
-#     result = List_Config_Reader(path)
-#     json.encode(result, 'sample_config.js')
+if __name__ == "__main__":
+    path = "../data/config/list_config.js"
+    result = List_Config_Reader(path)
+    json.encode(result, 'sample_config.js')

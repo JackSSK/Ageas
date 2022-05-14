@@ -35,18 +35,14 @@
   },
   "RFC": {
       "n_estimators": [
-          100,
-          50
+          100
       ],
       "criterion": [
         "gini",
         "entropy"
       ],
       "max_features":[
-        0.01,
-        "auto",
-        "log2",
-        null
+        "auto"
       ]
   },
   "SVM": {
@@ -174,8 +170,7 @@
           10
       ],
       "hidden_size":[
-          128,
-          256
+          128
       ],
       "num_layers":[
           2,
@@ -197,8 +192,7 @@
           10
       ],
       "hidden_size":[
-          128,
-          256
+          128
       ],
       "num_layers":[
           2,
@@ -220,8 +214,7 @@
           10
       ],
       "hidden_size":[
-          128,
-          256
+          128
       ],
       "num_layers":[
           2,
