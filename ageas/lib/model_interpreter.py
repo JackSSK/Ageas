@@ -29,9 +29,9 @@ class Interpret:
         # Background generation may need to be revised
         # We may just use grn generated based on universal exp matrix
         bases = pd.DataFrame().append(trainer_data.allData.mean(axis = 0),
-                                                            ignore_index = True)
-        self.feature_score = self.__interpret_process(trainer_data, bases)
-        self.feature_score = self.__subtract_feature_score(self.feature_score)
+                                        ignore_index = True)
+        self.result = self.__interpret_process(trainer_data, bases)
+        self.result = self.__subtract_feature_score(self.result)
 
     # Calculate importances of each feature
     def __interpret_process(self, trainer_data, bases):
@@ -128,28 +128,30 @@ class Interpret:
 
     # Update feature importance matrix with newer matrix
     def add(self, df):
-        self.feature_score = self.feature_score.add(df, axis = 0,
-                                                    fill_value = 0).sort_values(
-                                                            'importance',
-                                                            ascending = False)
+        self.result = self.result.add(df,axis = 0,fill_value = 0).sort_values(
+                                                'importance', ascending = False)
+
+    # divide importance value with stabilizing iteration times
+    def divide(self, denominator):
+        self.result['importance'] = self.result['importance'] / denominator
 
     # stratify GRPs based on Z score thread
     def stratify(self, z_score_thread, top_grp_amount, num_prev_grps):
         # change top top_grp_amount to int if value less or equal 1.0
         if top_grp_amount <= 1.0:
-            top_grp_amount = int(len(self.feature_score.index) * top_grp_amount)
+            top_grp_amount = int(len(self.result.index) * top_grp_amount)
         if num_prev_grps is not None:
             top_grp_amount -= num_prev_grps
-        for thread in range(len(self.feature_score.index)):
-            value = self.feature_score.iloc[thread]['importance']
+        for thread in range(len(self.result.index)):
+            value = self.result.iloc[thread]['importance']
             if value < z_score_thread or thread == top_grp_amount:
                 break
         if thread < top_grp_amount:
             print('Not enough GRP with Z score over thread, extract', thread)
-        return self.feature_score[:thread]
+        return self.result[:thread]
 
     # Save feature importances to given path
-    def save(self, path): self.feature_score.to_csv(path, sep = '\t')
+    def save(self, path): self.result.to_csv(path, sep = '\t')
 
 
 

@@ -36,6 +36,7 @@ class Make:
         self.std_value_thread = std_value_thread
         self.std_ratio_thread = std_ratio_thread
         self.correlation_thread = correlation_thread
+        if self.correlation_thread is None: self.correlation_thread = 0
         # load in
         if load_path is not None:
             self.class1_pcGRNs,self.class2_pcGRNs=self.__load_pcGRNs(load_path)

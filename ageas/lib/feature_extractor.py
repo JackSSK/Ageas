@@ -80,6 +80,7 @@ class Extract(object):
 				]for k in temp if max(temp[k][1], temp[k][0][1]) >= 2]
 		temp = sorted(temp, key = lambda x: x[-1], reverse = True)
 		temp = pd.DataFrame(temp, columns = ['Gene','Score','Degree','Count'])
+		temp['Score'] = temp['Score'] / temp['Count']
 		return temp
 
 	# extract genes based on whether occurence in important GRPs passing thread

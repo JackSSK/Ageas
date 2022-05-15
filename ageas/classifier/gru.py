@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-This file contains classes to build RNN based classifiers
+This file contains classes to build GRU based classifiers
 
 ToDo:
 Implement _earlystopping
@@ -53,9 +53,9 @@ class GRU(nn.Module):
 
 class Make(classifier.Make_Template):
     """
-    Analysis the performances of CNN based approaches
+    Analysis the performances of GRU based approaches
     with different hyperparameters
-    Find the top settings to build CNN
+    Find the top settings to build GRU
     """
     # Perform classifier training process for given times
     def train(self, dataSets, test_split_set):

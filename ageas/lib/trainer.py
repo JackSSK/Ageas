@@ -129,9 +129,11 @@ class Train(clf.Make_Template):
                 train_size = last_train_size
                 breaking = True
             print('Iteration:', i, ' with training size:', train_size)
+            keep_ratio = max(1 - train_size, clf_keep_ratio)
+            # remove more and more portion as more resource being avaliable
             self.general_process(train_size = train_size,
                                 clf_accuracy_thread = clf_accuracy_thread,
-                                clf_keep_ratio = clf_keep_ratio)
+                                clf_keep_ratio = keep_ratio)
             self.__prune_model_config(id_keep={x[0].id:''for x in self.models})
             if breaking: break
 

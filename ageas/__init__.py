@@ -31,31 +31,32 @@ class Ageas:
                 class1_path = None,
                 class2_path = None,
                 clf_keep_ratio = 0.5,
-                clf_accuracy_thread = 0.9,
-                correlation_thread = 0.2,
+                clf_accuracy_thread = 0.8,
+                correlation_thread = 0,
                 database_path = None,
                 database_type = 'gem_file',
                 factor_name_type = 'gene_name',
                 feature_dropout_ratio = 0.2,
-                feature_select_iteration = None,
+                feature_select_iteration = 1,
                 guide_load_path = None,
                 interaction_database = 'grtd',
                 top_grp_amount = 100,
-                key_gene_change_thread = 0.1,
+                grp_changing_thread = 0.05,
                 log2fc_thread = None,
                 model_config_path = None,
-                model_select_iteration = None,
+                model_select_iteration = 2,
                 mww_p_val_thread = 0.05,
-                outlier_thread = None,
-                patient = None,
+                outlier_thread = 3,
+                patient = 3,
                 pcgrn_load_path = None,
+                pcgrn_save_paht = None,
                 prediction_thread = 'auto',
                 specie = 'mouse',
                 sliding_window_size = 20,
                 sliding_window_stride = None,
                 std_value_thread = None,
                 std_ratio_thread = None,
-                stabilize_iteration = None,
+                stabilize_iteration = 10,
                 train_size = 0.95,
                 warning = False,
                 z_score_extract_thread = 0,):
@@ -69,7 +70,7 @@ class Ageas:
         self.model_select_iteration = model_select_iteration
         self.feature_select_iteration = feature_select_iteration
         self.stabilize_iteration = stabilize_iteration
-        self.key_gene_change_thread = key_gene_change_thread
+        self.grp_changing_thread = grp_changing_thread
         self.no_change_iteration_num = 0
         # Set up database path info
         self.database_info = binary_db.Setup(database_path,
@@ -103,9 +104,8 @@ class Ageas:
                                         prediction_thread = prediction_thread,
                                         correlation_thread = correlation_thread,
                                         guide_load_path = guide_load_path,)
-        pcGRNs.save('data/pcGRN_easy.js')
-        print('Time to cast pcGRNs : ', time.time() - start)
-
+        print('Time to cast or load pcGRNs : ', time.time() - start)
+        if pcgrn_save_paht is not None: pcGRNs.save(pcgrn_save_paht)
 
         """ Model Selection """
         print('Entering Model Selection')
@@ -126,15 +126,14 @@ class Ageas:
                                         top_grp_amount)
         print('Time to interpret 1st Gen classifiers : ', time.time() - start)
 
-
-
         """ Feature Selection """
-        if self.feature_select_iteration is not None:
+        if (self.feature_select_iteration is not None and
+            self.feature_select_iteration > 0):
             print('Entering Feature Selection')
             for i in range(self.feature_select_iteration):
                 start = time.time()
                 prev_grps = self.factor.grps.index
-                rm = self.__get_grp_remove_list(self.penelope.feature_score,
+                rm = self.__get_grp_remove_list(self.penelope.result,
                                                 feature_dropout_ratio,
                                                 outlier_thread)
                 pcGRNs.update_with_remove_list(rm)
@@ -153,23 +152,29 @@ class Ageas:
                     self.stabilize_iteration = None
                     break
 
-
-
         """ Stabilizing Output """
-        if self.stabilize_iteration is not None:
+        if (self.stabilize_iteration is not None and
+            self.stabilize_iteration > 0):
             print('Stabilizing Output')
+            denominator = 1
             for i in range(self.stabilize_iteration):
+                denominator += i
                 prev_grps = self.factor.grps.index
                 clfs.general_process(train_size = train_size,
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread)
-                self.penelope.add(interpreter.Interpret(clfs).feature_score)
+                self.penelope.add(interpreter.Interpret(clfs).result)
                 self.factor = extractor.Extract(self.penelope,
                                                 z_score_extract_thread,
                                                 self.far_out_grps,
                                                 top_grp_amount)
                 if self.__early_stop(prev_grps, self.factor.grps.index):
                     break
+            self.penelope.divide(denominator)
+            self.factor = extractor.Extract(self.penelope,
+                                            z_score_extract_thread,
+                                            self.far_out_grps,
+                                            top_grp_amount)
 
     # get pseudo-cGRNs from GEMs or GRNs
     def get_pcGRNs(self,
@@ -210,13 +215,13 @@ class Ageas:
         return guide, pcGRNs
 
     # take out some GRPs based on feature dropout ratio
-    def __get_grp_remove_list(self, feature_score = None,
+    def __get_grp_remove_list(self, df = None,
                                     feature_dropout_ratio = 0.2,
                                     outlier_thread = 3):
-        total_grp = len(feature_score.index)
+        total_grp = len(df.index)
         gate_index = int(total_grp * (1 - feature_dropout_ratio))
-        remove_list = list(feature_score.index[gate_index:])
-        for ele in self.__get_outliers(feature_score, outlier_thread):
+        remove_list = list(df.index[gate_index:])
+        for ele in self.__get_outliers(df, outlier_thread):
             self.far_out_grps.append(ele)
             remove_list.append(ele[0])
         return remove_list
@@ -249,7 +254,7 @@ class Ageas:
         change2 = (len(cur_grps) - common) / len(cur_grps)
         change = (change1 + change2) / 2
         print('Average Key GRPs Changing Portion:', change)
-        if change <= self.key_gene_change_thread:
+        if change <= self.grp_changing_thread:
             self.no_change_iteration_num += 1
             if self.no_change_iteration_num == self.patient:
                 print('Run out of patient! Early stopping!')

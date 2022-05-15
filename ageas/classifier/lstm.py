@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-This file contains classes to build RNN based classifiers
+This file contains classes to build LSTM based classifiers
 
 ToDo:
 Implement _earlystopping
@@ -57,9 +57,9 @@ class LSTM(nn.Module):
 
 class Make(classifier.Make_Template):
     """
-    Analysis the performances of CNN based approaches
+    Analysis the performances of LSTM based approaches
     with different hyperparameters
-    Find the top settings to build CNN
+    Find the top settings to build LSTM
     """
     # Perform classifier training process for given times
     def train(self, dataSets, test_split_set):
