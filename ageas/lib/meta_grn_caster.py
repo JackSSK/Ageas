@@ -20,13 +20,13 @@ class Analysis(object):
 	"""
 	Find important factors simply by GRN degree.
 	"""
-	def __init__(self, grn_guide, top = None):
+	def __init__(self, meta_grn, top = None):
 		super(Analysis, self).__init__()
 		self.top = top
 		temp = {}
-		for ele in grn_guide:
-			source = grn_guide[ele]['regulatory_source']
-			target = grn_guide[ele]['regulatory_target']
+		for ele in meta_grn:
+			source = meta_grn[ele]['regulatory_source']
+			target = meta_grn[ele]['regulatory_target']
 			if source not in temp: temp[source] = 1
 			else: temp[source] += 1
 			if target not in temp: temp[target] = 1
@@ -42,7 +42,7 @@ class Analysis(object):
 
 class Cast:
 	"""
-	Make GRN Guide based on GEMs
+	Cast Meta GRN based on GEMs
 	"""
 	def __init__(self,
 				gem_data = None,
@@ -51,14 +51,14 @@ class Cast:
 				load_path = None):
 		super(Cast, self).__init__()
 		# Initialization
-		self.guide = {}
+		self.meta_grn = {}
 		self.tfs_no_interaction_rec = {}
 		# Choose process
 		if load_path is not None: self.__load(load_path)
 		else: self.__cast(gem_data, prediction_thread, correlation_thread)
 
 	def __load(self, load_path):
-		self.guide = json.decode(load_path)
+		self.meta_grn = json.decode(load_path)
 		return
 
 	# Process to Cast out GRN construction guidance
@@ -79,16 +79,16 @@ class Cast:
 
 		# Start GRNBoost2-like process if thread is set
 		if prediction_thread is not None and len(self.tfs_no_interaction_rec)>0:
-			gBoost = grp.Predict(gem_data, self.guide, prediction_thread)
+			gBoost = grp.Predict(gem_data, self.meta_grn, prediction_thread)
 			""" ToDo: this condition may need to revise """
 			if len(self.tfs_no_interaction_rec) == 0:
 				genes = gem_data.genes
 			else:
 				genes = self.tfs_no_interaction_rec
-			self.guide = gBoost.expand_guide(self.guide,
+			self.meta_grn = gBoost.expand_meta_grn(self.meta_grn,
 											genes,
 											correlation_thread)
-		print('Total length of guide:', len(self.guide))
+		print('Total length of guide:', len(self.meta_grn))
 		# else: raise lib.Error('Sorry, such mode is not supported yet!')
 		""" ToDo: if more than 1 guide can be casted, make agreement """
 		return
@@ -131,7 +131,7 @@ class Cast:
 			for target in data.genes:
 				# Handle source TFs with record in target database
 				if target in reg_target:
-					tool.Update_GRN_Guidance(self.guide,
+					tool.Update_Meta_GRN(self.meta_grn,
 												source,
 												target,
 												data.class1,
@@ -180,7 +180,7 @@ class Cast:
 							passing = True
 
 				if passing:
-					tool.Update_GRN_Guidance(self.guide,
+					tool.Update_Meta_GRN(self.meta_grn,
 											source,
 											target,
 											data.class1,
@@ -196,7 +196,7 @@ class Cast:
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
 			for target in data.genes:
-				tool.Update_GRN_Guidance(self.guide,
+				tool.Update_Meta_GRN(self.meta_grn,
 											source,
 											target,
 											data.class1,
@@ -206,5 +206,5 @@ class Cast:
 
 	# Save guide file to given path
 	def save_guide(self, path):
-		json.encode(self.guide, path)
+		json.encode(self.meta_grn, path)
 		return

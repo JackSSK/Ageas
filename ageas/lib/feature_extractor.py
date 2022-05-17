@@ -6,8 +6,12 @@ author: jy, nkmtmsys
 """
 
 import pandas as pd
+import ageas.lib as lib
 import ageas.tool as tool
 from collections import OrderedDict
+
+
+GRP_TYPES = ['Standard', 'Outer_Signifcant', 'Outer_Supportive']
 
 
 class Extract(object):
@@ -18,9 +22,10 @@ class Extract(object):
 	def __init__(self,
 				grp_importances = None,
 				score_thread = None,
-				outlier_grps = None,
+				outlier_grps = {},
 				top_grp_amount = None):
 		super(Extract, self).__init__()
+		self.regulons = []
 		self.key_genes = None
 		self.common_reg_source = None
 		self.common_reg_target = None
@@ -29,28 +34,90 @@ class Extract(object):
 											top_grp_amount,
 											len(outlier_grps))
 
+	# as named
+	def construct_regulon(self, meta_grn):
+		self.key_genes = self.__extract_genes(self.grps, self.outlier_grps)
+		# process standard grps
+		for id in self.grps.index:
+			try:
+				grp = meta_grn[id]
+			except Exception:
+				raise lib.Error('GRP', id, 'not in GRN Guide')
+			grp['type'] = GRP_TYPES[0]
+			grp['score'] = self.grps.loc[id]['importance']
+			self.__update_regulon_with_grp(grp)
+		for id in self.outlier_grps:
+			try:
+				grp = meta_grn[id]
+			except Exception:
+				raise lib.Error('GRP', id, 'not in GRN Guide')
+			grp['type'] = GRP_TYPES[1]
+			grp['score'] = self.outlier_grps[id]
+			self.__update_regulon_with_grp(grp)
+
+	# as named
+	def __update_regulon_with_grp(self, grp):
+		source = grp['regulatory_source']
+		target = grp['regulatory_target']
+		start_new = True
+		# check whether GRP could be appended into an exist regulon
+		for regulon in self.regulons:
+			if source in regulon['genes'] or target in regulon['genes']:
+				start_new = False
+				# append GRP into regulon
+				assert grp['id'] not in regulon['grps']
+				regulon['grps'][grp['id']] = grp
+				# update gene list
+				if source not in regulon['genes']:
+					regulon['genes'][source] = {'source':[], 'target':[]}
+				elif target not in regulon['genes']:
+					regulon['genes'][target] = {'source':[], 'target':[]}
+
+				assert source not in regulon['genes'][target]['source']
+				assert source not in regulon['genes'][target]['target']
+				assert target not in regulon['genes'][source]['source']
+				assert target not in regulon['genes'][source]['target']
+				regulon['genes'][target]['source'].append(source)
+				regulon['genes'][source]['target'].append(target)
+				if grp['reversable']:
+					regulon['genes'][source]['source'].append(target)
+					regulon['genes'][target]['target'].append(source)
+				break
+		# make new regulon data
+		if start_new:
+			regulon = {
+				'grps':{grp['id']:grp},
+				'genes':{
+					source:{'source': [], 'target': [target]},
+					target:{'source': [source], 'target': []}
+				}
+			}
+			if grp['reversable']:
+				regulon['genes'][source]['source'].append(target)
+				regulon['genes'][target]['target'].append(source)
+			self.regulons.append(regulon)
+
 	# extract common regulaoty sources or targets of given genes
 	def extract_common(self,
-						grn_guidance,
+						meta_grn,
 						type = 'regulatory_source',
 						occurrence_thread = 1):
 		if type == 'regulatory_source': known = 'regulatory_target'
 		elif type == 'regulatory_target': known = 'regulatory_source'
-		self.key_genes = self.__extract_genes(self.grps, self.outlier_grps)
 		genes = [x[0] for x in self.key_genes]
 		dict = {}
-		for grp in grn_guidance:
-			record = grn_guidance[grp]
+		for grp in meta_grn:
+			record = meta_grn[grp]
 			if record[known] in genes:
 				target = record[type]
 				if target not in dict:
 					dict[target] = {
-						'relate': [{record[known]:self.__makeEle(record)}],
+						'relate': [{record[known]:self._new_rec(record)}],
 						'influence': 1
 					}
 				else:
 					dict[target]['relate'].append(
-										{record[known]:self.__makeEle(record)})
+										{record[known]:self._new_rec(record)})
 					dict[target]['influence'] += 1
 		dict = {ele:dict[ele]
 				for ele in dict
@@ -63,8 +130,6 @@ class Extract(object):
 
 	# find factors by checking Ageas' assigned importancy and regulaotry impact
 	def report(self):
-		if self.key_genes is None:
-			self.key_genes = self.__extract_genes(self.grps, self.outlier_grps)
 		factors = {k[0]:k[1] for k in self.key_genes}
 		temp = {}
 		for ele in self.common_reg_source:
@@ -111,7 +176,7 @@ class Extract(object):
 		return
 
 	# Add correlation in class 1 and class 2 into regulon record
-	def __makeEle(self, rec):
+	def _new_rec(self, rec):
 		return {k:rec[k] for k in rec if k not in ['id',
 													'regulatory_source',
 													'regulatory_target']}

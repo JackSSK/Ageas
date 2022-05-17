@@ -9,20 +9,20 @@ import re
 import gzip
 from scipy.stats import pearsonr
 
-# Update grn_guidance if given pathway exist in either class
+# Update meta_grn if given pathway exist in either class
 # and be able to pass corelation filter
-def Update_GRN_Guidance(grn_guidance,
-                        source,
-                        target,
-                        gem1,
-                        gem2,
-                        correlation_thread):
+def Update_Meta_GRN(meta_grn,
+                    source,
+                    target,
+                    gem1,
+                    gem2,
+                    correlation_thread):
     # Skip if processing self-regulating pathway
     if source == target: return
-    grp_ID = Cast_GRP_ID(source, target)
-    if grp_ID in grn_guidance:
-        if not grn_guidance[grp_ID]['reversable']:
-            grn_guidance[grp_ID]['reversable'] = True
+    grp_id = Cast_GRP_ID(source, target)
+    if grp_id in meta_grn:
+        if not meta_grn[grp_id]['reversable']:
+            meta_grn[grp_id]['reversable'] = True
         return
     # Test out global scale correlation
     cor_class1 = None
@@ -48,12 +48,17 @@ def Update_GRN_Guidance(grn_guidance,
             passed = True
     # If the testing pass survived till here, save it
     if passed:
-        grn_guidance[grp_ID] = {'id': grp_ID,
-                                'reversable': False,
-                                'regulatory_source': source,
-                                'regulatory_target': target,
-                                'correlation_in_class1': cor_class1,
-                                'correlation_in_class2': cor_class2}
+        meta_grn[grp_id] = {'id': grp_id,
+                            'type': None,
+                            'score': None,
+                            'reversable': False,
+                            'regulatory_source': source,
+                            'regulatory_target': target,
+                            'correlations':{
+                                            'class1':cor_class1,
+                                            'class2':cor_class2
+                                            }
+                            }
 
 
 # Get pearson correlation value while p-value not lower than thread

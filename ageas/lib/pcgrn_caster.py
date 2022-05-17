@@ -28,7 +28,7 @@ class Make:
                 std_ratio_thread = None,
                 correlation_thread = 0.2,
                 gem_data = None,
-                grn_guidance = None,
+                meta_grn = None,
                 load_path = None):
         super(Make, self).__init__()
         # Initialize
@@ -43,39 +43,36 @@ class Make:
         # Make GRNs
         else:
             self.class1_pcGRNs,self.class2_pcGRNs=self.__make_pcGRNs(gem_data,
-                                                                    grn_guidance
-                                                                    )
+                                                                    meta_grn)
 
     # main controller to cast pseudo cell GRNs (pcGRNs)
-    def __make_pcGRNs(self, gem_data, grn_guidance):
+    def __make_pcGRNs(self, gem_data, meta_grn):
         if gem_data is not None:
-            class1_pcGRNs = self.__loaded_gem_method(gem_data.class1,
-                                                    grn_guidance)
-            class2_pcGRNs = self.__loaded_gem_method(gem_data.class2,
-                                                    grn_guidance)
+            class1_pcGRNs = self.__loaded_gem_method(gem_data.class1, meta_grn)
+            class2_pcGRNs = self.__loaded_gem_method(gem_data.class2, meta_grn)
         elif self.database_info.type == 'gem_folder':
             class1_pcGRNs = self.__folder_method(self.database_info.class1_path,
-                                                grn_guidance)
+                                                meta_grn)
             class2_pcGRNs = self.__folder_method(self.database_info.class2_path,
-                                                grn_guidance)
+                                                meta_grn)
         elif self.database_info.type == 'gem_file':
             # need to revise here!
             class1_pcGRNs = self.__file_method(self.database_info.class1_path,
-                                                grn_guidance)
+                                                meta_grn)
             class2_pcGRNs = self.__file_method(self.database_info.class2_path,
-                                                grn_guidance)
+                                                meta_grn)
         else:
             raise tool.Error('pcGRN Caster Error: Unsupported database type')
         return class1_pcGRNs, class2_pcGRNs
 
     # as named
-    def __file_method(self, path, grn_guidance):
+    def __file_method(self, path, meta_grn):
         pcGRNs = {}
         print('pcgrn_caster.py:class Make: need to do something here')
         return pcGRNs
 
     # as named
-    def __loaded_gem_method(self, gem, grn_guidance):
+    def __loaded_gem_method(self, gem, meta_grn):
         pcGRNs = {}
         sample_num = 0
         start = 0
@@ -95,8 +92,8 @@ class Make:
                 loop = False
             sample_id = 'sample' + str(sample_num)
             sample = gem.iloc[:, start:end]
-            if grn_guidance is not None:
-                grn = self.__process_sample_with_guidance(sample, grn_guidance)
+            if meta_grn is not None:
+                grn = self.__process_sample_with_guidance(sample, meta_grn)
             else:
                 grn = self.__process_sample_without_guidance(sample)
             # Save data into pcGRNs
@@ -107,13 +104,13 @@ class Make:
         return pcGRNs
 
     # as named
-    def __folder_method(self, path, grn_guidance):
+    def __folder_method(self, path, meta_grn):
         data = self.__readin_folder(path)
         pcGRNs = {}
         for sample in data:
-            if grn_guidance is not None:
+            if meta_grn is not None:
                 grn = self.__process_sample_with_guidance(data[sample],
-                                                            grn_guidance)
+                                                            meta_grn)
             else:
                 grn = self.__process_sample_without_guidance(data[sample])
             # Save data into pcGRNs
@@ -125,11 +122,11 @@ class Make:
         return {pth:data for pth,data in grn.items() if data is not None}
 
     # as named
-    def __process_sample_with_guidance(self, gem, grn_guidance):
+    def __process_sample_with_guidance(self, gem, meta_grn):
         grn = {}
-        for grp in grn_guidance:
-            source_ID = grn_guidance[grp]['regulatory_source']
-            target_ID = grn_guidance[grp]['regulatory_target']
+        for grp in meta_grn:
+            source_ID = meta_grn[grp]['regulatory_source']
+            target_ID = meta_grn[grp]['regulatory_target']
             try:
                 source = list(gem.loc[[source_ID]].values[0])
                 target = list(gem.loc[[target_ID]].values[0])

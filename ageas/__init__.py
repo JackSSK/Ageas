@@ -15,7 +15,7 @@ import ageas.lib.config_maker as config_maker
 import ageas.lib.pcgrn_caster as grn
 import ageas.lib.trainer as trainer
 from ageas.lib.gem_db_loader import Load
-import ageas.lib.grn_guidance as grn_guidance
+import ageas.lib.meta_grn_caster as meta_grn
 import ageas.lib.model_interpreter as interpreter
 import ageas.lib.feature_extractor as extractor
 import ageas.database_setup.binary_class as binary_db
@@ -39,7 +39,7 @@ class Ageas:
                 feature_dropout_ratio = 0.2,
                 feature_select_iteration = 1,
                 guide_load_path = None,
-                interaction_database = 'grtd',
+                interaction_database = 'biogrid',
                 top_grp_amount = 100,
                 grp_changing_thread = 0.05,
                 log2fc_thread = None,
@@ -65,7 +65,7 @@ class Ageas:
         """ Initialization """
         start = time.time()
         if not warning: warnings.filterwarnings('ignore')
-        self.far_out_grps = []
+        self.far_out_grps = {}
         self.patient = patient
         self.model_select_iteration = model_select_iteration
         self.feature_select_iteration = feature_select_iteration
@@ -94,7 +94,7 @@ class Ageas:
         start = time.time()
         if guide_load_path is not None and pcgrn_load_path is not None:
             pcGRNs = grn.Make(load_path = pcgrn_load_path)
-            self.circe = grn_guidance.Cast(load_path = guide_load_path)
+            self.circe = meta_grn.Cast(load_path = guide_load_path)
         else:
             self.circe, pcGRNs=self.get_pcGRNs(database_info=self.database_info,
                                         std_value_thread = std_value_thread,
@@ -175,6 +175,7 @@ class Ageas:
                                             z_score_extract_thread,
                                             self.far_out_grps,
                                             top_grp_amount)
+        self.factor.construct_regulon(meta_grn = self.circe.meta_grn)
 
     # get pseudo-cGRNs from GEMs or GRNs
     def get_pcGRNs(self,
@@ -195,17 +196,17 @@ class Ageas:
                             std_value_thread)
             start1 = time.time()
             # Let kirke casts GRN construction guidance first
-            guide = grn_guidance.Cast(gem_data = gem_data,
-                                        prediction_thread = prediction_thread,
-                                        correlation_thread = correlation_thread,
-                                        load_path = guide_load_path)
+            guide = meta_grn.Cast(gem_data = gem_data,
+                                    prediction_thread = prediction_thread,
+                                    correlation_thread = correlation_thread,
+                                    load_path = guide_load_path)
             print('Time to cast GRN Guidnace : ', time.time() - start1)
             pcGRNs = grn.Make(database_info = database_info,
                                 std_value_thread = std_value_thread,
                                 std_ratio_thread = std_ratio_thread,
                                 correlation_thread = correlation_thread,
                                 gem_data = gem_data,
-                                grn_guidance = guide.guide)
+                                meta_grn = guide.meta_grn)
         # if we are reading in GRNs directly, just process them
         elif re.search(r'grn' , database_info.type):
             pcGRNs = None
@@ -222,7 +223,7 @@ class Ageas:
         gate_index = int(total_grp * (1 - feature_dropout_ratio))
         remove_list = list(df.index[gate_index:])
         for ele in self.__get_outliers(df, outlier_thread):
-            self.far_out_grps.append(ele)
+            self.far_out_grps[ele[0]] = ele[1]
             remove_list.append(ele[0])
         return remove_list
 
@@ -270,16 +271,14 @@ class Ageas:
         # Make path if not exist
         if not os.path.exists(folder): os.makedirs(folder)
         # GRN guide related
-        self.circe.save_guide(folder + 'grn_guide.js')
-        grn_guidance.Analysis(self.circe.guide).save(folder + 'grn_based.csv')
+        self.circe.save_guide(folder + 'meta_grn.js')
+        meta_grn.Analysis(self.circe.meta_grn).save(folder+'grn_based.csv')
         # GRP importances
         self.penelope.save(folder + 'all_grps_importances.txt')
-        self.factor.grps.to_csv(folder + 'key_grps_importances.txt', sep = '\t')
-        if len(self.factor.outlier_grps) > 0:
-            json.encode(self.factor.outlier_grps, folder + 'outlier_grps.js')
+        json.encode(self.factor.regulons, folder + 'regulons.js')
         # Common Regulatory sources and targets related
-        self.factor.extract_common(self.circe.guide, type = 'regulatory_source')
-        self.factor.extract_common(self.circe.guide, type = 'regulatory_target')
+        self.factor.extract_common(self.circe.meta_grn,type='regulatory_source')
+        self.factor.extract_common(self.circe.meta_grn,type='regulatory_target')
         self.factor.report().to_csv(folder + 'ageas_based.csv', index = False)
         # json.encode(self.factor.common_reg_source, folder + 'common_source.js')
         # json.encode(self.factor.common_reg_target, folder + 'common_target.js')
