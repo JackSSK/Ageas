@@ -163,7 +163,7 @@ class Cast:
 			# Handle source TFs with no record in target database
 			if len(reg_target) == 0:
 				if source not in self.tfs_no_interaction_rec:
-					self.tfs_no_interaction_rec[source] = ''
+					self.tfs_no_interaction_rec[source] = None
 					continue
 				else:
 					raise lib.Error('Duplicat source TF when __with_biogrid')

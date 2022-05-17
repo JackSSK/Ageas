@@ -11,7 +11,7 @@ import ageas.tool as tool
 from collections import OrderedDict
 
 
-GRP_TYPES = ['Standard', 'Outer_Signifcant', 'Outer_Supportive']
+GRP_TYPES = ['Standard', 'Outer_Signifcant', 'Outer_Bridge']
 
 
 class Extract(object):
@@ -35,8 +35,7 @@ class Extract(object):
 											len(outlier_grps))
 
 	# as named
-	def construct_regulon(self, meta_grn):
-		self.key_genes = self.__extract_genes(self.grps, self.outlier_grps)
+	def construct_regulon(self, meta_grn, header = 'regulon_'):
 		# process standard grps
 		for id in self.grps.index:
 			try:
@@ -54,6 +53,26 @@ class Extract(object):
 			grp['type'] = GRP_TYPES[1]
 			grp['score'] = self.outlier_grps[id]
 			self.__update_regulon_with_grp(grp)
+
+		# combine regulons if sharing common genes
+		i = 0
+		j = 1
+		while True:
+			if i == len(self.regulons) or j == len(self.regulons): break
+			reg_1 = self.regulons[i]
+			reg_2 = self.regulons[j]
+			if len([ele for ele in reg_1['genes'] if ele in reg_2['genes']])>0:
+				self.__update_regulon_with_another(regulon = reg_1, res = reg_2)
+				del self.regulons[j]
+				j = i + 1
+			else:
+				j += 1
+				if j == len(self.regulons):
+					i += 1
+					j = i + 1
+		# change regulon to dict type and find key genes
+		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
+		self.key_genes = self.__extract_genes(self.grps, self.outlier_grps)
 
 	# as named
 	def __update_regulon_with_grp(self, grp):
@@ -97,6 +116,18 @@ class Extract(object):
 				regulon['genes'][target]['target'].append(source)
 			self.regulons.append(regulon)
 
+	# as named
+	def __update_regulon_with_another(self, regulon, res):
+		regulon['grps'].update(res['grps'])
+		for gene in res['genes']:
+			if gene in regulon['genes']:
+				regulon['genes'][gene]['source'].extend(
+										res['genes'][gene]['source'])
+				regulon['genes'][gene]['target'].extend(
+										res['genes'][gene]['target'])
+			else:
+				regulon['genes'][gene] = res['genes'][gene]
+
 	# extract common regulaoty sources or targets of given genes
 	def extract_common(self,
 						meta_grn,
@@ -104,7 +135,7 @@ class Extract(object):
 						occurrence_thread = 1):
 		if type == 'regulatory_source': known = 'regulatory_target'
 		elif type == 'regulatory_target': known = 'regulatory_source'
-		genes = [x[0] for x in self.key_genes]
+		genes = {x[0]:None for x in self.key_genes}
 		dict = {}
 		for grp in meta_grn:
 			record = meta_grn[grp]
@@ -112,71 +143,54 @@ class Extract(object):
 				target = record[type]
 				if target not in dict:
 					dict[target] = {
-						'relate': [{record[known]:self._new_rec(record)}],
+						'relate': [{record[known]:self.__copy_rec(record)}],
 						'influence': 1
 					}
 				else:
 					dict[target]['relate'].append(
-										{record[known]:self._new_rec(record)})
+										{record[known]:self.__copy_rec(record)})
 					dict[target]['influence'] += 1
-		dict = {ele:dict[ele]
-				for ele in dict
-					if dict[ele]['influence'] >= occurrence_thread}
+		dict = {ele:dict[ele] for ele in dict
+								if dict[ele]['influence'] >= occurrence_thread}
 		dict = OrderedDict(sorted(dict.items(),
-									key = lambda x: x[1]['influence'],
-									reverse = True))
+								key = lambda x:x[1]['influence'], reverse=True))
 		if type == 'regulatory_source':      self.common_reg_source = dict
 		elif type == 'regulatory_target':    self.common_reg_target = dict
 
 	# find factors by checking Ageas' assigned importancy and regulaotry impact
 	def report(self):
 		factors = {k[0]:k[1] for k in self.key_genes}
-		temp = {}
 		for ele in self.common_reg_source:
 			reg_target_num = self.common_reg_source[ele]['influence']
-			if ele in factors:
-				temp[ele] = [factors[ele], reg_target_num]
-			else:
-				temp[ele] = [[0, 0], reg_target_num]
-		# for ele in factors:
-		# 	if ele not in temp: temp[ele] = [factors[ele], 0]
-		temp = [[
-					k, temp[k][0][0], temp[k][1], temp[k][0][1]
-				]for k in temp if max(temp[k][1], temp[k][0][1]) >= 2]
-		temp = sorted(temp, key = lambda x: x[-1], reverse = True)
-		temp = pd.DataFrame(temp, columns = ['Gene','Score','Degree','Count'])
-		temp['Score'] = temp['Score'] / temp['Count']
-		return temp
+			if ele in factors: 	factors[ele].append(reg_target_num)
+			else:				factors[ele] = ['None', 0, 0, reg_target_num]
+		for ele in factors:
+			if len(factors[ele]) < 4: factors[ele].append(0)
+		factors = [[k,factors[k][0],factors[k][1],factors[k][2],factors[k][3]]
+					for k in factors if max(factors[k][2], factors[k][3]) >= 2]
+		factors = pd.DataFrame(sorted(factors,key=lambda x:x[-2],reverse=True))
+		factors.columns=['Gene','Regulon','Source_Num','Target_Num','Influence']
+		return factors
 
 	# extract genes based on whether occurence in important GRPs passing thread
 	def __extract_genes(self, stratified_grps, outlier_grps):
 		dict = {}
-		for ele in stratified_grps.index.tolist():
-			score = stratified_grps.loc[ele]['importance']
-			self.__update_gene_extract_dict(ele, score, dict)
-		for ele in outlier_grps:
-			self.__update_gene_extract_dict(ele, outlier_grps[ele], dict)
+		for regulon_id in self.regulons:
+			regulon = self.regulons[regulon_id]
+			for gene in regulon['genes']:
+				source_num = len(regulon['genes'][gene]['source'])
+				target_num = len(regulon['genes'][gene]['target'])
+				if gene not in dict:
+					dict[gene] = [regulon_id, source_num, target_num]
+				else: raise lib.Error('Repeated Gene in regulons', gene)
 		# filter by top_grp_amount
 		answer = [[e, dict[e]] for e in dict]
 		answer.sort(key = lambda x:x[-1][-1], reverse = True)
 		return answer
 
-	def __update_gene_extract_dict(self, grp, score, dict):
-		grp = grp.strip().split('_') # get source and target from GRP ID
-		if grp[0] not in dict:
-			dict[grp[0]] = [score, 1]
-		else:
-			dict[grp[0]][0] += score
-			dict[grp[0]][1] += 1
-		if grp[1] not in dict:
-			dict[grp[1]] = [score, 1]
-		else:
-			dict[grp[1]][0] += score
-			dict[grp[1]][1] += 1
-		return
 
 	# Add correlation in class 1 and class 2 into regulon record
-	def _new_rec(self, rec):
+	def __copy_rec(self, rec):
 		return {k:rec[k] for k in rec if k not in ['id',
 													'regulatory_source',
 													'regulatory_target']}
