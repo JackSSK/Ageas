@@ -155,7 +155,7 @@ class Extract(object):
 			score = stratified_grps.loc[ele]['importance']
 			self.__update_gene_extract_dict(ele, score, dict)
 		for ele in outlier_grps:
-			self.__update_gene_extract_dict(ele[0], ele[1], dict)
+			self.__update_gene_extract_dict(ele, outlier_grps[ele], dict)
 		# filter by top_grp_amount
 		answer = [[e, dict[e]] for e in dict]
 		answer.sort(key = lambda x:x[-1][-1], reverse = True)
