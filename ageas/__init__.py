@@ -49,7 +49,7 @@ class Ageas:
                 outlier_thread = 3,
                 patient = 3,
                 pcgrn_load_path = None,
-                pcgrn_save_paht = None,
+                pcgrn_save_path = None,
                 prediction_thread = 'auto',
                 specie = 'mouse',
                 sliding_window_size = 20,
@@ -105,7 +105,7 @@ class Ageas:
                                         correlation_thread = correlation_thread,
                                         guide_load_path = guide_load_path,)
         print('Time to cast or load pcGRNs : ', time.time() - start)
-        if pcgrn_save_paht is not None: pcGRNs.save(pcgrn_save_paht)
+        if pcgrn_save_path is not None: pcGRNs.save(pcgrn_save_path)
 
         """ Model Selection """
         print('Entering Model Selection')
