@@ -51,6 +51,7 @@ class Ageas:
                 pcgrn_load_path = None,
                 pcgrn_save_path = None,
                 prediction_thread = 'auto',
+                regulon_link_allowrance = 1,
                 specie = 'mouse',
                 sliding_window_size = 20,
                 sliding_window_stride = None,
@@ -67,11 +68,12 @@ class Ageas:
         if not warning: warnings.filterwarnings('ignore')
         self.far_out_grps = {}
         self.patient = patient
-        self.model_select_iteration = model_select_iteration
-        self.feature_select_iteration = feature_select_iteration
+        self.no_change_iteration_num = 0
         self.stabilize_iteration = stabilize_iteration
         self.grp_changing_thread = grp_changing_thread
-        self.no_change_iteration_num = 0
+        self.model_select_iteration = model_select_iteration
+        self.regulon_link_allowrance = regulon_link_allowrance
+        self.feature_select_iteration = feature_select_iteration
         # Set up database path info
         self.database_info = binary_db.Setup(database_path,
                                             database_type,
@@ -152,10 +154,11 @@ class Ageas:
                     self.stabilize_iteration = None
                     break
 
-        """ Stabilizing Output """
+        """ Stabilizing Key GRPs """
         if (self.stabilize_iteration is not None and
             self.stabilize_iteration > 0):
-            print('Stabilizing Output')
+            print('Stabilizing Key GRPs')
+            start = time.time()
             denominator = 1
             for i in range(self.stabilize_iteration):
                 denominator += i
@@ -175,7 +178,19 @@ class Ageas:
                                             z_score_extract_thread,
                                             self.far_out_grps,
                                             top_grp_amount)
-        self.factor.construct_regulon(meta_grn = self.circe.meta_grn)
+            print('Time to stabilize key GRPs : ', time.time() - start)
+
+        """ Construct Regulons with Extracted GRPs and Access Them """
+        print('Building Regulons with key GRPs')
+        start = time.time()
+        self.factor.build_regulon(meta_grn = self.circe.meta_grn)
+        if (self.regulon_link_allowrance is not None and
+            self.regulon_link_allowrance > 0 and
+            len(self.factor.regulons) > 1):
+            print('Attempting to Connect Regulons')
+            self.factor.link_regulon(meta_grn = self.circe.meta_grn,
+                                    allowrance = self.regulon_link_allowrance)
+        print('Time to build key regulons : ', time.time() - start)
 
     # get pseudo-cGRNs from GEMs or GRNs
     def get_pcGRNs(self,
@@ -276,9 +291,4 @@ class Ageas:
         # GRP importances
         self.penelope.save(folder + 'all_grps_importances.txt')
         json.encode(self.factor.regulons, folder + 'regulons.js')
-        # Common Regulatory sources and targets related
-        self.factor.extract_common(self.circe.meta_grn,type='regulatory_source')
-        self.factor.extract_common(self.circe.meta_grn,type='regulatory_target')
         self.factor.report().to_csv(folder + 'ageas_based.csv', index = False)
-        # json.encode(self.factor.common_reg_source, folder + 'common_source.js')
-        # json.encode(self.factor.common_reg_target, folder + 'common_target.js')
