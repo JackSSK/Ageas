@@ -190,6 +190,7 @@ class Ageas:
             print('Attempting to Connect Regulons')
             self.factor.link_regulon(meta_grn = self.circe.meta_grn,
                                     allowrance = self.regulon_link_allowrance)
+        self.factor.change_regulon_list_to_dict()
         print('Time to build key regulons : ', time.time() - start)
 
     # get pseudo-cGRNs from GEMs or GRNs
