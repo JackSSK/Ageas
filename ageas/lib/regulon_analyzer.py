@@ -1,6 +1,15 @@
-# import networkx as nx
+#!/usr/bin/env python3
+"""
+Ageas Reborn
+
+author: jy, nkmtmsys
+"""
+
 # import numpy as np
+# import networkx as nx
 # import matplotlib.pyplot as plt
+
+
 
 # G = nx.DiGraph()
 # G.add_edges_from([('A', 'B'),('C','D'),('G','D')], weight=1)
@@ -28,27 +37,29 @@
 # nx.draw_networkx_edges(G, pos, edgelist=red_edges, edge_color='r', arrows=True)
 # nx.draw_networkx_edges(G, pos, edgelist=black_edges, arrows=False)
 
-G = nx.DiGraph()
-
-G.add_edges_from([('A', 'B'),('C','D'),('G','D')], weight=1)
-G.add_edges_from([('D','A'),('D','E'),('B','D'),('D','E')], weight=2)
-G.add_edges_from([('B','C'),('E','F')], weight=3)
-G.add_edges_from([('C','F')], weight=4)
 
 
-val_map = {'A': 1.0,
-            'D': 0.5714285714285714,
-            'H': 0.0}
-
-values = [val_map.get(node, 0.45) for node in G.nodes()]
-edge_labels=dict([((u,v,),d['weight'])
-                 for u,v,d in G.edges(data=True)])
-red_edges = [('C','D'),('D','A')]
-edge_colors = ['black' if not edge in red_edges else 'red' for edge in G.edges()]
-
-pos=nx.spring_layout(G)
-node_labels = {node:node for node in G.nodes()}; nx.draw_networkx_labels(G, pos, labels=node_labels)
-nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
-nx.draw(G,pos, node_color = values, node_size=1500,edge_color=edge_colors,edge_cmap=plt.cm.Reds)
-plt.savefig('test.pdf')
-plt.show()
+# G = nx.DiGraph()
+#
+# G.add_edges_from([('A', 'B'),('C','D'),('G','D')], weight=1)
+# G.add_edges_from([('D','A'),('D','E'),('B','D'),('D','E')], weight=2)
+# G.add_edges_from([('B','C'),('E','F')], weight=3)
+# G.add_edges_from([('C','F')], weight=4)
+#
+#
+# val_map = {'A': 1.0,
+#             'D': 0.5714285714285714,
+#             'H': 0.0}
+#
+# values = [val_map.get(node, 0.45) for node in G.nodes()]
+# edge_labels=dict([((u,v,),d['weight'])
+#                  for u,v,d in G.edges(data=True)])
+# red_edges = [('C','D'),('D','A')]
+# edge_colors = ['black' if not edge in red_edges else 'red' for edge in G.edges()]
+#
+# pos=nx.spring_layout(G)
+# node_labels = {node:node for node in G.nodes()}; nx.draw_networkx_labels(G, pos, labels=node_labels)
+# nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
+# nx.draw(G,pos, node_color = values, node_size=1500,edge_color=edge_colors,edge_cmap=plt.cm.Reds)
+# plt.savefig('test.pdf')
+# plt.show()

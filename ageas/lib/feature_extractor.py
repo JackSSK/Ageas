@@ -37,7 +37,9 @@ class Extract(object):
 		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
 
 	# as named
-	def build_regulon(self, meta_grn):
+	def build_regulon(self, meta_grn, target_num_thread = 1, impact_depth = 3):
+		# set outlier bonus score to max score of standard GRPs
+		outlier_bonus_score = self.grps.iloc[0]['importance']
 		# process standard grps
 		for id in self.grps.index:
 			try:
@@ -53,7 +55,7 @@ class Extract(object):
 			except Exception:
 				raise lib.Error('GRP', id, 'not in Meta GRN')
 			grp['type'] = TYPES[1]
-			grp['score'] = self.outlier_grps[id]
+			grp['score'] = self.outlier_grps[id] + outlier_bonus_score
 			self.__update_regulon_with_grp(grp)
 
 		# combine regulons if sharing common genes
@@ -107,7 +109,8 @@ class Extract(object):
 												target = target,
 												gene_list = regulon['genes'],
 												reversable = grp['reversable'])
-		self.regulatory_sources = self.__get_reg_sources()
+		self.regulatory_sources = self.__get_reg_sources(target_num_thread,
+														impact_depth)
 		del self.grps
 		del self.outlier_grps
 
@@ -164,14 +167,24 @@ class Extract(object):
 		for k, v in self.regulatory_sources.items():
 			if v['target_num'] >= target_num_thread:
 				df.append([k] + list(v.values()))
-		df = pd.DataFrame(sorted(df, key=lambda x:x[-2], reverse = True))
+		df = pd.DataFrame(sorted(df, key=lambda x:x[-1], reverse = True))
 		df.columns=['Gene',
 					'Regulon',
 					'Type',
 					'Source_Num',
 					'Target_Num',
-					'Impact_Val']
+					'Impact_Score']
 		return df
+
+	# recursively add up impact score with GRP linking gene to its target
+	def  __add_up_impact_score(self, regulon, gene, depth, score):
+		if depth > 0:
+			depth -= 1
+			for target in regulon['genes'][gene]['target']:
+				score += regulon['grps'][tool.Cast_GRP_ID(gene,target)]['score']
+				if len(regulon['genes'][target]['target']) > 0:
+					self.__add_up_impact_score(regulon, target, depth, score)
+		return score
 
 	# combine regulons in self.regulons by index
 	def __combine_regulons(self, ind_1, ind_2):
@@ -179,7 +192,7 @@ class Extract(object):
 		self.regulons[ind_1]['genes'].update(self.regulons[ind_2]['genes'])
 
 	# summarize key regulatory sources appearing in regulons
-	def __get_reg_sources(self, target_num_thread = 0):
+	def __get_reg_sources(self, target_num_thread = 1, impact_depth = 3):
 		dict = {}
 		for regulon_id, regulon in enumerate(self.regulons):
 			for gene in regulon['genes']:
@@ -187,13 +200,17 @@ class Extract(object):
 				target_num = len(regulon['genes'][gene]['target'])
 				if (gene not in dict and
 					# regulon['genes'][gene]['type'] != TYPES[2] and
-					target_num > target_num_thread):
+					target_num >= target_num_thread):
+					impact_score = self.__add_up_impact_score(self.regulons[regulon_id],
+												gene,
+												impact_depth,
+												0)
 					dict[gene]= {
 									'regulon_id': regulon_id,
 									'type':	regulon['genes'][gene]['type'],
 									'source_num': source_num,
 									'target_num': target_num,
-									'impact_val': 0
+									'impact_score': impact_score
 								}
 				elif gene in dict:
 					raise lib.Error('Repeated Gene in regulons', gene)

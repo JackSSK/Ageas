@@ -40,6 +40,8 @@ class Ageas:
                 feature_select_iteration = 1,
                 guide_load_path = None,
                 interaction_database = 'biogrid',
+                impact_depth = 3,
+                target_num_thread = 1,
                 top_grp_amount = 100,
                 grp_changing_thread = 0.05,
                 log2fc_thread = None,
@@ -183,7 +185,9 @@ class Ageas:
         """ Construct Regulons with Extracted GRPs and Access Them """
         print('Building Regulons with key GRPs')
         start = time.time()
-        self.factor.build_regulon(meta_grn = self.circe.meta_grn)
+        self.factor.build_regulon(meta_grn = self.circe.meta_grn,
+                                    target_num_thread = target_num_thread,
+                                    impact_depth = impact_depth)
         if (self.regulon_link_allowrance is not None and
             self.regulon_link_allowrance > 0 and
             len(self.factor.regulons) > 1):
