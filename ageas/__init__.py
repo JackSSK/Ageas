@@ -188,12 +188,15 @@ class Ageas:
         self.factor.build_regulon(meta_grn = self.meta.grn,
                                     impact_depth = impact_depth)
 
-        # temporary codes
+        # temporary codes to save reports and regulon before linking regulons
         if report_folder_path[-1] != '/': report_folder_path += '/'
-        if not os.path.exists(report_folder_path): os.makedirs(report_folder_path)
+        if not os.path.exists(report_folder_path):
+            os.makedirs(report_folder_path)
         self.factor.change_regulon_list_to_dict()
-        json.encode(self.factor.regulons, report_folder_path + 'regulons_before_link.js')
-        self.factor.report(self.meta.grn).to_csv(report_folder_path + 'ageas_before_link.csv', index = False)
+        json.encode(self.factor.regulons,
+                    report_folder_path + 'regulons_before_link.js')
+        self.factor.report(self.meta.grn).to_csv(
+                    report_folder_path + 'ageas_before_link.csv', index = False)
         self.factor.regulons = [e for e in self.factor.regulons.values()]
 
         if (self.link_step_allowrance is not None and

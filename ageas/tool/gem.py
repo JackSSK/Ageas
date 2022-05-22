@@ -21,7 +21,7 @@ class Reader(object):
 	Class to read in scRNA-seq or bulk RNA-seq based Gene Expression Matrices
 	Only suppordt .cvs and .txt for now
 	"""
-	def __init__(self, path, **kwargs):
+	def __init__(self, path:str = None, **kwargs):
 		super(Reader, self).__init__()
 		# Decide which seperation mark to use
 		if re.search(r'csv', path): 	self.sep = ','
@@ -51,7 +51,7 @@ class Folder(object):
 	Manipulations on Gene Expressio Matrices in given folder
 	"""
 	def __init__(self,
-				path,
+				path:str = None,
 				file_type = 'csv', 				# type of file considering GEM
 				compression_method = 'infer',	# compression method of files
 				header_row = 0, 				# header row for all GEM

@@ -42,8 +42,10 @@ def Update_Meta_GRN(meta_grn,
         return
     if cor_class1 is None and abs(cor_class2) > correlation_thread:
         passed = True
+        cor_class1 = 0
     elif cor_class2 is None and abs(cor_class1) > correlation_thread:
         passed = True
+        cor_class2 = 0
     elif cor_class1 is not None and cor_class2 is not None:
         if abs(cor_class1 - cor_class2) > correlation_thread:
             passed = True
@@ -56,8 +58,8 @@ def Update_Meta_GRN(meta_grn,
                                     'regulatory_source': source,
                                     'regulatory_target': target,
                                     'correlations':{
-                                                    'class1':cor_class1,
-                                                    'class2':cor_class2
+                                                    'class1':float(cor_class1),
+                                                    'class2':float(cor_class2)
                                                     }
                                     }
         Update_Meta_GRN_Exp(meta_grn, source, gem1, gem2)
@@ -75,8 +77,8 @@ def Update_Meta_GRN_Exp(meta_grn, gene, gem1, gem2):
         else:
             class2_exp = 0
         meta_grn['mean_gene_expressions'][gene] = {
-            'class1': class1_exp,
-            'class2': class2_exp
+            'class1': float(class1_exp),
+            'class2': float(class2_exp)
         }
 
 # Get pearson correlation value while p-value not lower than thread
