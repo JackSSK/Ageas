@@ -15,18 +15,17 @@ import ageas.lib.pcgrn_caster as grn
 import ageas.lib.grp_predictor as grp
 
 
-
 class Analysis(object):
 	"""
 	Find important factors simply by GRN degree.
 	"""
-	def __init__(self, meta_grn, top = None):
+	def __init__(self, meta_grn_grps, top = None):
 		super(Analysis, self).__init__()
 		self.top = top
 		temp = {}
-		for ele in meta_grn:
-			source = meta_grn[ele]['regulatory_source']
-			target = meta_grn[ele]['regulatory_target']
+		for ele in meta_grn_grps:
+			source = meta_grn_grps[ele]['regulatory_source']
+			target = meta_grn_grps[ele]['regulatory_target']
 			if source not in temp: temp[source] = 1
 			else: temp[source] += 1
 			if target not in temp: temp[target] = 1
@@ -51,22 +50,22 @@ class Cast:
 				load_path = None):
 		super(Cast, self).__init__()
 		# Initialization
-		self.meta_grn = {}
+		self.grn = {'mean_gene_expressions':{}, 'grps':{}}
 		self.tfs_no_interaction_rec = {}
 		# Choose process
 		if load_path is not None: self.__load(load_path)
 		else: self.__cast(gem_data, prediction_thread, correlation_thread)
 
 	def __load(self, load_path):
-		self.meta_grn = json.decode(load_path)
+		self.grn = json.decode(load_path)
 		return
 
 	# Process to Cast out GRN construction guidance
 	def __cast(self, gem_data, prediction_thread, correlation_thread):
 		# proces guidance casting process based on avaliable information
 		if gem_data.interactions is not None:
-			if gem_data.database_info.interaction_db == 'grtd':
-				self.__with_grtd(gem_data, correlation_thread)
+			if gem_data.database_info.interaction_db == 'gtrd':
+				self.__with_gtrd(gem_data, correlation_thread)
 			elif gem_data.database_info.interaction_db == 'biogrid':
 				self.__with_biogrid(gem_data, correlation_thread)
 		else:
@@ -79,28 +78,29 @@ class Cast:
 
 		# Start GRNBoost2-like process if thread is set
 		if prediction_thread is not None and len(self.tfs_no_interaction_rec)>0:
-			gBoost = grp.Predict(gem_data, self.meta_grn, prediction_thread)
+			gBoost = grp.Predict(gem_data, self.grn['grps'], prediction_thread)
 			""" ToDo: this condition may need to revise """
 			if len(self.tfs_no_interaction_rec) == 0:
 				genes = gem_data.genes
 			else:
 				genes = self.tfs_no_interaction_rec
-			self.meta_grn = gBoost.expand_meta_grn(self.meta_grn,
-											genes,
-											correlation_thread)
-		print('Total length of guide:', len(self.meta_grn))
+			self.grn = gBoost.expand_meta_grn(self.grn,genes,correlation_thread)
+		print('Total amount of GRPs in Meta GRN:',
+				len(self.grn['grps']))
+		print('Total amount of Genes in Meta GRN:',
+				len(self.grn['mean_gene_expressions']))
 		# else: raise lib.Error('Sorry, such mode is not supported yet!')
 		""" ToDo: if more than 1 guide can be casted, make agreement """
 		return
 
-	# Make GRN casting guide with GRTD data
-	def __with_grtd(self, data, correlation_thread):
+	# Make GRN casting guide with GTRD data
+	def __with_gtrd(self, data, correlation_thread):
 		# Iterate source TF candidates for GRP
 		for source in data.genes:
 			# Go through tf_list filter if avaliable
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
-			# Get Uniprot ID to use GRTD
+			# Get Uniprot ID to use GTRD
 			uniprot_ids = []
 			try:
 				for id in data.interactions.idmap[source].split(';'):
@@ -109,7 +109,7 @@ class Cast:
 			except:
 				warnings.warn(source, 'not in Uniprot ID Map.')
 
-			# pass this TF if no recorded interactions in GRTD
+			# pass this TF if no recorded interactions in GTRD
 			if len(uniprot_ids) == 0:
 					self.tfs_no_interaction_rec[source] = ''
 					continue
@@ -125,29 +125,27 @@ class Cast:
 					self.tfs_no_interaction_rec[source] = ''
 					continue
 				else:
-					raise lib.Error('Duplicat source TF when __with_grtd')
+					raise lib.Error('Duplicat source TF when __with_gtrd')
 
 			# Iterate target gene candidates for GRP
 			for target in data.genes:
 				# Handle source TFs with record in target database
 				if target in reg_target:
-					tool.Update_Meta_GRN(self.meta_grn,
-												source,
-												target,
-												data.class1,
-												data.class2,
-												correlation_thread)
+					tool.Update_Meta_GRN(self.grn,
+										source,
+										target,
+										data.class1,
+										data.class2,
+										correlation_thread)
 		return
 
 	# Make GRN casting guide with bioGRID data
 	def __with_biogrid(self, data, correlation_thread):
 		# Iterate source TF candidates for GRP
 		for source in data.genes:
-
 			# Go through tf_list filter if avaliable
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
-
 			reg_target = {}
 			if source in data.interactions.data:
 				reg_target = {tar:'' for tar in data.interactions.data[source]}
@@ -180,15 +178,15 @@ class Cast:
 							passing = True
 
 				if passing:
-					tool.Update_Meta_GRN(self.meta_grn,
-											source,
-											target,
-											data.class1,
-											data.class2,
-											correlation_thread)
+					tool.Update_Meta_GRN(self.grn,
+										source,
+										target,
+										data.class1,
+										data.class2,
+										correlation_thread)
 		return
 
-	# Kinda like GRTD version but only with correlation_thread and
+	# Kinda like GTRD version but only with correlation_thread and
 	def __no_interaction(self, data, correlation_thread):
 		# Iterate source TF candidates for GRP
 		for source in data.genes:
@@ -196,15 +194,15 @@ class Cast:
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
 			for target in data.genes:
-				tool.Update_Meta_GRN(self.meta_grn,
-											source,
-											target,
-											data.class1,
-											data.class2,
-											correlation_thread)
+				tool.Update_Meta_GRN(self.grn,
+									source,
+									target,
+									data.class1,
+									data.class2,
+									correlation_thread)
 		return
 
 	# Save guide file to given path
 	def save_guide(self, path):
-		json.encode(self.meta_grn, path)
+		json.encode(self.grn, path)
 		return

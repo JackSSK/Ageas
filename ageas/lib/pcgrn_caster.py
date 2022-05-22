@@ -11,6 +11,7 @@ gem_data method also need to be done <- higher priority
 """
 
 import os
+import statistics as sta
 import ageas.tool as tool
 import ageas.tool.gem as gem
 import ageas.tool.json as json
@@ -93,7 +94,7 @@ class Make:
             sample_id = 'sample' + str(sample_num)
             sample = gem.iloc[:, start:end]
             if meta_grn is not None:
-                grn = self.__process_sample_with_guidance(sample, meta_grn)
+                grn = self.__process_sample_with_metaGRN(sample, meta_grn)
             else:
                 grn = self.__process_sample_without_guidance(sample)
             # Save data into pcGRNs
@@ -109,8 +110,7 @@ class Make:
         pcGRNs = {}
         for sample in data:
             if meta_grn is not None:
-                grn = self.__process_sample_with_guidance(data[sample],
-                                                            meta_grn)
+                grn = self.__process_sample_with_metaGRN(data[sample], meta_grn)
             else:
                 grn = self.__process_sample_without_guidance(data[sample])
             # Save data into pcGRNs
@@ -122,25 +122,27 @@ class Make:
         return {pth:data for pth,data in grn.items() if data is not None}
 
     # as named
-    def __process_sample_with_guidance(self, gem, meta_grn):
+    def __process_sample_with_metaGRN(self, gem, meta_grn):
         grn = {}
-        for grp in meta_grn:
-            source_ID = meta_grn[grp]['regulatory_source']
-            target_ID = meta_grn[grp]['regulatory_target']
+        for grp in meta_grn['grps']:
+            source_ID = meta_grn['grps'][grp]['regulatory_source']
+            target_ID = meta_grn['grps'][grp]['regulatory_target']
             try:
-                source = list(gem.loc[[source_ID]].values[0])
-                target = list(gem.loc[[target_ID]].values[0])
+                source_exp = list(gem.loc[[source_ID]].values[0])
+                target_exp = list(gem.loc[[target_ID]].values[0])
             except:
                 continue
             # No need to compute if one array is constant
-            if len(set(source)) == 1 or len(set(target)) == 1:
+            if len(set(source_exp)) == 1 or len(set(target_exp)) == 1:
                 continue
-            cor = pearsonr(source, target)[0]
+            cor = pearsonr(source_exp, target_exp)[0]
             if abs(cor) > self.correlation_thread:
                 grn[grp] = {
                     'id': grp,
                     'regulatory_source': source_ID,
+                    'source_expression_mean': sta.mean(source_exp),
                     'regulatory_target': target_ID,
+                    'target_expression_mean': sta.mean(target_exp),
                     'correlation':cor
                 }
         return grn
@@ -162,13 +164,14 @@ class Make:
                         continue
                     elif len(set(gem[target_ID])) == 1:
                         continue
-                    cor = pearsonr(gem[source_ID],
-                                    gem[target_ID])[0]
+                    cor = pearsonr(gem[source_ID], gem[target_ID])[0]
                     if abs(cor) > self.correlation_thread:
                         grn[grp] = {
                             'id': grp,
                             'regulatory_source': source_ID,
+                            'source_expression_mean': sta.mean(gem[source_ID]),
                             'regulatory_target': target_ID,
+                            'target_expression_mean': sta.mean(gem[target_ID]),
                             'correlation':cor
                         }
                     else:

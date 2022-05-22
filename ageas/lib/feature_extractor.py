@@ -4,7 +4,7 @@ Ageas Reborn
 
 author: jy, nkmtmsys
 """
-
+import math
 import itertools
 import pandas as pd
 import ageas.lib as lib
@@ -37,13 +37,13 @@ class Extract(object):
 		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
 
 	# as named
-	def build_regulon(self, meta_grn, target_num_thread = 1, impact_depth = 3):
+	def build_regulon(self, meta_grn, impact_depth = 3):
 		# set outlier bonus score to max score of standard GRPs
 		outlier_bonus_score = self.grps.iloc[0]['importance']
 		# process standard grps
 		for id in self.grps.index:
 			try:
-				grp = meta_grn[id]
+				grp = meta_grn['grps'][id]
 			except Exception:
 				raise lib.Error('GRP', id, 'not in Meta GRN')
 			grp['type'] = TYPES[0]
@@ -51,7 +51,7 @@ class Extract(object):
 			self.__update_regulon_with_grp(grp)
 		for id in self.outlier_grps:
 			try:
-				grp = meta_grn[id]
+				grp = meta_grn['grps'][id]
 			except Exception:
 				raise lib.Error('GRP', id, 'not in Meta GRN')
 			grp['type'] = TYPES[1]
@@ -72,12 +72,12 @@ class Extract(object):
 				id = tool.Cast_GRP_ID(comb[0], comb[1])
 				if id not in checked_grps:
 					checked_grps[id] = None
-					if id in meta_grn:
+					if id in meta_grn['grps']:
 						if not combining: combining = True
 						assert id not in self.regulons[i]['grps']
-						meta_grn[id]['type'] = TYPES[2]
-						meta_grn[id]['score'] = 0
-						self.regulons[i]['grps'][id] = meta_grn[id]
+						meta_grn['grps'][id]['type'] = TYPES[2]
+						meta_grn['grps'][id]['score'] = 0
+						self.regulons[i]['grps'][id] = meta_grn['grps'][id]
 			if combining:
 				self.__combine_regulons(ind_1 = i, ind_2 = j)
 				del self.regulons[j]
@@ -87,6 +87,7 @@ class Extract(object):
 				if j == len(self.regulons):
 					i += 1
 					j = i + 1
+
 		# update and change regulon to dict type and find key genes
 		for regulon in self.regulons:
 			for grp in regulon['grps'].values():
@@ -109,8 +110,7 @@ class Extract(object):
 												target = target,
 												gene_list = regulon['genes'],
 												reversable = grp['reversable'])
-		self.regulatory_sources = self.__get_reg_sources(target_num_thread,
-														impact_depth)
+		self.regulatory_sources = self.__get_reg_sources(impact_depth)
 		del self.grps
 		del self.outlier_grps
 
@@ -140,12 +140,12 @@ class Extract(object):
 				# skip if already added
 				if grp_id in extend_regulon['grps']: continue
 				# update GRP information and add it to regulon
-				meta_grn[grp_id]['type'] = TYPES[2]
-				meta_grn[grp_id]['score'] = 0
-				extend_regulon['grps'][grp_id] = meta_grn[grp_id]
+				meta_grn['grps'][grp_id]['type'] = TYPES[2]
+				meta_grn['grps'][grp_id]['score'] = 0
+				extend_regulon['grps'][grp_id] = meta_grn['grps'][grp_id]
 				# update gene list in regulon
-				source = meta_grn[grp_id]['regulatory_source']
-				target = meta_grn[grp_id]['regulatory_target']
+				source = meta_grn['grps'][grp_id]['regulatory_source']
+				target = meta_grn['grps'][grp_id]['regulatory_target']
 				if source not in extend_regulon['genes']:
 					extend_regulon['genes'][source] = {'source':[],
 														'target':[],
@@ -155,35 +155,40 @@ class Extract(object):
 														'target':[],
 														'type':TYPES[2]}
 				self.__update_regulon_gene_list(source = source,
-												target = target,
-									gene_list = extend_regulon['genes'],
-									reversable = meta_grn[grp_id]['reversable'])
+							target = target,
+							gene_list = extend_regulon['genes'],
+							reversable = meta_grn['grps'][grp_id]['reversable'])
 		self.regulons = [e for e in self.regulons if e is not None]
 		self.regulatory_sources = self.__get_reg_sources()
 
 	# find factors by checking and regulaotry target number and impact score
-	def report(self, target_num_thread = 0, influence_thread = 0):
+	def report(self, meta_grn, impact_score_thread = 0):
 		df = []
 		for k, v in self.regulatory_sources.items():
-			if v['target_num'] >= target_num_thread:
-				df.append([k] + list(v.values()))
+			if v['impact_score'] >= impact_score_thread:
+				exps = meta_grn['mean_gene_expressions'][k]
+				fc = abs(math.log2( (exps['class1']+1) / (exps['class2']+1) ))
+				df.append([k] + list(v.values()) + [fc])
 		df = pd.DataFrame(sorted(df, key=lambda x:x[-1], reverse = True))
 		df.columns=['Gene',
 					'Regulon',
 					'Type',
 					'Source_Num',
 					'Target_Num',
-					'Impact_Score']
+					'Impact_Score',
+					'LogFC']
 		return df
 
 	# recursively add up impact score with GRP linking gene to its target
-	def  __add_up_impact_score(self, regulon, gene, depth, score):
+	def  __get_impact_score(self, regulon, gene, depth, score):
 		if depth > 0:
 			depth -= 1
 			for target in regulon['genes'][gene]['target']:
-				score += regulon['grps'][tool.Cast_GRP_ID(gene,target)]['score']
+				# if regulon['genes'][target]['type'] != TYPES[2]:
+				score += 1
+				# score += regulon['grps'][tool.Cast_GRP_ID(gene,target)]['score']
 				if len(regulon['genes'][target]['target']) > 0:
-					self.__add_up_impact_score(regulon, target, depth, score)
+					self.__get_impact_score(regulon, target, depth, score)
 		return score
 
 	# combine regulons in self.regulons by index
@@ -192,7 +197,7 @@ class Extract(object):
 		self.regulons[ind_1]['genes'].update(self.regulons[ind_2]['genes'])
 
 	# summarize key regulatory sources appearing in regulons
-	def __get_reg_sources(self, target_num_thread = 1, impact_depth = 3):
+	def __get_reg_sources(self, impact_depth = 3):
 		dict = {}
 		for regulon_id, regulon in enumerate(self.regulons):
 			for gene in regulon['genes']:
@@ -200,17 +205,17 @@ class Extract(object):
 				target_num = len(regulon['genes'][gene]['target'])
 				if (gene not in dict and
 					# regulon['genes'][gene]['type'] != TYPES[2] and
-					target_num >= target_num_thread):
-					impact_score = self.__add_up_impact_score(self.regulons[regulon_id],
-												gene,
-												impact_depth,
-												0)
+					target_num >= 1):
+					score = self.__get_impact_score(self.regulons[regulon_id],
+													gene,
+													impact_depth,
+													0)
 					dict[gene]= {
 									'regulon_id': regulon_id,
 									'type':	regulon['genes'][gene]['type'],
 									'source_num': source_num,
 									'target_num': target_num,
-									'impact_score': impact_score
+									'impact_score': score
 								}
 				elif gene in dict:
 					raise lib.Error('Repeated Gene in regulons', gene)
@@ -234,7 +239,7 @@ class Extract(object):
 				if record['regulon_id'] == from_regulon: continue
 				# presume GRP which could link regulons
 				grp_id = tool.Cast_GRP_ID(gene, anchor)
-				if grp_id not in grp_skip_list and grp_id in meta_grn:
+				if grp_id not in grp_skip_list and grp_id in meta_grn['grps']:
 					anchor_reg_id = record['regulon_id']
 					prev_grps.append(grp_id)
 					# add grp to grp_skip_list
@@ -245,7 +250,7 @@ class Extract(object):
 												combine_list = combine_list)
 
 		elif allowrance > 0:
-			for grp_id, grp in meta_grn.items():
+			for grp_id, grp in meta_grn['grps'].items():
 				if grp_id in grp_skip_list: continue
 				if grp['regulatory_source'] == gene:
 					new = grp['regulatory_target']

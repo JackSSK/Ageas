@@ -7,6 +7,7 @@ author: jy, nkmtmsys
 
 import re
 import gzip
+import statistics as sta
 from scipy.stats import pearsonr
 
 # Update meta_grn if given pathway exist in either class
@@ -48,18 +49,35 @@ def Update_Meta_GRN(meta_grn,
             passed = True
     # If the testing pass survived till here, save it
     if passed:
-        meta_grn[grp_id] = {'id': grp_id,
-                            'type': None,
-                            'score': None,
-                            'reversable': False,
-                            'regulatory_source': source,
-                            'regulatory_target': target,
-                            'correlations':{
-                                            'class1':cor_class1,
-                                            'class2':cor_class2
-                                            }
-                            }
+        meta_grn['grps'][grp_id] = {'id': grp_id,
+                                    'type': None,
+                                    'score': None,
+                                    'reversable': False,
+                                    'regulatory_source': source,
+                                    'regulatory_target': target,
+                                    'correlations':{
+                                                    'class1':cor_class1,
+                                                    'class2':cor_class2
+                                                    }
+                                    }
+        Update_Meta_GRN_Exp(meta_grn, source, gem1, gem2)
+        Update_Meta_GRN_Exp(meta_grn, target, gem1, gem2)
 
+# Need in Update_Meta_GRN
+def Update_Meta_GRN_Exp(meta_grn, gene, gem1, gem2):
+    if gene not in meta_grn['mean_gene_expressions']:
+        if gene in gem1.index:
+            class1_exp = sta.mean(gem1.loc[[gene]].values[0])
+        else:
+            class1_exp = 0
+        if gene in gem2.index:
+            class2_exp = sta.mean(gem2.loc[[gene]].values[0])
+        else:
+            class2_exp = 0
+        meta_grn['mean_gene_expressions'][gene] = {
+            'class1': class1_exp,
+            'class2': class2_exp
+        }
 
 # Get pearson correlation value while p-value not lower than thread
 # Originally pearson p-value thread was 1, which should be inappropriate

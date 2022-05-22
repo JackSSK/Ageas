@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pack GRTD data into .json based format with necessary data
+Pack GTRD data into .json based format with necessary data
 
 ToDo:
 Make sure load all tf target info at once would still be fine
@@ -20,7 +20,7 @@ import ageas.tool.uniprot_id_map as uniprot_id_map
 
 class Processor:
     """
-    Process summarized GRTD file
+    Process summarized GTRD file
     """
     def __init__(self, specie_path, factor_name_type, path):
         self.path = specie_path + path

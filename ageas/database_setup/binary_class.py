@@ -28,7 +28,7 @@ class Setup:
                 class2_path = 'CT2',
                 specie = 'mouse',
                 factor_name_type = 'gene_name',
-                interaction_db = 'grtd',
+                interaction_db = 'biogrid',
                 sliding_window_size = None,
                 sliding_window_stride = None):
         super(Setup, self).__init__()

@@ -10,7 +10,7 @@ import pandas as pd
 import ageas.tool as tool
 import ageas.tool.gem as gem
 import ageas.tool.json as json
-import ageas.tool.grtd as grtd
+import ageas.tool.gtrd as gtrd
 import ageas.tool.biogrid as biogrid
 import ageas.lib as lib
 import ageas.tool.transfac as transfac
@@ -38,8 +38,8 @@ class Load:
         self.tf_list = transfac.Reader(specie + 'Tranfac201803_MotifTFsF.txt',
                                         self.database_info.factor_name_type).tfs
         # Load interaction database
-        if self.database_info.interaction_db == 'grtd':
-            self.interactions = grtd.Processor(specie,
+        if self.database_info.interaction_db == 'gtrd':
+            self.interactions = gtrd.Processor(specie,
                                             self.database_info.factor_name_type,
                                             path = 'wholeGene.js.gz')
         elif self.database_info.interaction_db == 'biogrid':
