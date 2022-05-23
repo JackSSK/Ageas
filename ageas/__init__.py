@@ -38,13 +38,14 @@ class Ageas:
                 factor_name_type = 'gene_name',
                 feature_dropout_ratio = 0.1,
                 feature_select_iteration = 1,
-                guide_load_path = None,
                 interaction_database = 'biogrid',
                 impact_depth = 3,
                 top_grp_amount = 100,
                 grp_changing_thread = 0.05,
                 log2fc_thread = None,
                 link_step_allowrance = 0,
+                meta_load_path = None,
+                meta_save_path = None,
                 model_config_path = None,
                 model_select_iteration = 2,
                 mww_p_val_thread = 0.05,
@@ -96,9 +97,9 @@ class Ageas:
 
         """ Make or load pcGRNs and GRN construction guidance """
         start = time.time()
-        if guide_load_path is not None and pcgrn_load_path is not None:
+        if meta_load_path is not None and pcgrn_load_path is not None:
             pcGRNs = grn.Make(load_path = pcgrn_load_path)
-            self.meta = meta_grn.Cast(load_path = guide_load_path)
+            self.meta = meta_grn.Cast(load_path = meta_load_path)
         else:
             self.meta, pcGRNs=self.get_pcGRNs(database_info=self.database_info,
                                         std_value_thread = std_value_thread,
@@ -107,9 +108,10 @@ class Ageas:
                                         log2fc_thread = log2fc_thread,
                                         prediction_thread = prediction_thread,
                                         correlation_thread = correlation_thread,
-                                        guide_load_path = guide_load_path,)
+                                        meta_load_path = meta_load_path,)
         print('Time to cast or load pcGRNs : ', time.time() - start)
         if pcgrn_save_path is not None: pcGRNs.save(pcgrn_save_path)
+        if meta_save_path is not None: self.meta.save_guide(meta_save_path)
 
         """ Model Selection """
         print('Entering Model Selection')
@@ -221,7 +223,7 @@ class Ageas:
                     log2fc_thread = 0.1,
                     prediction_thread = 'auto',
                     correlation_thread = 0.2,
-                    guide_load_path = None,):
+                    meta_load_path = None,):
         meta = None
         # if reading in GEMs, we need to construct pseudo-cGRNs first
         if re.search(r'gem' , database_info.type):
@@ -234,7 +236,7 @@ class Ageas:
             meta = meta_grn.Cast(gem_data = gem_data,
                                 prediction_thread = prediction_thread,
                                 correlation_thread = correlation_thread,
-                                load_path = guide_load_path)
+                                load_path = meta_load_path)
             print('Time to cast GRN Guidnace : ', time.time() - start1)
             pcGRNs = grn.Make(database_info = database_info,
                                 std_value_thread = std_value_thread,
@@ -305,8 +307,7 @@ class Ageas:
         if folder[-1] != '/': folder += '/'
         # Make path if not exist
         if not os.path.exists(folder): os.makedirs(folder)
-        # GRN guide related
-        self.meta.save_guide(folder + 'meta_grn.js')
+        # meta GRN related
         meta_grn.Analysis(self.meta.grn['grps']).save(folder + 'grn_based.csv')
         # GRP importances
         self.grp_importances.save(folder + 'grps_importances.txt')

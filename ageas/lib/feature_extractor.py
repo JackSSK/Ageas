@@ -180,16 +180,16 @@ class Extract(object):
 		return df
 
 	# recursively add up impact score with GRP linking gene to its target
-	def  __get_impact_score(self, regulon, gene, depth, score):
+	def  __get_impact_genes(self, regulon, gene, depth, dict):
 		if depth > 0:
 			depth -= 1
 			for target in regulon['genes'][gene]['target']:
 				# if regulon['genes'][target]['type'] != TYPES[2]:
-				score += 1
+				if target not in dict: dict[target] = None
 				# score += regulon['grps'][tool.Cast_GRP_ID(gene,target)]['score']
 				if len(regulon['genes'][target]['target']) > 0:
-					self.__get_impact_score(regulon, target, depth, score)
-		return score
+					dict = self.__get_impact_genes(regulon, target, depth, dict)
+		return dict
 
 	# combine regulons in self.regulons by index
 	def __combine_regulons(self, ind_1, ind_2):
@@ -206,16 +206,16 @@ class Extract(object):
 				if (gene not in dict and
 					# regulon['genes'][gene]['type'] != TYPES[2] and
 					target_num >= 1):
-					score = self.__get_impact_score(self.regulons[regulon_id],
+					impact = self.__get_impact_genes(self.regulons[regulon_id],
 													gene,
 													impact_depth,
-													0)
+													{})
 					dict[gene]= {
 									'regulon_id': regulon_id,
 									'type':	regulon['genes'][gene]['type'],
 									'source_num': source_num,
 									'target_num': target_num,
-									'impact_score': score
+									'impact_score': len(impact)
 								}
 				elif gene in dict:
 					raise lib.Error('Repeated Gene in regulons', gene)

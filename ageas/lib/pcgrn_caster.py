@@ -140,9 +140,9 @@ class Make:
                 grn[grp] = {
                     'id': grp,
                     'regulatory_source': source_ID,
-                    'source_expression_mean': sta.mean(source_exp),
+                    'source_expression_mean': float(sta.mean(source_exp)),
                     'regulatory_target': target_ID,
-                    'target_expression_mean': sta.mean(target_exp),
+                    'target_expression_mean': float(sta.mean(target_exp)),
                     'correlation':cor
                 }
         return grn
@@ -160,18 +160,17 @@ class Make:
                 grp = tool.Cast_GRP_ID(source_ID, target_ID)
                 if grp not in grn:
                     # No need to compute if one array is constant
-                    if len(set(gem[source_ID])) == 1:
-                        continue
-                    elif len(set(gem[target_ID])) == 1:
-                        continue
-                    cor = pearsonr(gem[source_ID], gem[target_ID])[0]
+                    s_exp = gem[source_ID]
+                    t_exp = gem[target_ID]
+                    if len(set(s_exp)) == 1 or len(set(t_exp)) == 1: continue
+                    cor = pearsonr(s_exp, t_exp)[0]
                     if abs(cor) > self.correlation_thread:
                         grn[grp] = {
                             'id': grp,
                             'regulatory_source': source_ID,
-                            'source_expression_mean': sta.mean(gem[source_ID]),
+                            'source_expression_mean': float(sta.mean(s_exp)),
                             'regulatory_target': target_ID,
-                            'target_expression_mean': sta.mean(gem[target_ID]),
+                            'target_expression_mean': float(sta.mean(t_exp)),
                             'correlation':cor
                         }
                     else:
