@@ -29,9 +29,7 @@ class Extract(object):
 		self.regulons = []
 		self.regulatory_sources = None
 		self.outlier_grps = outlier_grps
-		self.grps = grp_importances.stratify(score_thread,
-											top_grp_amount,
-											len(outlier_grps))
+		self.grps = grp_importances.stratify(score_thread, top_grp_amount)
 	# as named
 	def change_regulon_list_to_dict(self, header = 'regulon_'):
 		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
@@ -184,10 +182,11 @@ class Extract(object):
 		if depth > 0:
 			depth -= 1
 			for target in regulon['genes'][gene]['target']:
-				# if regulon['genes'][target]['type'] != TYPES[2]:
-				if target not in dict: dict[target] = None
 				# score += regulon['grps'][tool.Cast_GRP_ID(gene,target)]['score']
 				if len(regulon['genes'][target]['target']) > 0:
+					if (target not in dict and
+						regulon['genes'][target]['type'] != TYPES[2]):
+						dict[target] = None
 					dict = self.__get_impact_genes(regulon, target, depth, dict)
 		return dict
 

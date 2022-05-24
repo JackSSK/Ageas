@@ -136,12 +136,10 @@ class Interpret:
         self.result['importance'] = self.result['importance'] / denominator
 
     # stratify GRPs based on Z score thread
-    def stratify(self, z_score_thread, top_grp_amount, num_prev_grps):
+    def stratify(self, z_score_thread, top_grp_amount):
         # change top top_grp_amount to int if value less or equal 1.0
         if top_grp_amount <= 1.0:
             top_grp_amount = int(len(self.result.index) * top_grp_amount)
-        if num_prev_grps is not None:
-            top_grp_amount -= num_prev_grps
         for thread in range(len(self.result.index)):
             value = self.result.iloc[thread]['importance']
             if value < z_score_thread or thread == top_grp_amount:

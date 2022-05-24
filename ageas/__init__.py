@@ -95,7 +95,7 @@ class Ageas:
             self.model_config = json.decode(model_config_path)
         print('Time to initialize : ', time.time() - start)
 
-        """ Make or load pcGRNs and GRN construction guidance """
+        """ Make or load pcGRNs and meta GRN """
         start = time.time()
         if meta_load_path is not None and pcgrn_load_path is not None:
             pcGRNs = grn.Make(load_path = pcgrn_load_path)
@@ -157,7 +157,8 @@ class Ageas:
                 if self.__early_stop(prev_grps, self.factor.grps.index):
                     self.stabilize_iteration = None
                     break
-
+        print('Total Length of Outlier GRPs is:', len(self.far_out_grps))
+        
         """ Stabilizing Key GRPs """
         if (self.stabilize_iteration is not None and
             self.stabilize_iteration > 0):
