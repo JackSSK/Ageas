@@ -6,6 +6,7 @@ author: jy, nkmtmsys
 """
 
 import warnings
+import math
 import pandas as pd
 from collections import Counter
 import ageas.lib as lib
@@ -19,20 +20,34 @@ class Analysis(object):
 	"""
 	Find important factors simply by GRN degree.
 	"""
-	def __init__(self, meta_grn_grps, top = None):
+	def __init__(self, meta_grn, top = None):
 		super(Analysis, self).__init__()
 		self.top = top
 		temp = {}
-		for ele in meta_grn_grps:
-			source = meta_grn_grps[ele]['regulatory_source']
-			target = meta_grn_grps[ele]['regulatory_target']
-			if source not in temp: temp[source] = 1
-			else: temp[source] += 1
-			if target not in temp: temp[target] = 1
-			else: temp[target] += 1
+		for ele in meta_grn['grps']:
+			source = meta_grn['grps'][ele]['regulatory_source']
+			target = meta_grn['grps'][ele]['regulatory_target']
+
+			if source not in temp:
+				temp[source] = 1
+			else:
+				temp[source] += 1
+
+			if target not in temp:
+				temp[target] = 1
+			else:
+				temp[target] += 1
+
 		if self.top is None: self.top = len(temp)
 		temp = [[k[0],k[1]] for k in Counter(temp).most_common(self.top)]
-		self.result = pd.DataFrame(temp, columns = ['Gene', 'Degree'])
+
+		# adding log2FC
+		for ele in temp:
+			exp = meta_grn['mean_gene_expressions'][ele[0]]
+			ele.append(abs(math.log2((exp['class1']+1) / (exp['class2']+1))))
+
+		# changing to dataframe type
+		self.result = pd.DataFrame(temp, columns = ['Gene', 'Degree', 'Log2FC'])
 
 	def save(self, path):
 		self.result.to_csv(path, index = False )

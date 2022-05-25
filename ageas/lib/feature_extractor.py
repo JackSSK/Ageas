@@ -21,6 +21,7 @@ class Extract(object):
 	"""
 
 	def __init__(self,
+				correlation_thread:float = 0.2,
 				grp_importances = None,
 				score_thread = None,
 				outlier_grps = {},
@@ -29,6 +30,7 @@ class Extract(object):
 		self.regulons = []
 		self.regulatory_sources = None
 		self.outlier_grps = outlier_grps
+		self.correlation_thread = correlation_thread
 		self.grps = grp_importances.stratify(score_thread, top_grp_amount)
 	# as named
 	def change_regulon_list_to_dict(self, header = 'regulon_'):
@@ -113,7 +115,10 @@ class Extract(object):
 		del self.outlier_grps
 
 	# Use extra GRPs from meta GRN to link different Regulons
-	def link_regulon(self, meta_grn = None, allowrance = 1):
+	def link_regulon(self,
+					meta_grn = None,
+					allowrance:int = 1,
+					correlation_thread:float = 0.2):
 		# initialize
 		grp_skip_list = {}
 		for regulon in self.regulons:
@@ -178,16 +183,35 @@ class Extract(object):
 		return df
 
 	# recursively add up impact score with GRP linking gene to its target
-	def  __get_impact_genes(self, regulon, gene, depth, dict):
+	def  __get_impact_genes(self,
+							regulon = None,
+							gene:str = None,
+							depth:int = 3,
+							dict = None,
+							prev_cor:float = 1.0,):
 		if depth > 0:
 			depth -= 1
 			for target in regulon['genes'][gene]['target']:
-				# score += regulon['grps'][tool.Cast_GRP_ID(gene,target)]['score']
 				if len(regulon['genes'][target]['target']) > 0:
+					# get regulatory correlation strength
+					link_grp = tool.Cast_GRP_ID(gene,target)
+					cors = regulon['grps'][link_grp]['correlations']
+					if cors['class1'] == 0.0 or cors['class2'] == 0.0:
+						cor = abs(max(cors['class1'], cors['class2']))
+					elif cors['class1'] != 0.0 and cors['class2'] != 0.0:
+						cor = (abs(cors['class1']) + abs(cors['class2'])) / 2
+					else:
+						raise lib.Error(link_grp, 'Cor in meta GRN is creepy')
+					# count it if passing conditions
 					if (target not in dict and
-						regulon['genes'][target]['type'] != TYPES[2]):
-						dict[target] = None
-					dict = self.__get_impact_genes(regulon, target, depth, dict)
+						regulon['genes'][target]['type'] != TYPES[2] and
+						cor * prev_cor > self.correlation_thread):
+						dict[target] = cor * prev_cor
+					dict = self.__get_impact_genes(regulon,
+													target,
+													depth,
+													dict,
+													cor * prev_cor)
 		return dict
 
 	# combine regulons in self.regulons by index
@@ -206,9 +230,10 @@ class Extract(object):
 					# regulon['genes'][gene]['type'] != TYPES[2] and
 					target_num >= 1):
 					impact = self.__get_impact_genes(self.regulons[regulon_id],
-													gene,
-													impact_depth,
-													{})
+													gene = gene,
+													depth = impact_depth,
+													dict = {},
+													prev_cor = 1.0)
 					dict[gene]= {
 									'regulon_id': regulon_id,
 									'type':	regulon['genes'][gene]['type'],

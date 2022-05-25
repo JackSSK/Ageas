@@ -28,42 +28,42 @@ class Ageas:
     and write report files into given folder
     """
     def __init__(self,
-                class1_path = None,
-                class2_path = None,
-                clf_keep_ratio = 0.5,
-                clf_accuracy_thread = 0.8,
-                correlation_thread = 0,
-                database_path = None,
-                database_type = 'gem_file',
-                factor_name_type = 'gene_name',
-                feature_dropout_ratio = 0.1,
-                feature_select_iteration = 1,
-                interaction_database = 'biogrid',
-                impact_depth = 3,
-                top_grp_amount = 100,
-                grp_changing_thread = 0.05,
-                log2fc_thread = None,
-                link_step_allowrance = 0,
-                meta_load_path = None,
-                meta_save_path = None,
-                model_config_path = None,
-                model_select_iteration = 2,
-                mww_p_val_thread = 0.05,
-                outlier_thread = 3,
-                patient = 3,
-                pcgrn_load_path = None,
-                pcgrn_save_path = None,
-                prediction_thread = 'auto',
-                report_folder_path = None,
-                specie = 'mouse',
-                sliding_window_size = 20,
-                sliding_window_stride = None,
-                std_value_thread = None,
-                std_ratio_thread = None,
-                stabilize_iteration = 10,
-                train_size = 0.95,
-                warning = False,
-                z_score_extract_thread = 0,):
+                class1_path:str = None,
+                class2_path:str = None,
+                clf_keep_ratio:float = 0.5,
+                clf_accuracy_thread:float = 0.8,
+                correlation_thread:float = 0.0,
+                database_path:str = None,
+                database_type:str = 'gem_file',
+                factor_name_type:str = 'gene_name',
+                feature_dropout_ratio:float = 0.1,
+                feature_select_iteration:int = 1,
+                interaction_database:float = 'biogrid',
+                impact_depth:int = 3,
+                top_grp_amount:int = 100,
+                grp_changing_thread:float = 0.05,
+                log2fc_thread:float = None,
+                link_step_allowrance:int = 0,
+                meta_load_path:str = None,
+                meta_save_path:str = None,
+                model_config_path :str= None,
+                model_select_iteration:int = 2,
+                mww_p_val_thread:str = 0.05,
+                outlier_thread:float = 3.0,
+                patient:int = 3,
+                pcgrn_load_path:str = None,
+                pcgrn_save_path:str = None,
+                prediction_thread:str = 'auto',
+                report_folder_path:str = None,
+                specie:str = 'mouse',
+                sliding_window_size:int = 20,
+                sliding_window_stride:int = None,
+                std_value_thread:float = None,
+                std_ratio_thread:float = None,
+                stabilize_iteration:int = 10,
+                train_size:float = 0.95,
+                warning:bool = False,
+                z_score_extract_thread:float = 0.0,):
         super(Ageas, self).__init__()
 
         """ Initialization """
@@ -126,7 +126,8 @@ class Ageas:
         print('Finished Model Selection', time.time() - start)
         start = time.time()
         self.grp_importances = interpreter.Interpret(clfs)
-        self.factor = extractor.Extract(self.grp_importances,
+        self.factor = extractor.Extract(correlation_thread,
+                                        self.grp_importances,
                                         z_score_extract_thread,
                                         self.far_out_grps,
                                         top_grp_amount)
@@ -149,7 +150,8 @@ class Ageas:
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread)
                 self.grp_importances = interpreter.Interpret(clfs)
-                self.factor = extractor.Extract(self.grp_importances,
+                self.factor = extractor.Extract(correlation_thread,
+                                                self.grp_importances,
                                                 z_score_extract_thread,
                                                 self.far_out_grps,
                                                 top_grp_amount)
@@ -158,7 +160,7 @@ class Ageas:
                     self.stabilize_iteration = None
                     break
         print('Total Length of Outlier GRPs is:', len(self.far_out_grps))
-        
+
         """ Stabilizing Key GRPs """
         if (self.stabilize_iteration is not None and
             self.stabilize_iteration > 0):
@@ -172,14 +174,16 @@ class Ageas:
                                     clf_keep_ratio = clf_keep_ratio,
                                     clf_accuracy_thread = clf_accuracy_thread)
                 self.grp_importances.add(interpreter.Interpret(clfs).result)
-                self.factor = extractor.Extract(self.grp_importances,
+                self.factor = extractor.Extract(correlation_thread,
+                                                self.grp_importances,
                                                 z_score_extract_thread,
                                                 self.far_out_grps,
                                                 top_grp_amount)
                 if self.__early_stop(prev_grps, self.factor.grps.index):
                     break
             self.grp_importances.divide(denominator)
-            self.factor = extractor.Extract(self.grp_importances,
+            self.factor = extractor.Extract(correlation_thread,
+                                            self.grp_importances,
                                             z_score_extract_thread,
                                             self.far_out_grps,
                                             top_grp_amount)
@@ -191,16 +195,16 @@ class Ageas:
         self.factor.build_regulon(meta_grn = self.meta.grn,
                                     impact_depth = impact_depth)
 
-        # temporary codes to save reports and regulon before linking regulons
-        if report_folder_path[-1] != '/': report_folder_path += '/'
-        if not os.path.exists(report_folder_path):
-            os.makedirs(report_folder_path)
-        self.factor.change_regulon_list_to_dict()
-        json.encode(self.factor.regulons,
-                    report_folder_path + 'regulons_before_link.js')
-        self.factor.report(self.meta.grn).to_csv(
-                    report_folder_path + 'ageas_before_link.csv', index = False)
-        self.factor.regulons = [e for e in self.factor.regulons.values()]
+        # # temporary codes to save reports and regulon before linking regulons
+        # if report_folder_path[-1] != '/': report_folder_path += '/'
+        # if not os.path.exists(report_folder_path):
+        #     os.makedirs(report_folder_path)
+        # self.factor.change_regulon_list_to_dict()
+        # json.encode(self.factor.regulons,
+        #             report_folder_path + 'regulons_before_link.js')
+        # self.factor.report(self.meta.grn).to_csv(
+        #             report_folder_path + 'ageas_before_link.csv', index = False)
+        # self.factor.regulons = [e for e in self.factor.regulons.values()]
 
         if (self.link_step_allowrance is not None and
             self.link_step_allowrance > 0 and
@@ -211,7 +215,8 @@ class Ageas:
         self.factor.change_regulon_list_to_dict()
         print('Time to build key regulons : ', time.time() - start)
 
-        """ Generate Report Files if specified path """
+        """ Generate and Save Report Files if specified path """
+        self.report = self.factor.report(self.meta.grn)
         if report_folder_path is not None:
             self.write_reports(report_folder_path)
 
@@ -309,9 +314,8 @@ class Ageas:
         # Make path if not exist
         if not os.path.exists(folder): os.makedirs(folder)
         # meta GRN related
-        meta_grn.Analysis(self.meta.grn['grps']).save(folder + 'grn_based.csv')
+        meta_grn.Analysis(self.meta.grn).save(folder + 'grn_based.csv')
         # GRP importances
         self.grp_importances.save(folder + 'grps_importances.txt')
         json.encode(self.factor.regulons, folder + 'regulons.js')
-        self.factor.report(self.meta.grn).to_csv(folder + 'ageas_based.csv',
-                                                index = False)
+        self.report.to_csv(folder + 'ageas_based.csv', index = False)
