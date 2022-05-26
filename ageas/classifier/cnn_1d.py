@@ -44,20 +44,27 @@ class Limited(nn.Module):
         self.loss_func = nn.CrossEntropyLoss()
         # Layer set 1
         self.pool = nn.MaxPool1d(param['maxpool_kernel_size'])
-        self.conv = nn.Conv1d(1, param['conv_kernel_num'],
-                                    param['conv_kernel_size'])
+        self.conv = nn.Conv1d(
+            1,
+            param['conv_kernel_num'],
+            param['conv_kernel_size']
+        )
 
         # Layer set 2
         self.pool1 = nn.MaxPool1d(param['maxpool_kernel_size'])
-        self.conv1 = nn.Conv1d(param['conv_kernel_num'],
-                                param['conv_kernel_num'],
-                                param['conv_kernel_size'])
+        self.conv1 = nn.Conv1d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            param['conv_kernel_size']
+        )
 
         # Layer set 3
         self.pool2 = nn.MaxPool1d(param['maxpool_kernel_size'])
-        self.conv2 = nn.Conv1d(param['conv_kernel_num'],
-                                param['conv_kernel_num'],
-                                param['conv_kernel_size'])
+        self.conv2 = nn.Conv1d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            param['conv_kernel_size']
+        )
 
         ### Trying to avoid Lazy module since it's under development ###
         ### But so far it's working just fine, so still using lazy module ###
@@ -96,11 +103,16 @@ class Unlimited(nn.Module):
         self.model_type = 'CNN_1D_Unlimited'
         self.num_layers = param['num_layers']
         self.loss_func = nn.CrossEntropyLoss()
-        self.conv = nn.Conv1d(1, param['conv_kernel_num'],
-                                    param['conv_kernel_size'])
-        self.convMore = nn.Conv1d(param['conv_kernel_num'],
-                                    param['conv_kernel_num'],
-                                    param['conv_kernel_size'])
+        self.conv = nn.Conv1d(
+            1,
+            param['conv_kernel_num'],
+            param['conv_kernel_size']
+        )
+        self.convMore = nn.Conv1d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            param['conv_kernel_size']
+        )
         self.pool = nn.MaxPool1d(param['maxpool_kernel_size'])
 
         ### Trying to avoid Lazy module since it's under development ###
@@ -145,8 +157,10 @@ class Make(classifier.Make_Template):
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(epoch, batch_size, model, dataSets)
-            accuracy = self._evaluate_torch(model,
-                                            testData,
-                                            testLabel,
-                                            test_split_set)
+            accuracy = self._evaluate_torch(
+                model,
+                testData,
+                testLabel,
+                test_split_set
+            )
             self.models.append([model, accuracy])

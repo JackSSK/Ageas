@@ -51,17 +51,18 @@ def Update_Meta_GRN(meta_grn,
             passed = True
     # If the testing pass survived till here, save it
     if passed:
-        meta_grn['grps'][grp_id] = {'id': grp_id,
-                                    'type': None,
-                                    'score': None,
-                                    'reversable': False,
-                                    'regulatory_source': source,
-                                    'regulatory_target': target,
-                                    'correlations':{
-                                                    'class1':float(cor_class1),
-                                                    'class2':float(cor_class2)
-                                                    }
-                                    }
+        meta_grn['grps'][grp_id] = {
+            'id': grp_id,
+            'type': None,
+            'score': None,
+            'reversable': False,
+            'regulatory_source': source,
+            'regulatory_target': target,
+            'correlations':{
+                'class1':float(cor_class1),
+                'class2':float(cor_class2)
+            }
+        }
         Update_Meta_GRN_Exp(meta_grn, source, gem1, gem2)
         Update_Meta_GRN_Exp(meta_grn, target, gem1, gem2)
 

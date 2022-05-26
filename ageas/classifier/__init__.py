@@ -94,9 +94,11 @@ class Make_Template:
     def _train_torch(self, epoch, batch_size, model, dataSets):
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         for ep in range(epoch):
-            index_set = DataLoader(dataset = range(len(dataSets.dataTrain)),
-                                    batch_size = batch_size,
-                                    shuffle = True)
+            index_set = DataLoader(
+                dataset = range(len(dataSets.dataTrain)),
+                batch_size = batch_size,
+                shuffle = True
+            )
             for index in index_set:
                 index = index.tolist()
                 data = [dataSets.dataTrain[i] for i in index]
@@ -135,9 +137,11 @@ class Make_Template:
     def _evaluate_sklearn(self, model, testData, testLabel, do_test):
         accuracy = None
         if do_test:
-            accuracy = difflib.SequenceMatcher(None,
-                                                model.clf.predict(testData),
-                                                testLabel).ratio()
+            accuracy = difflib.SequenceMatcher(
+                None,
+                model.clf.predict(testData),
+                testLabel
+            ).ratio()
         return accuracy
 
     # stop epoch when no improvement on loss

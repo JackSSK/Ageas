@@ -68,8 +68,10 @@ class Make(classifier.Make_Template):
             batch_size = self.configs[id]['batch_size']
             self._train_torch(epoch, batch_size, model, dataSets)
             # local test
-            accuracy = self._evaluate_torch(model,
-                                            testData,
-                                            testLabel,
-                                            test_split_set)
+            accuracy = self._evaluate_torch(
+                model,
+                testData,
+                testLabel,
+                test_split_set
+            )
             self.models.append([model, accuracy])

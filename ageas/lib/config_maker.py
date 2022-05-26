@@ -18,40 +18,59 @@ def List_Config_Reader(path):
     result = {}
     if 'Transformer' in config_list:
         result['Transformer'] = Pytorch_Transformer(
-                                    header = 'pytorch_transformer_',
-                                    config = config_list['Transformer']).configs
+            header = 'pytorch_transformer_',
+            config = config_list['Transformer']
+        ).configs
     if 'CNN_1D' in config_list:
         result['CNN_1D'] = Pytorch_CNN_1D(
-                                    header = 'pytorch_cnn_1d_',
-                                    config = config_list['CNN_1D']).configs
+            header = 'pytorch_cnn_1d_',
+            config = config_list['CNN_1D']
+        ).configs
     if 'CNN_Hybrid' in config_list:
         result['CNN_Hybrid'] = Pytorch_CNN_Hybrid(
-                                    header = 'pytorch_cnn_hybrid_',
-                                    config = config_list['CNN_Hybrid']).configs
+            header = 'pytorch_cnn_hybrid_',
+            config = config_list['CNN_Hybrid']
+        ).configs
     if 'RNN' in config_list:
-        result['RNN'] = Pytorch_RNN(header = 'pytorch_rnn_',
-                                    config = config_list['RNN']).configs
+        result['RNN'] = Pytorch_RNN(
+            header = 'pytorch_rnn_',
+            config = config_list['RNN']
+        ).configs
     if 'GRU' in config_list:
-        result['GRU'] = Pytorch_GRU(header = 'pytorch_gru_',
-                                    config = config_list['GRU']).configs
+        result['GRU'] = Pytorch_GRU(
+            header = 'pytorch_gru_',
+            config = config_list['GRU']
+        ).configs
     if 'LSTM' in config_list:
-        result['LSTM'] = Pytorch_LSTM(header = 'pytorch_lstm_',
-                                    config = config_list['LSTM']).configs
+        result['LSTM'] = Pytorch_LSTM(
+            header = 'pytorch_lstm_',
+            config = config_list['LSTM']
+        ).configs
     if 'SVM' in config_list:
-        result['SVM'] = Sklearn_SVM(header = 'pytorch_svc_',
-                                    config = config_list['SVM']).configs
+        result['SVM'] = Sklearn_SVM(
+            header = 'pytorch_svc_',
+            config = config_list['SVM']
+        ).configs
     if 'RFC' in config_list:
-        result['RFC'] = Sklearn_RFC(header = 'pytorch_rfc_',
-                                    config = config_list['RFC']).configs
+        result['RFC'] = Sklearn_RFC(
+            header = 'pytorch_rfc_',
+            config = config_list['RFC']
+        ).configs
     if 'GNB' in config_list:
-        result['GNB'] = Sklearn_GNB(header = 'pytorch_gnb_',
-                                    config = config_list['GNB']).configs
+        result['GNB'] = Sklearn_GNB(
+            header = 'pytorch_gnb_',
+            config = config_list['GNB']
+        ).configs
     if 'Logit' in config_list:
-        result['Logit'] = Sklearn_Logit(header = 'pytorch_logit_',
-                                    config = config_list['Logit']).configs
+        result['Logit'] = Sklearn_Logit(
+            header = 'pytorch_logit_',
+            config = config_list['Logit']
+        ).configs
     if 'GBM' in config_list:
-        result['GBM'] = XGBoost_GBM(header = 'xgboost_gbm_',
-                                    config = config_list['GBM']).configs
+        result['GBM'] = XGBoost_GBM(
+            header = 'xgboost_gbm_',
+            config = config_list['GBM']
+        ).configs
     return result
 
 

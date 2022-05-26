@@ -30,10 +30,12 @@ class GRU(nn.Module):
         self.num_layers = num_layers
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(p = dropout)
-        self.gru = nn.GRU(input_size,
-                            self.hidden_size,
-                            self.num_layers,
-                            batch_first=True)
+        self.gru = nn.GRU(
+            input_size,
+            self.hidden_size,
+            self.num_layers,
+            batch_first = True
+        )
         self.fc = nn.Linear(self.hidden_size, n_class)
         self.optimizer = torch.optim.Adam(self.parameters(), lr = learning_rate)
         self.loss_func = nn.CrossEntropyLoss()
@@ -67,8 +69,10 @@ class Make(classifier.Make_Template):
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(epoch, batch_size, model, dataSets)
-            accuracy = self._evaluate_torch(model,
-                                            testData,
-                                            testLabel,
-                                            test_split_set)
+            accuracy = self._evaluate_torch(
+                model,
+                testData,
+                testLabel,
+                test_split_set
+            )
             self.models.append([model, accuracy])

@@ -146,12 +146,14 @@ class Cast:
 			for target in data.genes:
 				# Handle source TFs with record in target database
 				if target in reg_target:
-					tool.Update_Meta_GRN(self.grn,
-										source,
-										target,
-										data.class1,
-										data.class2,
-										correlation_thread)
+					tool.Update_Meta_GRN(
+						self.grn,
+						source,
+						target,
+						data.class1,
+						data.class2,
+						correlation_thread
+					)
 		return
 
 	# Make GRN casting guide with bioGRID data
@@ -193,12 +195,14 @@ class Cast:
 							passing = True
 
 				if passing:
-					tool.Update_Meta_GRN(self.grn,
-										source,
-										target,
-										data.class1,
-										data.class2,
-										correlation_thread)
+					tool.Update_Meta_GRN(
+						self.grn,
+						source,
+						target,
+						data.class1,
+						data.class2,
+						correlation_thread
+					)
 		return
 
 	# Kinda like GTRD version but only with correlation_thread and
@@ -209,15 +213,17 @@ class Cast:
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
 			for target in data.genes:
-				tool.Update_Meta_GRN(self.grn,
-									source,
-									target,
-									data.class1,
-									data.class2,
-									correlation_thread)
+				tool.Update_Meta_GRN(
+					self.grn,
+					source,
+					target,
+					data.class1,
+					data.class2,
+					correlation_thread
+				)
 		return
 
 	# Save guide file to given path
-	def save_guide(self, path):
+	def save_guide(self, path:str = None):
 		json.encode(self.grn, path)
 		return

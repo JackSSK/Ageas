@@ -106,10 +106,12 @@ class Extract(object):
 					if (regulon['genes'][target]['type'] != TYPES[1] and
 						regulon['genes'][target]['type'] != TYPES[0]):
 						regulon['genes'][target]['type'] = TYPES[0]
-				self.__update_regulon_gene_list(source = source,
-												target = target,
-												gene_list = regulon['genes'],
-												reversable = grp['reversable'])
+				self.__update_regulon_gene_list(
+					source = source,
+					target = target,
+					gene_list = regulon['genes'],
+					reversable = grp['reversable']
+				)
 		self.regulatory_sources = self.__get_reg_sources(impact_depth)
 		del self.grps
 		del self.outlier_grps
@@ -150,17 +152,23 @@ class Extract(object):
 				source = meta_grn['grps'][grp_id]['regulatory_source']
 				target = meta_grn['grps'][grp_id]['regulatory_target']
 				if source not in extend_regulon['genes']:
-					extend_regulon['genes'][source] = {'source':[],
-														'target':[],
-														'type':TYPES[2]}
+					extend_regulon['genes'][source] = {
+						'source':[],
+						'target':[],
+						'type':TYPES[2]
+					}
 				if target not in extend_regulon['genes']:
-					extend_regulon['genes'][target] = {'source':[],
-														'target':[],
-														'type':TYPES[2]}
-				self.__update_regulon_gene_list(source = source,
-							target = target,
-							gene_list = extend_regulon['genes'],
-							reversable = meta_grn['grps'][grp_id]['reversable'])
+					extend_regulon['genes'][target] = {
+						'source':[],
+						'target':[],
+						'type':TYPES[2]
+					}
+				self.__update_regulon_gene_list(
+						source = source,
+						target = target,
+						gene_list = extend_regulon['genes'],
+						reversable = meta_grn['grps'][grp_id]['reversable']
+				)
 		self.regulons = [e for e in self.regulons if e is not None]
 		self.regulatory_sources = self.__get_reg_sources()
 
@@ -173,13 +181,15 @@ class Extract(object):
 				fc = abs(math.log2( (exps['class1']+1) / (exps['class2']+1) ))
 				df.append([k] + list(v.values()) + [fc])
 		df = pd.DataFrame(sorted(df, key=lambda x:x[-1], reverse = True))
-		df.columns=['Gene',
-					'Regulon',
-					'Type',
-					'Source_Num',
-					'Target_Num',
-					'Impact_Score',
-					'LogFC']
+		df.columns = [
+			'Gene',
+			'Regulon',
+			'Type',
+			'Source_Num',
+			'Target_Num',
+			'Impact_Score',
+			'LogFC'
+		]
 		return df
 
 	# recursively add up impact score with GRP linking gene to its target
@@ -207,11 +217,13 @@ class Extract(object):
 						regulon['genes'][target]['type'] != TYPES[2] and
 						cor * prev_cor > self.correlation_thread):
 						dict[target] = cor * prev_cor
-					dict = self.__get_impact_genes(regulon,
-													target,
-													depth,
-													dict,
-													cor * prev_cor)
+					dict = self.__get_impact_genes(
+						regulon,
+						target,
+						depth,
+						dict,
+						cor * prev_cor
+					)
 		return dict
 
 	# combine regulons in self.regulons by index
@@ -229,18 +241,20 @@ class Extract(object):
 				if (gene not in dict and
 					# regulon['genes'][gene]['type'] != TYPES[2] and
 					target_num >= 1):
-					impact = self.__get_impact_genes(self.regulons[regulon_id],
-													gene = gene,
-													depth = impact_depth,
-													dict = {},
-													prev_cor = 1.0)
+					impact = self.__get_impact_genes(
+									self.regulons[regulon_id],
+									gene = gene,
+									depth = impact_depth,
+									dict = {},
+									prev_cor = 1.0
+								)
 					dict[gene]= {
-									'regulon_id': regulon_id,
-									'type':	regulon['genes'][gene]['type'],
-									'source_num': source_num,
-									'target_num': target_num,
-									'impact_score': len(impact)
-								}
+						'regulon_id': regulon_id,
+						'type':	regulon['genes'][gene]['type'],
+						'source_num': source_num,
+						'target_num': target_num,
+						'impact_score': len(impact)
+					}
 				elif gene in dict:
 					raise lib.Error('Repeated Gene in regulons', gene)
 		# filter by top_grp_amount
@@ -268,10 +282,12 @@ class Extract(object):
 					prev_grps.append(grp_id)
 					# add grp to grp_skip_list
 					for id in prev_grps: grp_skip_list[id] = None
-					self.__update_combine_list(reg_id1 = from_regulon,
-												reg_id2 = anchor_reg_id,
-												grp_ids = prev_grps,
-												combine_list = combine_list)
+					self.__update_combine_list(
+						reg_id1 = from_regulon,
+						reg_id2 = anchor_reg_id,
+						grp_ids = prev_grps,
+						combine_list = combine_list
+					)
 
 		elif allowrance > 0:
 			for grp_id, grp in meta_grn['grps'].items():
@@ -287,19 +303,23 @@ class Extract(object):
 					prev_grps.append(grp_id)
 					# add grp to grp_skip_list
 					for id in prev_grps: grp_skip_list[id] = None
-					self.__update_combine_list(reg_id1 = from_regulon,
-												reg_id2 = anchor_reg_id,
-												grp_ids = prev_grps,
-												combine_list = combine_list)
+					self.__update_combine_list(
+						reg_id1 = from_regulon,
+						reg_id2 = anchor_reg_id,
+						grp_ids = prev_grps,
+						combine_list = combine_list
+					)
 				else:
 					prev_grps.append(grp_id)
-					self.__find_bridges_by_gene(new,
-												from_regulon,
-												meta_grn,
-												allowrance - 1,
-												grp_skip_list,
-												combine_list,
-												prev_grps)
+					self.__find_bridges_by_gene(
+						new,
+						from_regulon,
+						meta_grn,
+						allowrance - 1,
+						grp_skip_list,
+						combine_list,
+						prev_grps
+					)
 
 		else:
 			raise lib.Error('Reached a negative allowrance value')
@@ -363,9 +383,10 @@ class Extract(object):
 			# make new regulon data
 			regulon = {
 				'grps':{grp['id']: grp},
-				'genes':{	source: {'source':[], 'target':[], 'type':TYPES[2]},
-							target: {'source':[], 'target':[], 'type':TYPES[2]}
-						}
+				'genes':{
+					source: {'source':[], 'target':[], 'type':TYPES[2]},
+					target: {'source':[], 'target':[], 'type':TYPES[2]}
+				}
 			}
 			self.regulons.append(regulon)
 			return
@@ -390,13 +411,17 @@ class Extract(object):
 			self.regulons[update_ind]['grps'][grp['id']] = grp
 			# update gene list
 			if source not in self.regulons[update_ind]['genes']:
-				self.regulons[update_ind]['genes'][source] = {	'source':[],
-																'target':[],
-																'type':TYPES[2]}
+				self.regulons[update_ind]['genes'][source] = {
+					'source':[],
+					'target':[],
+					'type':TYPES[2]
+				}
 			elif target not in self.regulons[update_ind]['genes']:
-				self.regulons[update_ind]['genes'][target] = {	'source':[],
-																'target':[],
-																'type':TYPES[2]}
+				self.regulons[update_ind]['genes'][target] = {
+					'source':[],
+					'target':[],
+					'type':TYPES[2]
+				}
 
 		# combine 2 regulons if new GRP can connect two
 		if combine_ind is not None:

@@ -78,15 +78,17 @@ class Ageas:
         self.link_step_allowrance = link_step_allowrance
         self.feature_select_iteration = feature_select_iteration
         # Set up database path info
-        self.database_info = binary_db.Setup(database_path,
-                                            database_type,
-                                            class1_path,
-                                            class2_path,
-                                            specie,
-                                            factor_name_type,
-                                            interaction_database,
-                                            sliding_window_size,
-                                            sliding_window_stride)
+        self.database_info = binary_db.Setup(
+                                database_path,
+                                database_type,
+                                class1_path,
+                                class2_path,
+                                specie,
+                                factor_name_type,
+                                interaction_database,
+                                sliding_window_size,
+                                sliding_window_stride
+                            )
         # load standard config file if not further specified
         if model_config_path is None:
             path = resource_filename(__name__, 'data/config/list_config.js')
@@ -101,14 +103,16 @@ class Ageas:
             pcGRNs = grn.Make(load_path = pcgrn_load_path)
             self.meta = meta_grn.Cast(load_path = meta_load_path)
         else:
-            self.meta, pcGRNs=self.get_pcGRNs(database_info=self.database_info,
-                                        std_value_thread = std_value_thread,
-                                        std_ratio_thread = std_ratio_thread,
-                                        mww_p_val_thread = mww_p_val_thread,
-                                        log2fc_thread = log2fc_thread,
-                                        prediction_thread = prediction_thread,
-                                        correlation_thread = correlation_thread,
-                                        meta_load_path = meta_load_path,)
+            self.meta, pcGRNs = self.get_pcGRNs(
+                                    database_info = self.database_info,
+                                    std_value_thread = std_value_thread,
+                                    std_ratio_thread = std_ratio_thread,
+                                    mww_p_val_thread = mww_p_val_thread,
+                                    log2fc_thread = log2fc_thread,
+                                    prediction_thread = prediction_thread,
+                                    correlation_thread = correlation_thread,
+                                    meta_load_path = meta_load_path,
+                                )
         print('Time to cast or load pcGRNs : ', time.time() - start)
         if pcgrn_save_path is not None: pcGRNs.save(pcgrn_save_path)
         if meta_save_path is not None: self.meta.save_guide(meta_save_path)
@@ -116,21 +120,27 @@ class Ageas:
         """ Model Selection """
         print('Entering Model Selection')
         start = time.time()
-        clfs = trainer.Train(pcGRNs = pcGRNs,
-                            database_info = self.database_info,
-                            model_config = self.model_config,)
-        clfs.successive_halving_process(iteration = self.model_select_iteration,
-                                        clf_keep_ratio = clf_keep_ratio,
-                                        clf_accuracy_thread=clf_accuracy_thread,
-                                        last_train_size = train_size)
+        clfs = trainer.Train(
+                    pcGRNs = pcGRNs,
+                    database_info = self.database_info,
+                    model_config = self.model_config,
+                )
+        clfs.successive_pruning(
+            iteration = self.model_select_iteration,
+            clf_keep_ratio = clf_keep_ratio,
+            clf_accuracy_thread = clf_accuracy_thread,
+            last_train_size = train_size
+        )
         print('Finished Model Selection', time.time() - start)
         start = time.time()
         self.grp_importances = interpreter.Interpret(clfs)
-        self.factor = extractor.Extract(correlation_thread,
-                                        self.grp_importances,
-                                        z_score_extract_thread,
-                                        self.far_out_grps,
-                                        top_grp_amount)
+        self.factor = extractor.Extract(
+                            correlation_thread,
+                            self.grp_importances,
+                            z_score_extract_thread,
+                            self.far_out_grps,
+                            top_grp_amount
+                        )
         print('Time to interpret 1st Gen classifiers : ', time.time() - start)
 
         """ Feature Selection """
@@ -140,21 +150,27 @@ class Ageas:
             for i in range(self.feature_select_iteration):
                 start = time.time()
                 prev_grps = self.factor.grps.index
-                rm = self.__get_grp_remove_list(self.grp_importances.result,
-                                                feature_dropout_ratio,
-                                                outlier_thread)
+                rm = self.__get_grp_remove_list(
+                            self.grp_importances.result,
+                            feature_dropout_ratio,
+                            outlier_thread
+                        )
                 pcGRNs.update_with_remove_list(rm)
                 clfs.clear_data()
                 clfs.grns = pcGRNs
-                clfs.general_process(train_size = train_size,
-                                    clf_keep_ratio = clf_keep_ratio,
-                                    clf_accuracy_thread = clf_accuracy_thread)
+                clfs.general_process(
+                    train_size = train_size,
+                    clf_keep_ratio = clf_keep_ratio,
+                    clf_accuracy_thread = clf_accuracy_thread
+                )
                 self.grp_importances = interpreter.Interpret(clfs)
-                self.factor = extractor.Extract(correlation_thread,
-                                                self.grp_importances,
-                                                z_score_extract_thread,
-                                                self.far_out_grps,
-                                                top_grp_amount)
+                self.factor = extractor.Extract(
+                                    correlation_thread,
+                                    self.grp_importances,
+                                    z_score_extract_thread,
+                                    self.far_out_grps,
+                                    top_grp_amount
+                                )
                 print('Time to do a feature selection : ', time.time() - start)
                 if self.__early_stop(prev_grps, self.factor.grps.index):
                     self.stabilize_iteration = None
@@ -170,48 +186,47 @@ class Ageas:
             for i in range(self.stabilize_iteration):
                 denominator += i
                 prev_grps = self.factor.grps.index
-                clfs.general_process(train_size = train_size,
-                                    clf_keep_ratio = clf_keep_ratio,
-                                    clf_accuracy_thread = clf_accuracy_thread)
+                clfs.general_process(
+                    train_size = train_size,
+                    clf_keep_ratio = clf_keep_ratio,
+                    clf_accuracy_thread = clf_accuracy_thread
+                )
                 self.grp_importances.add(interpreter.Interpret(clfs).result)
-                self.factor = extractor.Extract(correlation_thread,
-                                                self.grp_importances,
-                                                z_score_extract_thread,
-                                                self.far_out_grps,
-                                                top_grp_amount)
+                self.factor = extractor.Extract(
+                                    correlation_thread,
+                                    self.grp_importances,
+                                    z_score_extract_thread,
+                                    self.far_out_grps,
+                                    top_grp_amount
+                                )
                 if self.__early_stop(prev_grps, self.factor.grps.index):
                     break
             self.grp_importances.divide(denominator)
-            self.factor = extractor.Extract(correlation_thread,
-                                            self.grp_importances,
-                                            z_score_extract_thread,
-                                            self.far_out_grps,
-                                            top_grp_amount)
+            self.factor = extractor.Extract(
+                                correlation_thread,
+                                self.grp_importances,
+                                z_score_extract_thread,
+                                self.far_out_grps,
+                                top_grp_amount
+                            )
             print('Time to stabilize key GRPs : ', time.time() - start)
 
         """ Construct Regulons with Extracted GRPs and Access Them """
         print('Building Regulons with key GRPs')
         start = time.time()
-        self.factor.build_regulon(meta_grn = self.meta.grn,
-                                    impact_depth = impact_depth)
-
-        # # temporary codes to save reports and regulon before linking regulons
-        # if report_folder_path[-1] != '/': report_folder_path += '/'
-        # if not os.path.exists(report_folder_path):
-        #     os.makedirs(report_folder_path)
-        # self.factor.change_regulon_list_to_dict()
-        # json.encode(self.factor.regulons,
-        #             report_folder_path + 'regulons_before_link.js')
-        # self.factor.report(self.meta.grn).to_csv(
-        #             report_folder_path + 'ageas_before_link.csv', index = False)
-        # self.factor.regulons = [e for e in self.factor.regulons.values()]
+        self.factor.build_regulon(
+            meta_grn = self.meta.grn,
+            impact_depth = impact_depth
+        )
 
         if (self.link_step_allowrance is not None and
             self.link_step_allowrance > 0 and
             len(self.factor.regulons) > 1):
             print('Attempting to Connect Regulons')
-            self.factor.link_regulon(meta_grn = self.meta.grn,
-                                    allowrance = self.link_step_allowrance)
+            self.factor.link_regulon(
+                meta_grn = self.meta.grn,
+                allowrance = self.link_step_allowrance
+            )
         self.factor.change_regulon_list_to_dict()
         print('Time to build key regulons : ', time.time() - start)
 
@@ -219,6 +234,7 @@ class Ageas:
         self.report = self.factor.report(self.meta.grn)
         if report_folder_path is not None:
             self.write_reports(report_folder_path)
+        print('RTB!\n')
 
     # get pseudo-cGRNs from GEMs or GRNs
     def get_pcGRNs(self,
@@ -233,35 +249,46 @@ class Ageas:
         meta = None
         # if reading in GEMs, we need to construct pseudo-cGRNs first
         if re.search(r'gem' , database_info.type):
-            gem_data = Load(database_info,
-                            mww_p_val_thread,
-                            log2fc_thread,
-                            std_value_thread)
+            gem_data = Load(
+                database_info,
+                mww_p_val_thread,
+                log2fc_thread,
+                std_value_thread
+            )
             start1 = time.time()
             # Let kirke casts GRN construction guidance first
-            meta = meta_grn.Cast(gem_data = gem_data,
-                                prediction_thread = prediction_thread,
-                                correlation_thread = correlation_thread,
-                                load_path = meta_load_path)
+            meta = meta_grn.Cast(
+                gem_data = gem_data,
+                prediction_thread = prediction_thread,
+                correlation_thread = correlation_thread,
+                load_path = meta_load_path
+            )
             print('Time to cast GRN Guidnace : ', time.time() - start1)
-            pcGRNs = grn.Make(database_info = database_info,
-                                std_value_thread = std_value_thread,
-                                std_ratio_thread = std_ratio_thread,
-                                correlation_thread = correlation_thread,
-                                gem_data = gem_data,
-                                meta_grn = meta.grn)
+            pcGRNs = grn.Make(
+                database_info = database_info,
+                std_value_thread = std_value_thread,
+                std_ratio_thread = std_ratio_thread,
+                correlation_thread = correlation_thread,
+                gem_data = gem_data,
+                meta_grn = meta.grn
+            )
+        # if we are reading in MEX, make GEM first and then mimic GEM mode
+        elif re.search(r'mex' , database_info.type):
+            pcGRNs = None
+            print('trainer.py: mode MEX need to be revised here')
         # if we are reading in GRNs directly, just process them
         elif re.search(r'grn' , database_info.type):
             pcGRNs = None
-            print('trainer.py: mode grn need to be revised here')
+            print('trainer.py: mode GRN need to be revised here')
         else:
             raise lib.Error('Unrecogonized database type: ', database_info.type)
         return meta, pcGRNs
 
     # take out some GRPs based on feature dropout ratio
-    def __get_grp_remove_list(self, df = None,
-                                    feature_dropout_ratio = 0.2,
-                                    outlier_thread = 3):
+    def __get_grp_remove_list(self,
+                                df = None,
+                                feature_dropout_ratio = 0.2,
+                                outlier_thread = 3):
         total_grp = len(df.index)
         gate_index = int(total_grp * (1 - feature_dropout_ratio))
         remove_list = list(df.index[gate_index:])
@@ -314,8 +341,8 @@ class Ageas:
         # Make path if not exist
         if not os.path.exists(folder): os.makedirs(folder)
         # meta GRN related
-        meta_grn.Analysis(self.meta.grn).save(folder + 'grn_based.csv')
+        meta_grn.Analysis(self.meta.grn).save(folder + 'meta_report.csv')
         # GRP importances
         self.grp_importances.save(folder + 'grps_importances.txt')
         json.encode(self.factor.regulons, folder + 'regulons.js')
-        self.report.to_csv(folder + 'ageas_based.csv', index = False)
+        self.report.to_csv(folder + 'report.csv', index = False)

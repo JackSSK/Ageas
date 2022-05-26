@@ -60,12 +60,14 @@ class Train(clf.Make_Template):
         Then train out models in model sets
         Only keep top performancing models in each set
         """
-        data = binary_class.Process(self.database_info,
-                                    self.grns,
-                                    train_size,
-                                    self.random_state,
-                                    self.allData,
-                                    self.allLabel)
+        data = binary_class.Process(
+            self.database_info,
+            self.grns,
+            train_size,
+            self.random_state,
+            self.allData,
+            self.allLabel
+        )
         data.auto_inject_fake_grps()
 
         # Update allGRP_IDs, allData, allLabel after first iteration
@@ -95,18 +97,20 @@ class Train(clf.Make_Template):
             self._filter_models(clf_keep_ratio, clf_accuracy_thread)
 
         # Filter based on global test performace
-        self.models = self.get_clf_accuracy(clf_list = self.models,
-                                            data = self.allData.to_numpy(),
-                                            label = self.allLabel)
+        self.models = self.get_clf_accuracy(
+            clf_list = self.models,
+            data = self.allData.to_numpy(),
+            label = self.allLabel
+        )
         self._filter_models(clf_keep_ratio, clf_accuracy_thread)
         print('Keeping ', len(self.models), ' models')
 
 
-    def successive_halving_process(self,
-                                    iteration = 2,
-                                    clf_keep_ratio = 0.5,
-                                    clf_accuracy_thread = 0.9,
-                                    last_train_size = 0.9,):
+    def successive_pruning(self,
+                            iteration = 2,
+                            clf_keep_ratio = 0.5,
+                            clf_accuracy_thread = 0.9,
+                            last_train_size = 0.9,):
         """
         Train out models in Successive Halving manner
         Amount of training data is set as limited resouce
@@ -131,19 +135,23 @@ class Train(clf.Make_Template):
             print('Iteration:', i, ' with training size:', train_size)
             keep_ratio = max(1 - train_size, clf_keep_ratio)
             # remove more and more portion as more resource being avaliable
-            self.general_process(train_size = train_size,
-                                clf_accuracy_thread = clf_accuracy_thread,
-                                clf_keep_ratio = keep_ratio)
+            self.general_process(
+                train_size = train_size,
+                clf_accuracy_thread = clf_accuracy_thread,
+                clf_keep_ratio = keep_ratio
+            )
             self.__prune_model_config(id_keep={x[0].id:''for x in self.models})
             if breaking: break
 
         if train_size < last_train_size:
             print('Iteration Last: with training size:', last_train_size)
-            self.general_process(train_size = last_train_size,
-                                clf_accuracy_thread = clf_accuracy_thread)
+            self.general_process(
+                train_size = last_train_size,
+                clf_accuracy_thread = clf_accuracy_thread
+            )
         else: self._filter_models(clf_accuracy_thread = clf_accuracy_thread)
 
-        self.__prune_model_config(id_keep={x[0].id:''for x in self.models})
+        self.__prune_model_config(id_keep = {x[0].id:'' for x in self.models})
         total_model = 0
         for genra in self.model_config:
             total_model += len(self.model_config[genra])
@@ -163,9 +171,11 @@ class Train(clf.Make_Template):
                 model.model_type == 'RFC' or
                 model.model_type == 'XGB_GBM'):
                 pred_result = model.clf.predict(data)
-                pred_accuracy = difflib.SequenceMatcher(None,
-                                                        pred_result,
-                                                        label).ratio()
+                pred_accuracy = difflib.SequenceMatcher(
+                    None,
+                    pred_result,
+                    label
+                ).ratio()
             # RNN type handling + CNN cases
             elif (model.model_type == 'RNN' or
                     model.model_type == 'LSTM' or
@@ -176,8 +186,10 @@ class Train(clf.Make_Template):
                 model.eval()
                 with torch.no_grad():
                     pred_result = model(clf.reshape_tensor(data))
-                pred_accuracy, pred_result = self.__evaluate_torch(pred_result,
-                                                                    label)
+                pred_accuracy, pred_result = self.__evaluate_torch(
+                    pred_result,
+                    label
+                )
             else:
                 raise lib.Error('Cannot handle classifier: ', model.model_type)
             record[-1] = pred_result
@@ -220,8 +232,11 @@ class Train(clf.Make_Template):
         if 'CNN_1D' in config:
             list.append(cnn_1d.Make(config = config['CNN_1D']))
         if 'CNN_Hybrid' in config:
-            list.append(cnn_hybrid.Make(config = config['CNN_Hybrid'],
-                                        grp_amount = len(self.allData.columns)))
+            list.append(cnn_hybrid.Make(
+                    config = config['CNN_Hybrid'],
+                    grp_amount = len(self.allData.columns)
+                )
+            )
         if 'RNN' in config:
             list.append(rnn.Make(config = config['RNN']))
         if 'LSTM' in config:

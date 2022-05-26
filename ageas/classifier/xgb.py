@@ -35,8 +35,10 @@ class Make(classifier.Make_Template):
             # Initialize XGB model
             model = XGB(id, self.configs[id]['config'])
             model.train(dataSets.dataTrain, dataSets.labelTrain)
-            accuracy = self._evaluate_sklearn(model,
-                                                dataSets.dataTest,
-                                                dataSets.labelTest,
-                                                test_split_set)
+            accuracy = self._evaluate_sklearn(
+                model,
+                dataSets.dataTest,
+                dataSets.labelTest,
+                test_split_set
+            )
             self.models.append([model, accuracy])

@@ -51,33 +51,51 @@ class Limited(nn.Module):
 
         # Layer set 1
         self.poolVer = nn.MaxPool2d((1, param['maxpool_kernel_size']))
-        self.convVer = nn.Conv2d(1, param['conv_kernel_num'],
-                                    (1, self.matrixSize[1]))
+        self.convVer = nn.Conv2d(
+            1,
+            param['conv_kernel_num'],
+            (1, self.matrixSize[1])
+        )
         self.poolHor = nn.MaxPool2d((param['maxpool_kernel_size'], 1))
-        self.convHor = nn.Conv2d(1, param['conv_kernel_num'],
-                                    (self.matrixSize[0], 1))
+        self.convHor = nn.Conv2d(
+            1,
+            param['conv_kernel_num'],
+            (self.matrixSize[0], 1)
+        )
         self.poolVer1 = nn.MaxPool2d((1, param['maxpool_kernel_size']))
-        self.convVer1 = nn.Conv2d(param['conv_kernel_num'],
-                                    param['conv_kernel_num'],
-                    (int(self.matrixSize[1] / pow(param['maxpool_kernel_size'],
-                                    self.num_layers)), 1))
+        self.convVer1 = nn.Conv2d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            (int(
+            self.matrixSize[1]/pow(param['maxpool_kernel_size'],self.num_layers)
+            ), 1)
+        )
         self.poolHor1 = nn.MaxPool2d((param['maxpool_kernel_size'], 1))
-        self.convHor1 = nn.Conv2d(param['conv_kernel_num'],
-                                    param['conv_kernel_num'],
-                (1, int(self.matrixSize[0] / pow(param['maxpool_kernel_size'],
-                                    self.num_layers))))
+        self.convHor1 = nn.Conv2d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            (1, int(
+            self.matrixSize[0]/pow(param['maxpool_kernel_size'],self.num_layers)
+            ))
+        )
 
         # Layer set 3
         self.poolVer2 = nn.MaxPool2d((1, param['maxpool_kernel_size']))
-        self.convVer2 = nn.Conv2d(param['conv_kernel_num'],
-                                    param['conv_kernel_num'],
-                    (int(self.matrixSize[1] / pow(param['maxpool_kernel_size'],
-                                    self.num_layers)), 1))
+        self.convVer2 = nn.Conv2d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            (int(
+            self.matrixSize[1]/pow(param['maxpool_kernel_size'],self.num_layers)
+            ), 1)
+        )
         self.poolHor2 = nn.MaxPool2d((param['maxpool_kernel_size'], 1))
-        self.convHor2 = nn.Conv2d(param['conv_kernel_num'],
-                                    param['conv_kernel_num'],
-                (1, int(self.matrixSize[0] / pow(param['maxpool_kernel_size'],
-                                    self.num_layers))))
+        self.convHor2 = nn.Conv2d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            (1, int(
+            self.matrixSize[0]/pow(param['maxpool_kernel_size'],self.num_layers)
+            ))
+        )
 
 
         ### Same problem as 1D model ###
@@ -130,14 +148,26 @@ class Unlimited(nn.Module):
         self.pool0 = nn.MaxPool2d((1, param['maxpool_kernel_size']))
         self.pool1 = nn.MaxPool2d((param['maxpool_kernel_size'], 1))
         dividen = pow(param['maxpool_kernel_size'], self.num_layers)
-        self.conv0 = nn.Conv2d(1, param['conv_kernel_num'],(self.mat_size[0],1))
-        self.conv0_recur = nn.Conv2d(param['conv_kernel_num'],
-                                    param['conv_kernel_num'],
-                                    (1, max(1,int(self.mat_size[0] / dividen))))
-        self.conv1 = nn.Conv2d(1, param['conv_kernel_num'],(1,self.mat_size[1]))
-        self.conv1_recur = nn.Conv2d(param['conv_kernel_num'],
-                                    param['conv_kernel_num'],
-                                    (max(1,int(self.mat_size[1] / dividen)), 1))
+        self.conv0 = nn.Conv2d(
+            1,
+            param['conv_kernel_num'],
+            (self.mat_size[0],1)
+        )
+        self.conv0_recur = nn.Conv2d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            (1, max(1, int(self.mat_size[0] / dividen)))
+        )
+        self.conv1 = nn.Conv2d(
+            1,
+            param['conv_kernel_num'],
+            (1,self.mat_size[1])
+        )
+        self.conv1_recur = nn.Conv2d(
+            param['conv_kernel_num'],
+            param['conv_kernel_num'],
+            (max(1, int(self.mat_size[1] / dividen)), 1)
+        )
 
         ### Same problem as 1D model ###
         # flattenLength = int(featureNum / pow(maxpool_kernel_size, num_layers))
@@ -196,10 +226,12 @@ class Make(classifier.Make_Template):
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(epoch, batch_size, model, dataSets)
-            accuracy = self._evaluate_torch(model,
-                                            testData,
-                                            testLabel,
-                                            test_split_set)
+            accuracy = self._evaluate_torch(
+                model,
+                testData,
+                testLabel,
+                test_split_set
+            )
             self.models.append([model, accuracy])
 
     # Check whether matrix sizes are reasonable or not

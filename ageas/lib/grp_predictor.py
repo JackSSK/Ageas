@@ -37,16 +37,20 @@ class Predict:
     def expand_meta_grn(self, meta_grn, genes, correlation_thread):
         for gene in genes:
             class1FeatImpts, class2FeatImpts = self._getFeatureImportences(gene)
-            self.__update_grps_to_meta_grn(meta_grn,
-                                            correlation_thread,
-                                            gene,
-                                            self.class1_gem.index,
-                                            class1FeatImpts,)
-            self.__update_grps_to_meta_grn(meta_grn,
-                                            correlation_thread,
-                                            gene,
-                                            self.class2_gem.index,
-                                            class2FeatImpts,)
+            self.__update_grps_to_meta_grn(
+                meta_grn,
+                correlation_thread,
+                gene,
+                self.class1_gem.index,
+                class1FeatImpts,
+            )
+            self.__update_grps_to_meta_grn(
+                meta_grn,
+                correlation_thread,
+                gene,
+                self.class2_gem.index,
+                class2FeatImpts,
+            )
         return meta_grn
 
     # decide whether update GRPs associated with given gene into GRN guidance
@@ -61,12 +65,14 @@ class Predict:
             tar = gene_list[i]
             if feature_importances[i] > self.thread:
                 if tool.Cast_GRP_ID(gene, tar) not in meta_grn:
-                    tool.Update_Meta_GRN(meta_grn,
-                                        gene,
-                                        tar,
-                                        self.class1_gem,
-                                        self.class2_gem,
-                                        correlation_thread)
+                    tool.Update_Meta_GRN(
+                        meta_grn,
+                        gene,
+                        tar,
+                        self.class1_gem,
+                        self.class2_gem,
+                        correlation_thread
+                    )
         return
 
     # Automatically set prediction thread by tuning with sample GRPs
@@ -115,12 +121,16 @@ class Predict:
     # Basically, this part mimicing what GRNBoost2 does
     def _getFeatureImportences(self, key, checked_in_gem = False):
         if checked_in_gem or key in self.class1_gem.index:
-            c1_result = self.__gbm_feature_importances_calculat(self.class1_gem,
-                                                                key)
+            c1_result = self.__gbm_feature_importances_calculat(
+                            self.class1_gem,
+                            key
+                        )
         else: c1_result = None
         if checked_in_gem or key in self.class2_gem.index:
-            c2_result = self.__gbm_feature_importances_calculat(self.class2_gem,
-                                                                key)
+            c2_result = self.__gbm_feature_importances_calculat(
+                            self.class2_gem,
+                            key
+                        )
         else: c2_result = None
         return c1_result, c2_result
 

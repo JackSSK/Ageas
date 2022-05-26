@@ -15,12 +15,14 @@ from scipy.stats import mannwhitneyu
 # Mann-Whitney U test:  Return True if p-value lower than given threshold
 def MWW_Test(list1, list2, threshold = 0.05):
     if threshold is None: return True
-    u1, p = mannwhitneyu(list1,         # Gene Expression list 1
-                        list2,          # Gene Expression list 2
-                        use_continuity = True,
-                        alternative = 'two-sided',
-                        axis = 0,
-                        method = 'asymptotic')
+    u1, p = mannwhitneyu(
+        list1,         # Gene Expression list 1
+        list2,          # Gene Expression list 2
+        use_continuity = True,
+        alternative = 'two-sided',
+        axis = 0,
+        method = 'asymptotic'
+    )
     if p <= threshold: return True
     else: return False
 

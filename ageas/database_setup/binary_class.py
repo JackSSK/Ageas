@@ -79,8 +79,10 @@ class Label_Encode:
         super(Label_Encode, self).__init__()
         # Initialization
         self.encoder = LabelEncoder().fit([class1_path, class2_path])
-        self.transformed_labels = self.encoder.transform([class1_path,
-                                                        class2_path])
+        self.transformed_labels = self.encoder.transform([
+                                                        class1_path,
+                                                        class2_path
+                                                        ])
 
     # Perform inverse_transform
     def getOriginLable(self, query):
@@ -120,11 +122,15 @@ class Process(object):
     # Process in database mode
     def __init_protocol(self, database_info, grnData):
         # class1Result is [dataTrainC1, dataTestC1, lableTrainC1, labelTestC1]
-        class1Result = self._splitTrainTest(grnData.class1_pcGRNs,
-                                            database_info.label1)
+        class1Result = self.__split_train_test(
+            grnData.class1_pcGRNs,
+            database_info.label1
+        )
         # similar with class1
-        class2Result = self._splitTrainTest(grnData.class2_pcGRNs,
-                                            database_info.label2)
+        class2Result = self.__split_train_test(
+            grnData.class2_pcGRNs,
+            database_info.label2
+        )
         self.labelTrain = np.array(class1Result[2] + class2Result[2])
         self.labelTest = np.array(class1Result[3] + class2Result[3])
         self.dataTrain = []
@@ -132,16 +138,20 @@ class Process(object):
         # standardize feature data
         # to make sure all training and testing samples
         # will be in same dimmension
-        self.__update_train_test(grnData.class1_pcGRNs,
-                                train_set = class1Result[0],
-                                test_set = class1Result[1])
-        self.__update_train_test(grnData.class2_pcGRNs,
-                                train_set = class2Result[0],
-                                test_set = class2Result[1])
+        self.__update_train_test(
+            grnData.class1_pcGRNs,
+            train_set = class1Result[0],
+            test_set = class1Result[1]
+        )
+        self.__update_train_test(
+            grnData.class2_pcGRNs,
+            train_set = class2Result[0],
+            test_set = class2Result[1]
+        )
         # Add zeros for position holding
-        self._addZeros(self.dataTrain)
-        self._addZeros(self.dataTest)
-        # self._allIDsCheck()
+        self.__append_zeros(self.dataTrain)
+        self.__append_zeros(self.dataTest)
+        # self.__all_grp_id_check()
         # Clear unnecessary data
         del grnData
         del database_info
@@ -170,10 +180,12 @@ class Process(object):
 
     # Makke training/testing data and lable arrays based on given full data
     def __iterating_protocool(self, fullData, fullLabel):
-            data = train_test_split(fullData,
-                                    fullLabel,
-                                    train_size = self.train_size,
-                                    random_state = self.random_state)
+            data = train_test_split(
+                fullData,
+                fullLabel,
+                train_size = self.train_size,
+                random_state = self.random_state
+            )
             self.dataTrain = data[0]
             self.dataTest = data[1]
             self.labelTrain = data[2]
@@ -181,21 +193,23 @@ class Process(object):
 
     # seperate files in given path into training
     # and testing sets based on ratio
-    def _splitTrainTest(self, grnData, label):
+    def __split_train_test(self, grnData, label):
         data_sample = []
         label_sample = []
         for sample in grnData:
             data_sample.append(sample)
             label_sample.append(label)
-        return train_test_split(data_sample,
-                                label_sample,
-                                train_size = self.train_size,
-                                random_state = self.random_state)
+        return train_test_split(
+            data_sample,
+            label_sample,
+            train_size = self.train_size,
+            random_state = self.random_state
+        )
 
     # add zeros to each preprocessed samples
     # to make sure all training and testing samples
     # will be in same dimmension
-    def _addZeros(self, dataset):
+    def __append_zeros(self, dataset):
         for sample in dataset:
             if len(sample) != len(self.all_grp_ids):
                 sample += [0] * (len(self.all_grp_ids) - len(sample))
@@ -204,13 +218,14 @@ class Process(object):
 
     # Check whether allIDs have dupicate IDs or not
     # ToDo: need optimization to get unique ids
-    def _allIDsCheck(self):
+    def __all_grp_id_check(self):
         # check whether allIDs have duplicate elements
         unique = [x for i, x in enumerate([*self.all_grp_ids])
             if i == [*self.all_grp_ids].index(x)]
         if len(self.all_grp_ids) != len(unique):
             raise db_setup.Error(
-                'preprocessor malfunction: duplicate ID in allIDs')
+                'preprocessor malfunction: duplicate ID in allIDs'
+            )
         del unique
 
     # Calculate a close-to-square matrix size based on allIDs
@@ -226,5 +241,5 @@ class Process(object):
             for i in range(fakeID_Num):
                 id = fakeID + str(i)
                 self.all_grp_ids[id] = ''
-        self._addZeros(self.dataTrain)
-        self._addZeros(self.dataTest)
+        self.__append_zeros(self.dataTrain)
+        self.__append_zeros(self.dataTest)

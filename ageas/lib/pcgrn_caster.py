@@ -40,11 +40,13 @@ class Make:
         if self.correlation_thread is None: self.correlation_thread = 0
         # load in
         if load_path is not None:
-            self.class1_pcGRNs,self.class2_pcGRNs=self.__load_pcGRNs(load_path)
+            self.class1_pcGRNs,self.class2_pcGRNs= self.__load_pcGRNs(load_path)
         # Make GRNs
         else:
-            self.class1_pcGRNs,self.class2_pcGRNs=self.__make_pcGRNs(gem_data,
-                                                                    meta_grn)
+            self.class1_pcGRNs, self.class2_pcGRNs = self.__make_pcGRNs(
+                gem_data = gem_data,
+                meta_grn = meta_grn
+            )
 
     # main controller to cast pseudo cell GRNs (pcGRNs)
     def __make_pcGRNs(self, gem_data, meta_grn):
@@ -52,16 +54,24 @@ class Make:
             class1_pcGRNs = self.__loaded_gem_method(gem_data.class1, meta_grn)
             class2_pcGRNs = self.__loaded_gem_method(gem_data.class2, meta_grn)
         elif self.database_info.type == 'gem_folder':
-            class1_pcGRNs = self.__folder_method(self.database_info.class1_path,
-                                                meta_grn)
-            class2_pcGRNs = self.__folder_method(self.database_info.class2_path,
-                                                meta_grn)
+            class1_pcGRNs = self.__folder_method(
+                self.database_info.class1_path,
+                meta_grn
+            )
+            class2_pcGRNs = self.__folder_method(
+                self.database_info.class2_path,
+                meta_grn
+            )
         elif self.database_info.type == 'gem_file':
             # need to revise here!
-            class1_pcGRNs = self.__file_method(self.database_info.class1_path,
-                                                meta_grn)
-            class2_pcGRNs = self.__file_method(self.database_info.class2_path,
-                                                meta_grn)
+            class1_pcGRNs = self.__file_method(
+                self.database_info.class1_path,
+                meta_grn
+            )
+            class2_pcGRNs = self.__file_method(
+                self.database_info.class2_path,
+                meta_grn
+            )
         else:
             raise tool.Error('pcGRN Caster Error: Unsupported database type')
         return class1_pcGRNs, class2_pcGRNs
@@ -184,8 +194,10 @@ class Make:
             filename = path + '/' + filename
             # read in GEM files
             temp = gem.Reader(filename, header = 0, index_col = 0)
-            temp.STD_Filter(std_value_thread = self.std_value_thread,
-                            std_ratio_thread = self.std_ratio_thread)
+            temp.STD_Filter(
+                std_value_thread = self.std_value_thread,
+                std_ratio_thread = self.std_ratio_thread
+            )
             result[filename] = temp.data
         return result
 
@@ -203,8 +215,10 @@ class Make:
     # temporal pcGRN saving method
     """ need to be revised later to save pcGRNs file by file"""
     def save(self, save_path):
-        json.encode({'class1':self.class1_pcGRNs, 'class2':self.class2_pcGRNs},
-                    save_path)
+        json.encode(
+            {'class1':self.class1_pcGRNs, 'class2':self.class2_pcGRNs},
+            save_path
+        )
 
     # load in pcGRNs from files
     """ need to be revised later with save_pcGRNs"""

@@ -53,13 +53,16 @@ class Interpret:
             test_data = trainer_data.allData.iloc[test_data,:]
             # Handling RFC cases
             if model.model_type == 'RFC':
-                feature_score = shap_explainer.get_tree_explain(model.clf,
-                                                                test_data)
+                feature_score = shap_explainer.get_tree_explain(
+                    model.clf,
+                    test_data
+                )
             # Handling GNB cases
             elif model.model_type == 'GNB':
                 feature_score = shap_explainer.get_kernel_explain(
-                                                        model.clf.predict_proba,
-                                                        test_data)
+                    model.clf.predict_proba,
+                    test_data
+                )
             # Handling Logistic Regression cases
             elif model.model_type == 'Logit':
                 feature_score = softmax(abs(model.clf.coef_[0]))
@@ -71,18 +74,23 @@ class Interpret:
                 # Handle other cases here
                 else:
                     feature_score = shap_explainer.get_kernel_explain(
-                                                        model.clf.predict_proba,
-                                                        test_data)
+                        model.clf.predict_proba,
+                        test_data
+                    )
             # Hybrid CNN cases and 1D CNN cases
             elif re.search(r'CNN', model.model_type):
                 # Use DeepExplainer when in limited mode
                 if re.search(r'Limited', model.model_type):
-                    feature_score = shap_explainer.get_deep_explain(model,
-                                                                    test_data)
+                    feature_score = shap_explainer.get_deep_explain(
+                        model,
+                        test_data
+                    )
                 # Use GradientExplainer when in unlimited mode
                 elif re.search(r'Unlimited', model.model_type):
-                    feature_score = shap_explainer.get_gradient_explain(model,
-                                                                    test_data)
+                    feature_score = shap_explainer.get_gradient_explain(
+                        model,
+                        test_data
+                    )
                 else:
                     raise lib.Error('Unrecogonized CNN model:',model.model_type)
             # XGB's GBM cases
@@ -93,14 +101,18 @@ class Interpret:
                     model.model_type == 'LSTM' or
                     model.model_type == 'GRU' or
                     model.model_type == 'Transformer'):
-                feature_score = shap_explainer.get_gradient_explain(model,
-                                                                    test_data)
+                feature_score = shap_explainer.get_gradient_explain(
+                    model,
+                    test_data
+                )
             else:raise lib.Error('Unrecogonized model type: ', model.model_type)
 
             # Update feature_score_sum
             if feature_score_sum is None and feature_score is not None:
-                feature_score_sum = pd.array((feature_score * accuracy),
-                                            dtype = float)
+                feature_score_sum = pd.array(
+                    (feature_score * accuracy),
+                    dtype = float
+                )
             elif feature_score is not None:
                 feature_score_sum += (feature_score * accuracy)
 
@@ -128,8 +140,14 @@ class Interpret:
 
     # Update feature importance matrix with newer matrix
     def add(self, df):
-        self.result = self.result.add(df,axis = 0,fill_value = 0).sort_values(
-                                                'importance', ascending = False)
+        self.result = self.result.add(
+                                        df,
+                                        axis = 0,
+                                        fill_value = 0
+                                    ).sort_values(
+                                        'importance',
+                                        ascending = False
+                                        )
 
     # divide importance value with stabilizing iteration times
     def divide(self, denominator):
@@ -197,9 +215,11 @@ class SHAP_Explainer(object):
 
     # Use TreeExplainer
     def get_tree_explain(self, model, data: pd.DataFrame):
-        explainer = shap.TreeExplainer(model,
-                                        feature_perturbation = 'interventional',
-                                        check_additivity = False,
-                                        data = self.basement_data,)
+        explainer = shap.TreeExplainer(
+            model,
+            feature_perturbation = 'interventional',
+            check_additivity = False,
+            data = self.basement_data,
+        )
         shap_vals = explainer.shap_values(data)
         return softmax(sum(np.abs(shap_vals).mean(0)))
