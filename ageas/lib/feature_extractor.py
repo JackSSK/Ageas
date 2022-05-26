@@ -177,6 +177,7 @@ class Extract(object):
 		df = []
 		for k, v in self.regulatory_sources.items():
 			if v['impact_score'] >= impact_score_thread:
+				v['regulon_id'] = 'regulon_' + str(v['regulon_id'])
 				exps = meta_grn['mean_gene_expressions'][k]
 				fc = abs(math.log2( (exps['class1']+1) / (exps['class2']+1) ))
 				df.append([k] + list(v.values()) + [fc])

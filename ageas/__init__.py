@@ -263,7 +263,7 @@ class Ageas:
                 correlation_thread = correlation_thread,
                 load_path = meta_load_path
             )
-            print('Time to cast GRN Guidnace : ', time.time() - start1)
+            print('Time to cast Meta GRN : ', time.time() - start1)
             pcGRNs = grn.Make(
                 database_info = database_info,
                 std_value_thread = std_value_thread,
