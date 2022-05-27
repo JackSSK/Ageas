@@ -17,7 +17,7 @@ TYPES = ['Standard', 'Outer', 'Bridge']
 
 class Extract(object):
 	"""
-	Extract key genes from the most important GRPs
+	Extract key Regulons from the most important GRPs
 	"""
 
 	def __init__(self,
@@ -31,7 +31,9 @@ class Extract(object):
 		self.regulatory_sources = None
 		self.outlier_grps = outlier_grps
 		self.correlation_thread = correlation_thread
+		self.full_grps = grp_importances
 		self.grps = grp_importances.stratify(score_thread, top_grp_amount)
+
 	# as named
 	def change_regulon_list_to_dict(self, header = 'regulon_'):
 		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
@@ -114,7 +116,6 @@ class Extract(object):
 				)
 		self.regulatory_sources = self.__get_reg_sources(impact_depth)
 		del self.grps
-		del self.outlier_grps
 
 	# Use extra GRPs from meta GRN to link different Regulons
 	def link_regulon(self,
@@ -128,13 +129,15 @@ class Extract(object):
 				grp_skip_list[grp_id] = None
 		combine_list = []
 		for gene in self.regulatory_sources:
-			self.__find_bridges_by_gene(gene,
-									self.regulatory_sources[gene]['regulon_id'],
-									meta_grn,
-									allowrance,
-									grp_skip_list,
-									combine_list,
-									[])
+			self.__find_bridges_by_gene(
+				gene,
+				self.regulatory_sources[gene]['regulon_id'],
+				meta_grn,
+				allowrance,
+				grp_skip_list,
+				combine_list,
+				[]
+			)
 		for comb in combine_list:
 			assert len(comb[0]) >= 2
 			extend_regulon = self.regulons[comb[0][0]]
@@ -164,10 +167,10 @@ class Extract(object):
 						'type':TYPES[2]
 					}
 				self.__update_regulon_gene_list(
-						source = source,
-						target = target,
-						gene_list = extend_regulon['genes'],
-						reversable = meta_grn['grps'][grp_id]['reversable']
+					source = source,
+					target = target,
+					gene_list = extend_regulon['genes'],
+					reversable = meta_grn['grps'][grp_id]['reversable']
 				)
 		self.regulons = [e for e in self.regulons if e is not None]
 		self.regulatory_sources = self.__get_reg_sources()
@@ -243,12 +246,12 @@ class Extract(object):
 					# regulon['genes'][gene]['type'] != TYPES[2] and
 					target_num >= 1):
 					impact = self.__get_impact_genes(
-									self.regulons[regulon_id],
-									gene = gene,
-									depth = impact_depth,
-									dict = {},
-									prev_cor = 1.0
-								)
+						self.regulons[regulon_id],
+						gene = gene,
+						depth = impact_depth,
+						dict = {},
+						prev_cor = 1.0
+					)
 					dict[gene]= {
 						'regulon_id': regulon_id,
 						'type':	regulon['genes'][gene]['type'],

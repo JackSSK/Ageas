@@ -31,18 +31,22 @@ class Reader(object):
 		elif re.search(r'.zip', path):	self.compression = 'zip'
 		else: 							self.compression = 'infer'
 		try:
-			self.data = pd.read_csv(path,
-									sep = self.sep,
-									compression = self.compression,
-									**kwargs)
+			self.data = pd.read_csv(
+				path,
+				sep = self.sep,
+				compression = self.compression,
+				**kwargs
+			)
 		except Exception as GEM_Reader_Error:
 			raise tool.Error('Unsupported File Type: ', path)
 
 	# filter data frame based on standered deviations
 	def STD_Filter(self, std_value_thread = None, std_ratio_thread = None):
-		self.data = tool.STD_Filter(df = self.data,
-									std_value_thread = std_value_thread,
-									std_ratio_thread = std_ratio_thread)
+		self.data = tool.STD_Filter(
+			df = self.data,
+			std_value_thread = std_value_thread,
+			std_ratio_thread = std_ratio_thread
+		)
 
 
 
@@ -83,11 +87,13 @@ class Folder(object):
 			# Skip files without targeting appendix
 			if not re.search(self.file_type, filename): continue
 			filepath = self.path + '/' + filename
-			gem = pd.read_csv(filepath,
-								sep = self.sep,
-								header = self.header_row,
-								index_col = self.index_col,
-								compression = self.compression_method)
+			gem = pd.read_csv(
+				filepath,
+				sep = self.sep,
+				header = self.header_row,
+				index_col = self.index_col,
+				compression = self.compression_method
+			)
 			# Initialize output df if still empty
 			if result is None:
 				result = gem
@@ -98,11 +104,13 @@ class Folder(object):
 				unique_samples = gem.columns.difference(result.columns)
 				# if nothing new, move forward
 				if len(unique_samples) == 0: continue
-				result = pd.merge(result,
-								gem[unique_samples],
-								left_index = True,
-								right_index = True,
-								how = method)
+				result = pd.merge(
+					result,
+					gem[unique_samples],
+					left_index = True,
+					right_index = True,
+					how = method
+				)
 			# Just in case
 			result = result[~result.index.duplicated(keep='first')]
 		del gem
@@ -114,6 +122,8 @@ class Folder(object):
 		# return or save matrix
 		if outpath is None: return result
 		else:
-			result.to_csv(outpath,
-							sep = self.sep,
-							compression = self.compression_method)
+			result.to_csv(
+				outpath,
+				sep = self.sep,
+				compression = self.compression_method
+			)

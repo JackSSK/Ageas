@@ -13,7 +13,7 @@ from netgraph import InteractiveGraph
 TYPES = ['Standard', 'Outer', 'Bridge']
 
 
-class Regulon(object):
+class Plot_Regulon(object):
     """
     Visualize full or partial Regulon
 
@@ -27,7 +27,7 @@ class Regulon(object):
                 file_path:str = None,
                 root_gene:str = None,
                 impact_depth:int = 1):
-        super(Regulon, self).__init__()
+        super(Plot_Regulon, self).__init__()
         self.plot = None
         self.scale = scale
         self.regulon = json.decode(file_path)[regulon_id]

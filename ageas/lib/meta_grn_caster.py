@@ -88,8 +88,9 @@ class Cast:
 		self.tfs_no_interaction_rec = [x for x in self.tfs_no_interaction_rec]
 
 		# print out amount of TFs not covered by selected interaction database
-		print(len(self.tfs_no_interaction_rec),
-				'potential source TFs not coverd by interaction DB')
+		print('	Predicting interactions for',
+				len(self.tfs_no_interaction_rec),
+				'TFs not covered in interaction DB')
 
 		# Start GRNBoost2-like process if thread is set
 		if prediction_thread is not None and len(self.tfs_no_interaction_rec)>0:
@@ -100,9 +101,8 @@ class Cast:
 			else:
 				genes = self.tfs_no_interaction_rec
 			self.grn = gBoost.expand_meta_grn(self.grn,genes,correlation_thread)
-		print('Total amount of GRPs in Meta GRN:',
-				len(self.grn['grps']))
-		print('Total amount of Genes in Meta GRN:',
+		print('	Total amount of GRPs in Meta GRN:', len(self.grn['grps']))
+		print('	Total amount of Genes in Meta GRN:',
 				len(self.grn['mean_gene_expressions']))
 		# else: raise lib.Error('Sorry, such mode is not supported yet!')
 		""" ToDo: if more than 1 guide can be casted, make agreement """
