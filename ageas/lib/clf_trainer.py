@@ -35,14 +35,14 @@ class Train(clf.Make_Template):
     Train out well performing classification models
     """
     def __init__(self,
-                pcGRNs = None,
+                psGRNs = None,
                 database_info = None,
                 model_config = None,
                 random_state = None,
                 test_split_set = False,):
         super(Train, self).__init__()
         # Initialization
-        self.grns = pcGRNs
+        self.grns = psGRNs
         self.models = None
         self.allData = None
         self.allLabel = None

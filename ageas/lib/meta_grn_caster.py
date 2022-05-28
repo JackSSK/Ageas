@@ -12,7 +12,7 @@ from collections import Counter
 import ageas.lib as lib
 import ageas.tool as tool
 import ageas.tool.json as json
-import ageas.lib.pcgrn_caster as grn
+import ageas.lib.psgrn_caster as grn
 import ageas.lib.grp_predictor as grp
 
 

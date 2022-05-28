@@ -233,12 +233,12 @@ class Process(object):
     def __init_protocol(self, database_info, grnData):
         # class1Result is [dataTrainC1, dataTestC1, lableTrainC1, labelTestC1]
         class1Result = self.__split_train_test(
-            grnData.class1_pcGRNs,
+            grnData.class1_psGRNs,
             database_info.label1
         )
         # similar with class1
         class2Result = self.__split_train_test(
-            grnData.class2_pcGRNs,
+            grnData.class2_psGRNs,
             database_info.label2
         )
         self.labelTrain = np.array(class1Result[2] + class2Result[2])
@@ -249,12 +249,12 @@ class Process(object):
         # to make sure all training and testing samples
         # will be in same dimmension
         self.__update_train_test(
-            grnData.class1_pcGRNs,
+            grnData.class1_psGRNs,
             train_set = class1Result[0],
             test_set = class1Result[1]
         )
         self.__update_train_test(
-            grnData.class2_pcGRNs,
+            grnData.class2_psGRNs,
             train_set = class2Result[0],
             test_set = class2Result[1]
         )

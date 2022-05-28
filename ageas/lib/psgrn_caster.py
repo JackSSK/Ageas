@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Ageas Reborn
-Generate pseudo-cell GRNs (pcGRNs) from GEMs
+Generate pseudo-cell GRNs (psGRNs) from GEMs
 
 author: jy, nkmtmsys
 
@@ -40,51 +40,51 @@ class Make:
         if self.correlation_thread is None: self.correlation_thread = 0
         # load in
         if load_path is not None:
-            self.class1_pcGRNs,self.class2_pcGRNs= self.__load_pcGRNs(load_path)
+            self.class1_psGRNs,self.class2_psGRNs= self.__load_psGRNs(load_path)
         # Make GRNs
         else:
-            self.class1_pcGRNs, self.class2_pcGRNs = self.__make_pcGRNs(
+            self.class1_psGRNs, self.class2_psGRNs = self.__make_psGRNs(
                 gem_data = gem_data,
                 meta_grn = meta_grn
             )
 
-    # main controller to cast pseudo cell GRNs (pcGRNs)
-    def __make_pcGRNs(self, gem_data, meta_grn):
+    # main controller to cast pseudo cell GRNs (psGRNs)
+    def __make_psGRNs(self, gem_data, meta_grn):
         if gem_data is not None:
-            class1_pcGRNs = self.__loaded_gem_method(gem_data.class1, meta_grn)
-            class2_pcGRNs = self.__loaded_gem_method(gem_data.class2, meta_grn)
+            class1_psGRNs = self.__loaded_gem_method(gem_data.class1, meta_grn)
+            class2_psGRNs = self.__loaded_gem_method(gem_data.class2, meta_grn)
         elif self.database_info.type == 'gem_folder':
-            class1_pcGRNs = self.__folder_method(
+            class1_psGRNs = self.__folder_method(
                 self.database_info.class1_path,
                 meta_grn
             )
-            class2_pcGRNs = self.__folder_method(
+            class2_psGRNs = self.__folder_method(
                 self.database_info.class2_path,
                 meta_grn
             )
         elif self.database_info.type == 'gem_file':
             # need to revise here!
-            class1_pcGRNs = self.__file_method(
+            class1_psGRNs = self.__file_method(
                 self.database_info.class1_path,
                 meta_grn
             )
-            class2_pcGRNs = self.__file_method(
+            class2_psGRNs = self.__file_method(
                 self.database_info.class2_path,
                 meta_grn
             )
         else:
-            raise tool.Error('pcGRN Caster Error: Unsupported database type')
-        return class1_pcGRNs, class2_pcGRNs
+            raise tool.Error('psGRN Caster Error: Unsupported database type')
+        return class1_psGRNs, class2_psGRNs
 
     # as named
     def __file_method(self, path, meta_grn):
-        pcGRNs = {}
-        print('pcgrn_caster.py:class Make: need to do something here')
-        return pcGRNs
+        psGRNs = {}
+        print('psgrn_caster.py:class Make: need to do something here')
+        return psGRNs
 
     # as named
     def __loaded_gem_method(self, gem, meta_grn):
-        pcGRNs = {}
+        psGRNs = {}
         sample_num = 0
         start = 0
         end = self.database_info.sliding_window_size
@@ -107,25 +107,25 @@ class Make:
                 grn = self.__process_sample_with_metaGRN(sample, meta_grn)
             else:
                 grn = self.__process_sample_without_guidance(sample)
-            # Save data into pcGRNs
-            pcGRNs[sample_id] = self.__reform_grn(grn)
+            # Save data into psGRNs
+            psGRNs[sample_id] = self.__reform_grn(grn)
             start += stride
             end += stride
             sample_num += 1
-        return pcGRNs
+        return psGRNs
 
     # as named
     def __folder_method(self, path, meta_grn):
         data = self.__readin_folder(path)
-        pcGRNs = {}
+        psGRNs = {}
         for sample in data:
             if meta_grn is not None:
                 grn = self.__process_sample_with_metaGRN(data[sample], meta_grn)
             else:
                 grn = self.__process_sample_without_guidance(data[sample])
-            # Save data into pcGRNs
-            pcGRNs[sample] = self.__reform_grn(grn)
-        return pcGRNs
+            # Save data into psGRNs
+            psGRNs[sample] = self.__reform_grn(grn)
+        return psGRNs
 
     # again, as named
     def __reform_grn(self, grn):
@@ -203,26 +203,26 @@ class Make:
 
     # as named
     def update_with_remove_list(self, remove_list):
-        for sample in self.class1_pcGRNs:
+        for sample in self.class1_psGRNs:
             for id in remove_list:
-                if id in self.class1_pcGRNs[sample]:
-                    del self.class1_pcGRNs[sample][id]
-        for sample in self.class2_pcGRNs:
+                if id in self.class1_psGRNs[sample]:
+                    del self.class1_psGRNs[sample][id]
+        for sample in self.class2_psGRNs:
             for id in remove_list:
-                if id in self.class2_pcGRNs[sample]:
-                    del self.class2_pcGRNs[sample][id]
+                if id in self.class2_psGRNs[sample]:
+                    del self.class2_psGRNs[sample][id]
 
-    # temporal pcGRN saving method
-    """ need to be revised later to save pcGRNs file by file"""
+    # temporal psGRN saving method
+    """ need to be revised later to save psGRNs file by file"""
     def save(self, save_path):
         json.encode(
-            {'class1':self.class1_pcGRNs, 'class2':self.class2_pcGRNs},
+            {'class1':self.class1_psGRNs, 'class2':self.class2_psGRNs},
             save_path
         )
 
-    # load in pcGRNs from files
-    """ need to be revised later with save_pcGRNs"""
-    def __load_pcGRNs(self, load_path):
+    # load in psGRNs from files
+    """ need to be revised later with save_psGRNs"""
+    def __load_psGRNs(self, load_path):
         data = json.decode(load_path)
         return data['class1'], data['class2']
 

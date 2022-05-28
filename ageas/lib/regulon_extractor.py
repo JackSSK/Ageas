@@ -29,9 +29,10 @@ class Extract(object):
 		super(Extract, self).__init__()
 		self.regulons = []
 		self.regulatory_sources = None
-		self.outlier_grps = outlier_grps
 		self.correlation_thread = correlation_thread
 		self.full_grps = grp_importances
+		# will be deleted after recorded in self.regulons
+		self.outlier_grps = outlier_grps
 		self.grps = grp_importances.stratify(score_thread, top_grp_amount)
 
 	# as named
@@ -116,6 +117,7 @@ class Extract(object):
 				)
 		self.regulatory_sources = self.__get_reg_sources(impact_depth)
 		del self.grps
+		del self.outlier_grps
 
 	# Use extra GRPs from meta GRN to link different Regulons
 	def link_regulon(self,

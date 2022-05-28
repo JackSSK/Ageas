@@ -70,24 +70,28 @@ class Unit:
         self.impact_depth = impact_depth
         self.link_step_allowrance = link_step_allowrance
 
-    def process(self,):
-        """ Model Selection """
+    # Select Classification models for later interpretations
+    def select_models(self,):
         print('\nEntering Model Selection')
         start = time.time()
-        clfs = trainer.Train(
-            pcGRNs = self.pseudo_grns,
+        # initialize trainer
+        self.clf = trainer.Train(
+            psGRNs = self.pseudo_grns,
             database_info = self.database_info,
             model_config = self.model_config,
         )
-        clfs.successive_pruning(
+        # start model selection
+        self.clf.successive_pruning(
             iteration = self.model_select_iteration,
             clf_keep_ratio = self.clf_keep_ratio,
             clf_accuracy_thread = self.clf_accuracy_thread,
             last_train_size = self.max_train_size
         )
         print('Finished Model Selection', time.time() - start)
+
+    def launch(self,):
         start = time.time()
-        self.grp_importances = interpreter.Interpret(clfs)
+        self.grp_importances = interpreter.Interpret(self.clf)
         self.regulon = extractor.Extract(
             self.correlation_thread,
             self.grp_importances,
@@ -110,14 +114,14 @@ class Unit:
                             self.outlier_thread
                         )
                 self.pseudo_grns.update_with_remove_list(rm)
-                clfs.clear_data()
-                clfs.grns = self.pseudo_grns
-                clfs.general_process(
-                    max_train_size = self.max_train_size,
+                self.clf.clear_data()
+                self.clf.grns = self.pseudo_grns
+                self.clf.general_process(
+                    train_size = self.max_train_size,
                     clf_keep_ratio = self.clf_keep_ratio,
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
-                self.grp_importances = interpreter.Interpret(clfs)
+                self.grp_importances = interpreter.Interpret(self.clf)
                 self.regulon = extractor.Extract(
                     self.correlation_thread,
                     self.grp_importances,
@@ -140,12 +144,12 @@ class Unit:
             for i in range(self.stabilize_iteration):
                 denominator += i
                 prev_grps = self.regulon.grps.index
-                clfs.general_process(
-                    max_train_size = self.max_train_size,
+                self.clf.general_process(
+                    train_size = self.max_train_size,
                     clf_keep_ratio = self.clf_keep_ratio,
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
-                self.grp_importances.add(interpreter.Interpret(clfs).result)
+                self.grp_importances.add(interpreter.Interpret(self.clf).result)
                 self.regulon = extractor.Extract(
                     self.correlation_thread,
                     self.grp_importances,
@@ -166,18 +170,18 @@ class Unit:
             del self.grp_importances
             print('Time to stabilize key GRPs : ', time.time() - start)
 
-        """ Construct Regulons with Extracted GRPs and Access Them """
+    # Construct Regulons with Extracted GRPs and Access Them
+    def generate_regulons(self,):
         print('\nBuilding Regulons with key GRPs')
         start = time.time()
         self.regulon.build_regulon(
             meta_grn = self.meta.grn,
             impact_depth = self.impact_depth
         )
-
+        # Attempting to Connect Regulons if necessary
         if (self.link_step_allowrance is not None and
             self.link_step_allowrance > 0 and
             len(self.regulon.regulons) > 1):
-            print('Attempting to Connect Regulons')
             self.regulon.link_regulon(
                 meta_grn = self.meta.grn,
                 allowrance = self.link_step_allowrance
