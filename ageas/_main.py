@@ -4,7 +4,6 @@ Ageas Reborn
 
 author: jy, nkmtmsys
 """
-
 import re
 import os
 import sys
@@ -15,10 +14,15 @@ import warnings
 from pkg_resources import resource_filename
 import ageas
 import ageas.tool.json as json
-import ageas.lib.config_maker as config_maker
 import ageas.lib.psgrn_caster as grn
 import ageas.lib.meta_grn_caster as meta_grn
+import ageas.lib.config_maker as config_maker
+import ageas.lib.regulon_extractor as extractor
 import ageas.database_setup.binary_class as binary_db
+
+
+
+GRP_TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 
 
@@ -57,6 +61,7 @@ class Launch:
                 pcgrn_save_path:str = None,
                 prediction_thread:str = 'auto',
                 report_folder_path:str = None,
+                save_unit_reports:bool = False,
                 specie:str = 'mouse',
                 sliding_window_size:int = 10,
                 sliding_window_stride:int = None,
@@ -73,10 +78,11 @@ class Launch:
         print('Launching Ageas')
         start = time.time()
         if not warning: warnings.filterwarnings('ignore')
-        self.results = []
+        self.reports = list()
         self.protocol = protocol
         self.unit_num = unit_num
         self.silent = block_blog
+        self.impact_depth = impact_depth
         # Get database information
         self.database_info = binary_db.Setup(
             database_path,
@@ -102,6 +108,9 @@ class Launch:
                 self.report_folder_path += '/'
             if not os.path.exists(self.report_folder_path):
                 os.makedirs(self.report_folder_path)
+        self.save_unit_reports = save_unit_reports
+        if self.save_unit_reports and self.report_folder_path is None:
+            raise Exception('Report Path must be given to save unit reports!')
         print('Time to Boot: ', time.time() - start)
 
         # Make or load psGRNs and meta GRN
@@ -185,14 +194,12 @@ class Launch:
             unit.join()
         if self.silent: sys.stdout = sys.__stdout__
         print('\nUnits RTB')
-        print('Operation Time: ', time.time() - start)
         del units
+        self.regulon = self.combine_unit_reports()
+        print('Operation Time: ', time.time() - start)
 
-        self.regulon = self.results[0]
         if self.report_folder_path is not None:
-            self.regulon.full_grps.save(
-                self.report_folder_path + 'grps_importances.txt'
-            )
+            print('Generating Report Files')
             json.encode(
                 self.regulon.regulons,
                 self.report_folder_path + 'regulons.js'
@@ -203,6 +210,35 @@ class Launch:
             )
         print('\nFin\n')
 
+    # Combine information from reports returned by each unit
+    def combine_unit_reports(self):
+        all_grps = dict()
+        for index, report in enumerate(self.reports):
+
+            # save unit report if asking
+            if self.save_unit_reports:
+                report_path = self.report_folder_path + 'no_' + str(index) + '/'
+                if not os.path.exists(report_path): os.makedirs(report_path)
+                report.grps.save(report_path + 'grps_importances.txt')
+                json.encode(report.outlier_grps, report_path+'outlier_grps.js')
+
+            for regulon in report.regulons.values():
+                for id, record in regulon['grps'].items():
+                    if id not in all_grps:
+                        all_grps[id] = record
+                    elif id in all_grps:
+                        all_grps[id] = self._combine_grp_records(
+                            record_1 = all_grps[id],
+                            record_2 = record
+                        )
+        # now we build regulons
+        regulon = extractor.Extract()
+        for id, grp in all_grps.items():
+            regulon.update_regulon_with_grp(grp)
+        regulon.find_bridges(meta_grn = self.meta.grn)
+        regulon.update_genes(impact_depth = self.impact_depth)
+        return regulon
+
     # Model selection and regulon contruction part run parallel
     def proto_multi(self,):
         new_unit = copy.deepcopy(self.basic_unit)
@@ -212,7 +248,7 @@ class Launch:
         new_unit.launch()
         self.lockon.release()
         new_unit.generate_regulons()
-        self.results.append(new_unit.regulon)
+        self.reports.append(new_unit.regulon)
 
     # Do everything unit by unit
     def proto_solo(self,):
@@ -221,7 +257,7 @@ class Launch:
         new_unit.select_models()
         new_unit.launch()
         new_unit.generate_regulons()
-        self.results.append(new_unit.regulon)
+        self.reports.append(new_unit.regulon)
         self.lockon.release()
 
     # get pseudo-cGRNs from GEMs or GRNs
@@ -271,3 +307,20 @@ class Launch:
         else:
             raise lib.Error('Unrecogonized database type: ', database_info.type)
         return meta, psGRNs
+
+    # combine information of same GRP form different reports
+    def _combine_grp_records(self, record_1, record_2):
+        answer = record_1.copy()
+        if answer['type'] != record_2['type']:
+            if answer['type'] == GRP_TYPES[2]:
+                assert answer['score'] == 0
+                if record_2['type'] != GRP_TYPES[2]:
+                    answer['type'] = record_2['type']
+                    answer['score'] = record_2['score']
+            else:
+                if record_2['type'] != GRP_TYPES[2]:
+                    answer['type'] = GRP_TYPES[3]
+                    answer['score'] = max(answer['score'], record_2['score'])
+        else:
+            answer['score'] = max(answer['score'], record_2['score'])
+        return answer

@@ -107,7 +107,7 @@ class Unit:
             print('\nEntering Feature Selection')
             for i in range(self.feature_select_iteration):
                 start = time.time()
-                prev_grps = self.regulon.grps.index
+                prev_grps = self.regulon.top_grps.index
                 rm = self.__get_grp_remove_list(
                             self.grp_importances.result,
                             self.feature_dropout_ratio,
@@ -130,7 +130,7 @@ class Unit:
                     self.top_grp_amount
                 )
                 print('Time to do a feature selection : ', time.time() - start)
-                if self.__early_stop(prev_grps, self.regulon.grps.index):
+                if self.__early_stop(prev_grps, self.regulon.top_grps.index):
                     self.stabilize_iteration = None
                     break
         print('Total Length of Outlier GRPs is:', len(self.far_out_grps))
@@ -143,7 +143,7 @@ class Unit:
             denominator = 1
             for i in range(self.stabilize_iteration):
                 denominator += i
-                prev_grps = self.regulon.grps.index
+                prev_grps = self.regulon.top_grps.index
                 self.clf.general_process(
                     train_size = self.max_train_size,
                     clf_keep_ratio = self.clf_keep_ratio,
@@ -157,7 +157,7 @@ class Unit:
                     self.far_out_grps,
                     self.top_grp_amount
                 )
-                if self.__early_stop(prev_grps, self.regulon.grps.index):
+                if self.__early_stop(prev_grps, self.regulon.top_grps.index):
                     break
             self.grp_importances.divide(denominator)
             self.regulon = extractor.Extract(
@@ -167,8 +167,8 @@ class Unit:
                 self.far_out_grps,
                 self.top_grp_amount
             )
-            del self.grp_importances
             print('Time to stabilize key GRPs : ', time.time() - start)
+        del self.grp_importances
 
     # Construct Regulons with Extracted GRPs and Access Them
     def generate_regulons(self,):

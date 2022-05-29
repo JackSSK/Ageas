@@ -12,7 +12,7 @@ import ageas.tool as tool
 from collections import OrderedDict
 
 
-TYPES = ['Standard', 'Outer', 'Bridge']
+GRP_TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 
 class Extract(object):
@@ -27,13 +27,14 @@ class Extract(object):
 				outlier_grps = {},
 				top_grp_amount = None):
 		super(Extract, self).__init__()
-		self.regulons = []
+		self.regulons = list()
 		self.regulatory_sources = None
-		self.correlation_thread = correlation_thread
-		self.full_grps = grp_importances
-		# will be deleted after recorded in self.regulons
+		self.grps = grp_importances
 		self.outlier_grps = outlier_grps
-		self.grps = grp_importances.stratify(score_thread, top_grp_amount)
+		self.correlation_thread = correlation_thread
+		# will be deleted after recorded in self.regulons
+		if grp_importances is not None:
+			self.top_grps=grp_importances.stratify(score_thread, top_grp_amount)
 
 	# as named
 	def change_regulon_list_to_dict(self, header = 'regulon_'):
@@ -42,26 +43,32 @@ class Extract(object):
 	# as named
 	def build_regulon(self, meta_grn, impact_depth = 3):
 		# set outlier bonus score to max score of standard GRPs
-		outlier_bonus_score = self.grps.iloc[0]['importance']
+		outlier_bonus_score = self.top_grps.iloc[0]['importance']
 		# process standard grps
-		for id in self.grps.index:
+		for id in self.top_grps.index:
 			try:
 				grp = meta_grn['grps'][id]
 			except Exception:
 				raise lib.Error('GRP', id, 'not in Meta GRN')
-			grp['type'] = TYPES[0]
-			grp['score'] = self.grps.loc[id]['importance']
-			self.__update_regulon_with_grp(grp)
+			grp['type'] = GRP_TYPES[0]
+			grp['score'] = self.top_grps.loc[id]['importance']
+			self.update_regulon_with_grp(grp)
+		del self.top_grps
 		for id in self.outlier_grps:
 			try:
 				grp = meta_grn['grps'][id]
 			except Exception:
 				raise lib.Error('GRP', id, 'not in Meta GRN')
-			grp['type'] = TYPES[1]
+			grp['type'] = GRP_TYPES[1]
 			grp['score'] = self.outlier_grps[id] + outlier_bonus_score
-			self.__update_regulon_with_grp(grp)
+			self.update_regulon_with_grp(grp)
+		# del self.outlier_grps
+		# link regulons if bridge can be build with factors already in regulons
+		self.find_bridges(meta_grn = meta_grn)
+		self.update_genes(impact_depth = impact_depth)
 
-		# combine regulons if sharing common genes
+	# combine regulons if sharing common genes
+	def find_bridges(self, meta_grn):
 		i = 0
 		j = 1
 		checked_grps = {}
@@ -78,7 +85,7 @@ class Extract(object):
 					if id in meta_grn['grps']:
 						if not combining: combining = True
 						assert id not in self.regulons[i]['grps']
-						meta_grn['grps'][id]['type'] = TYPES[2]
+						meta_grn['grps'][id]['type'] = GRP_TYPES[2]
 						meta_grn['grps'][id]['score'] = 0
 						self.regulons[i]['grps'][id] = meta_grn['grps'][id]
 			if combining:
@@ -91,24 +98,28 @@ class Extract(object):
 					i += 1
 					j = i + 1
 
-		# update and change regulon to dict type and find key genes
+	# update and change regulon to dict type and get information for each gene
+	def update_genes(self, impact_depth):
 		for regulon in self.regulons:
 			for grp in regulon['grps'].values():
 				source = grp['regulatory_source']
 				target = grp['regulatory_target']
 				# update genes type based on GRP type
-				if grp['type'] == TYPES[1]:
-					if regulon['genes'][source]['type'] != TYPES[1]:
-						regulon['genes'][source]['type'] = TYPES[1]
-					if regulon['genes'][target]['type'] != TYPES[1]:
-						regulon['genes'][target]['type'] = TYPES[1]
-				elif grp['type'] == TYPES[0]:
-					if (regulon['genes'][source]['type'] != TYPES[1] and
-						regulon['genes'][source]['type'] != TYPES[0]):
-						regulon['genes'][source]['type'] = TYPES[0]
-					if (regulon['genes'][target]['type'] != TYPES[1] and
-						regulon['genes'][target]['type'] != TYPES[0]):
-						regulon['genes'][target]['type'] = TYPES[0]
+				if grp['type'] == GRP_TYPES[3]:
+					regulon['genes'][source]['type'] = GRP_TYPES[3]
+					regulon['genes'][target]['type'] = GRP_TYPES[3]
+				elif grp['type'] == GRP_TYPES[1]:
+					if regulon['genes'][source]['type'] != GRP_TYPES[3]:
+						regulon['genes'][source]['type'] = GRP_TYPES[1]
+					if regulon['genes'][target]['type'] != GRP_TYPES[3]:
+						regulon['genes'][target]['type'] = GRP_TYPES[1]
+				elif grp['type'] == GRP_TYPES[0]:
+					if (regulon['genes'][source]['type'] != GRP_TYPES[1] and
+						regulon['genes'][source]['type'] != GRP_TYPES[3]):
+						regulon['genes'][source]['type'] = GRP_TYPES[0]
+					if (regulon['genes'][target]['type'] != GRP_TYPES[1] and
+						regulon['genes'][target]['type'] != GRP_TYPES[3]):
+						regulon['genes'][target]['type'] = GRP_TYPES[0]
 				self.__update_regulon_gene_list(
 					source = source,
 					target = target,
@@ -116,8 +127,7 @@ class Extract(object):
 					reversable = grp['reversable']
 				)
 		self.regulatory_sources = self.__get_reg_sources(impact_depth)
-		del self.grps
-		del self.outlier_grps
+
 
 	# Use extra GRPs from meta GRN to link different Regulons
 	def link_regulon(self,
@@ -150,7 +160,7 @@ class Extract(object):
 				# skip if already added
 				if grp_id in extend_regulon['grps']: continue
 				# update GRP information and add it to regulon
-				meta_grn['grps'][grp_id]['type'] = TYPES[2]
+				meta_grn['grps'][grp_id]['type'] = GRP_TYPES[2]
 				meta_grn['grps'][grp_id]['score'] = 0
 				extend_regulon['grps'][grp_id] = meta_grn['grps'][grp_id]
 				# update gene list in regulon
@@ -160,13 +170,13 @@ class Extract(object):
 					extend_regulon['genes'][source] = {
 						'source':[],
 						'target':[],
-						'type':TYPES[2]
+						'type':GRP_TYPES[2]
 					}
 				if target not in extend_regulon['genes']:
 					extend_regulon['genes'][target] = {
 						'source':[],
 						'target':[],
-						'type':TYPES[2]
+						'type':GRP_TYPES[2]
 					}
 				self.__update_regulon_gene_list(
 					source = source,
@@ -220,7 +230,7 @@ class Extract(object):
 						raise lib.Error(link_grp, 'Cor in meta GRN is creepy')
 					# count it if passing conditions
 					if (target not in dict and
-						regulon['genes'][target]['type'] != TYPES[2] and
+						regulon['genes'][target]['type'] != GRP_TYPES[2] and
 						cor * prev_cor > self.correlation_thread):
 						dict[target] = cor * prev_cor
 					dict = self.__get_impact_genes(
@@ -245,7 +255,7 @@ class Extract(object):
 				source_num = len(regulon['genes'][gene]['source'])
 				target_num = len(regulon['genes'][gene]['target'])
 				if (gene not in dict and
-					# regulon['genes'][gene]['type'] != TYPES[2] and
+					# regulon['genes'][gene]['type'] != GRP_TYPES[2] and
 					target_num >= 1):
 					impact = self.__get_impact_genes(
 						self.regulons[regulon_id],
@@ -368,7 +378,7 @@ class Extract(object):
 			gene_list[source]['source'].append(target)
 			gene_list[target]['target'].append(source)
 
-	def __update_regulon_with_grp(self, grp):
+	def update_regulon_with_grp(self, grp):
 		update_ind = None
 		combine_ind = None
 		source_regulon_ind = None
@@ -390,8 +400,8 @@ class Extract(object):
 			regulon = {
 				'grps':{grp['id']: grp},
 				'genes':{
-					source: {'source':[], 'target':[], 'type':TYPES[2]},
-					target: {'source':[], 'target':[], 'type':TYPES[2]}
+					source: {'source':[], 'target':[], 'type':GRP_TYPES[2]},
+					target: {'source':[], 'target':[], 'type':GRP_TYPES[2]}
 				}
 			}
 			self.regulons.append(regulon)
@@ -420,13 +430,13 @@ class Extract(object):
 				self.regulons[update_ind]['genes'][source] = {
 					'source':[],
 					'target':[],
-					'type':TYPES[2]
+					'type':GRP_TYPES[2]
 				}
 			elif target not in self.regulons[update_ind]['genes']:
 				self.regulons[update_ind]['genes'][target] = {
 					'source':[],
 					'target':[],
-					'type':TYPES[2]
+					'type':GRP_TYPES[2]
 				}
 
 		# combine 2 regulons if new GRP can connect two
