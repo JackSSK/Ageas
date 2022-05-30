@@ -48,22 +48,22 @@ def List_Config_Reader(path):
         ).configs
     if 'SVM' in config_list:
         result['SVM'] = Sklearn_SVM(
-            header = 'pytorch_svc_',
+            header = 'sklearn_svc_',
             config = config_list['SVM']
         ).configs
     if 'RFC' in config_list:
         result['RFC'] = Sklearn_RFC(
-            header = 'pytorch_rfc_',
+            header = 'sklearn_rfc_',
             config = config_list['RFC']
         ).configs
     if 'GNB' in config_list:
         result['GNB'] = Sklearn_GNB(
-            header = 'pytorch_gnb_',
+            header = 'sklearn_gnb_',
             config = config_list['GNB']
         ).configs
     if 'Logit' in config_list:
         result['Logit'] = Sklearn_Logit(
-            header = 'pytorch_logit_',
+            header = 'sklearn_logit_',
             config = config_list['Logit']
         ).configs
     if 'GBM' in config_list:

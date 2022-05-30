@@ -86,10 +86,9 @@ class Label_Encode:
         super(Label_Encode, self).__init__()
         # Initialization
         self.encoder = LabelEncoder().fit([class1_path, class2_path])
-        self.transformed_labels = self.encoder.transform([
-                                                        class1_path,
-                                                        class2_path
-                                                        ])
+        self.transformed_labels = self.encoder.transform(
+            [class1_path, class2_path]
+        )
 
     # Perform inverse_transform
     def getOriginLable(self, query):

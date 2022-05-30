@@ -1288,7 +1288,7 @@
     "RNN": {
         "pytorch_rnn_0": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1298,7 +1298,7 @@
         },
         "pytorch_rnn_1": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1308,7 +1308,7 @@
         },
         "pytorch_rnn_2": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1317,46 +1317,6 @@
             "batch_size": 10
         },
         "pytorch_rnn_3": {
-            "config": {
-                "hidden_size": 256,
-                "num_layers": 2,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 5
-        },
-        "pytorch_rnn_4": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 3,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 10
-        },
-        "pytorch_rnn_5": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 3,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 5
-        },
-        "pytorch_rnn_6": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 2,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 10
-        },
-        "pytorch_rnn_7": {
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
@@ -1370,7 +1330,7 @@
     "GRU": {
         "pytorch_gru_0": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1380,7 +1340,7 @@
         },
         "pytorch_gru_1": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1390,7 +1350,7 @@
         },
         "pytorch_gru_2": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1399,46 +1359,6 @@
             "batch_size": 10
         },
         "pytorch_gru_3": {
-            "config": {
-                "hidden_size": 256,
-                "num_layers": 2,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 5
-        },
-        "pytorch_gru_4": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 3,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 10
-        },
-        "pytorch_gru_5": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 3,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 5
-        },
-        "pytorch_gru_6": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 2,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 10
-        },
-        "pytorch_gru_7": {
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
@@ -1452,7 +1372,7 @@
     "LSTM": {
         "pytorch_lstm_0": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1462,7 +1382,7 @@
         },
         "pytorch_lstm_1": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1472,7 +1392,7 @@
         },
         "pytorch_lstm_2": {
             "config": {
-                "hidden_size": 256,
+                "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
                 "dropout": 0.2
@@ -1481,46 +1401,6 @@
             "batch_size": 10
         },
         "pytorch_lstm_3": {
-            "config": {
-                "hidden_size": 256,
-                "num_layers": 2,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 5
-        },
-        "pytorch_lstm_4": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 3,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 10
-        },
-        "pytorch_lstm_5": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 3,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 5
-        },
-        "pytorch_lstm_6": {
-            "config": {
-                "hidden_size": 128,
-                "num_layers": 2,
-                "learning_rate": 0.01,
-                "dropout": 0.2
-            },
-            "epoch": 2,
-            "batch_size": 10
-        },
-        "pytorch_lstm_7": {
             "config": {
                 "hidden_size": 128,
                 "num_layers": 2,
@@ -1532,7 +1412,7 @@
         }
     },
     "SVM": {
-        "pytorch_svc_0": {
+        "sklearn_svc_0": {
             "config": {
                 "kernel": "linear",
                 "gamma": "auto",
@@ -1542,7 +1422,7 @@
                 "probability": true
             }
         },
-        "pytorch_svc_1": {
+        "sklearn_svc_1": {
             "config": {
                 "kernel": "linear",
                 "gamma": "scale",
@@ -1554,116 +1434,18 @@
         }
     },
     "RFC": {
-        "pytorch_rfc_0": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "entropy",
-                "max_features": null
-            }
-        },
-        "pytorch_rfc_1": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "entropy",
-                "max_features": "log2"
-            }
-        },
-        "pytorch_rfc_2": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "entropy",
-                "max_features": "auto"
-            }
-        },
-        "pytorch_rfc_3": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "entropy",
-                "max_features": 0.01
-            }
-        },
-        "pytorch_rfc_4": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "gini",
-                "max_features": null
-            }
-        },
-        "pytorch_rfc_5": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "gini",
-                "max_features": "log2"
-            }
-        },
-        "pytorch_rfc_6": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "gini",
-                "max_features": "auto"
-            }
-        },
-        "pytorch_rfc_7": {
-            "config": {
-                "n_estimators": 50,
-                "criterion": "gini",
-                "max_features": 0.01
-            }
-        },
-        "pytorch_rfc_8": {
-            "config": {
-                "n_estimators": 100,
-                "criterion": "entropy",
-                "max_features": null
-            }
-        },
-        "pytorch_rfc_9": {
-            "config": {
-                "n_estimators": 100,
-                "criterion": "entropy",
-                "max_features": "log2"
-            }
-        },
-        "pytorch_rfc_10": {
+        "sklearn_rfc_0": {
             "config": {
                 "n_estimators": 100,
                 "criterion": "entropy",
                 "max_features": "auto"
             }
         },
-        "pytorch_rfc_11": {
-            "config": {
-                "n_estimators": 100,
-                "criterion": "entropy",
-                "max_features": 0.01
-            }
-        },
-        "pytorch_rfc_12": {
-            "config": {
-                "n_estimators": 100,
-                "criterion": "gini",
-                "max_features": null
-            }
-        },
-        "pytorch_rfc_13": {
-            "config": {
-                "n_estimators": 100,
-                "criterion": "gini",
-                "max_features": "log2"
-            }
-        },
-        "pytorch_rfc_14": {
+        "sklearn_rfc_1": {
             "config": {
                 "n_estimators": 100,
                 "criterion": "gini",
                 "max_features": "auto"
-            }
-        },
-        "pytorch_rfc_15": {
-            "config": {
-                "n_estimators": 100,
-                "criterion": "gini",
-                "max_features": 0.01
             }
         }
     },

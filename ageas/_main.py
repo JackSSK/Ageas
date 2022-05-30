@@ -170,31 +170,44 @@ class Launch:
             link_step_allowrance = link_step_allowrance,
         )
 
-        # Prepare Units
-        print('Protocol:', self.protocol)
         self.lockon = threading.Lock()
-        units = []
-        for i in range(self.unit_num):
-            id = 'RN_' + str(i)
-            print('Preparing Unit', id)
-            if self.protocol == 'multi':
-                units.append(threading.Thread(target=self.proto_multi, name=id))
-            elif self.protocol == 'solo':
-                units.append(threading.Thread(target=self.proto_solo, name=id))
-
-        # Time to work
-        print('\nSending All Units')
+        print('Protocol:', self.protocol)
         print('Silent:', self.silent)
-        if self.silent: sys.stdout = open(os.devnull, 'w')
-        # Start each unit
-        for unit in units:
-            unit.start()
-        # Wait till all thread terminates
-        for unit in units:
-            unit.join()
-        if self.silent: sys.stdout = sys.__stdout__
-        print('\nUnits RTB')
-        del units
+
+        # Do everything unit by unit
+        if self.protocol == 'solo':
+            for i in range(self.unit_num):
+                id = 'RN_' + str(i)
+                print('Preparing Unit', id)
+                new_unit = copy.deepcopy(self.basic_unit)
+                print('\nSending Unit', id, '\n')
+                if self.silent: sys.stdout = open(os.devnull, 'w')
+                new_unit.select_models()
+                new_unit.launch()
+                new_unit.generate_regulons()
+                self.reports.append(new_unit.regulon)
+                if self.silent: sys.stdout = sys.__stdout__
+                print(id, 'RTB\n')
+            del new_unit
+
+        # Multithreading protocol
+        elif self.protocol == 'multi':
+            units = []
+            for i in range(self.unit_num):
+                id = 'RN_' + str(i)
+                print('Preparing Unit', id)
+                units.append(threading.Thread(target=self.proto_multi, name=id))
+            # Time to work
+            print('\nSending All Units\n')
+            if self.silent: sys.stdout = open(os.devnull, 'w')
+            # Start each unit
+            for unit in units: unit.start()
+            # Wait till all thread terminates
+            for unit in units: unit.join()
+            if self.silent: sys.stdout = sys.__stdout__
+            print('Units RTB\n')
+            del units
+
         self.regulon = self.combine_unit_reports()
         print('Operation Time: ', time.time() - start)
 
@@ -249,16 +262,7 @@ class Launch:
         self.lockon.release()
         new_unit.generate_regulons()
         self.reports.append(new_unit.regulon)
-
-    # Do everything unit by unit
-    def proto_solo(self,):
-        self.lockon.acquire()
-        new_unit = copy.deepcopy(self.basic_unit)
-        new_unit.select_models()
-        new_unit.launch()
-        new_unit.generate_regulons()
-        self.reports.append(new_unit.regulon)
-        self.lockon.release()
+        del new_unit
 
     # get pseudo-cGRNs from GEMs or GRNs
     def get_pseudo_grns(self,
