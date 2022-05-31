@@ -250,6 +250,7 @@ class Launch:
             regulon.update_regulon_with_grp(grp)
         regulon.find_bridges(meta_grn = self.meta.grn)
         regulon.update_genes(impact_depth = self.impact_depth)
+        regulon.change_regulon_list_to_dict()
         return regulon
 
     # Model selection and regulon contruction part run parallel
