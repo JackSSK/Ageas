@@ -14,7 +14,7 @@ import warnings
 from pkg_resources import resource_filename
 import ageas
 import ageas.tool.json as json
-import ageas.lib.psgrn_caster as grn
+import ageas.lib.psgrn_caster as psgrn
 import ageas.lib.meta_grn_caster as meta_grn
 import ageas.lib.config_maker as config_maker
 import ageas.lib.regulon_extractor as extractor
@@ -57,8 +57,8 @@ class Launch:
                 outlier_thread:float = 3.0,
                 protocol:str = 'solo',
                 patient:int = 3,
-                pcgrn_load_path:str = None,
-                pcgrn_save_path:str = None,
+                psgrn_load_path:str = None,
+                psgrn_save_path:str = None,
                 prediction_thread:str = 'auto',
                 report_folder_path:str = None,
                 save_unit_reports:bool = False,
@@ -115,9 +115,9 @@ class Launch:
 
         # Make or load psGRNs and meta GRN
         start = time.time()
-        if meta_load_path is not None and pcgrn_load_path is not None:
+        if meta_load_path is not None and psgrn_load_path is not None:
             self.meta = meta_grn.Cast(load_path = meta_load_path)
-            self.pseudo_grns = grn.Make(load_path = pcgrn_load_path)
+            self.pseudo_grns = psgrn.Make(load_path = psgrn_load_path)
         else:
             self.meta, self.pseudo_grns = self.get_pseudo_grns(
                 database_info = self.database_info,
@@ -134,10 +134,10 @@ class Launch:
         # Save docs if specified path
         if self.report_folder_path is not None:
             self.meta_report.save(self.report_folder_path + 'meta_report.csv')
-        if pcgrn_save_path is not None:
-            self.pseudo_grns.save(pcgrn_save_path)
+        if psgrn_save_path is not None:
+            self.pseudo_grns.save(psgrn_save_path)
         if meta_save_path is not None:
-            self.meta.save_guide(meta_save_path)
+            self.meta.grn.save_json(meta_save_path)
         print('Time to cast or load Pseudo-Sample GRNs : ', time.time() - start)
         print('\nDeck Ready')
 
@@ -175,53 +175,71 @@ class Launch:
         print('Silent:', self.silent)
 
         # Do everything unit by unit
-        if self.protocol == 'solo':
-            for i in range(self.unit_num):
-                id = 'RN_' + str(i)
-                print('Preparing Unit', id)
-                new_unit = copy.deepcopy(self.basic_unit)
-                print('\nSending Unit', id, '\n')
-                if self.silent: sys.stdout = open(os.devnull, 'w')
-                new_unit.select_models()
-                new_unit.launch()
-                new_unit.generate_regulons()
-                self.reports.append(new_unit.regulon)
-                if self.silent: sys.stdout = sys.__stdout__
-                print(id, 'RTB\n')
-            del new_unit
+        if self.protocol == 'solo': self.proto_solo()
 
         # Multithreading protocol
-        elif self.protocol == 'multi':
-            units = []
-            for i in range(self.unit_num):
-                id = 'RN_' + str(i)
-                print('Preparing Unit', id)
-                units.append(threading.Thread(target=self.proto_multi, name=id))
-            # Time to work
-            print('\nSending All Units\n')
-            if self.silent: sys.stdout = open(os.devnull, 'w')
-            # Start each unit
-            for unit in units: unit.start()
-            # Wait till all thread terminates
-            for unit in units: unit.join()
-            if self.silent: sys.stdout = sys.__stdout__
-            print('Units RTB\n')
-            del units
+        elif self.protocol == 'multi': self.proto_multi()
 
         self.regulon = self.combine_unit_reports()
         print('Operation Time: ', time.time() - start)
 
         if self.report_folder_path is not None:
             print('Generating Report Files')
-            json.encode(
+            self._save_regulon_as_json(
                 self.regulon.regulons,
                 self.report_folder_path + 'regulons.js'
             )
+
             self.regulon.report(self.meta.grn).to_csv(
                 self.report_folder_path + 'report.csv',
                 index = False
             )
+
         print('\nFin\n')
+
+    # Protocol SOLO
+    def proto_solo(self):
+        for i in range(self.unit_num):
+            id = 'RN_' + str(i)
+            new_unit = copy.deepcopy(self.basic_unit)
+            print('Unit', id, 'Ready')
+            print('\nSending Unit', id, '\n')
+            if self.silent: sys.stdout = open(os.devnull, 'w')
+            new_unit.select_models()
+            new_unit.launch()
+            new_unit.generate_regulons()
+            self.reports.append(new_unit.regulon)
+            if self.silent: sys.stdout = sys.__stdout__
+            print(id, 'RTB\n')
+
+    # Protocol MULTI
+    def proto_multi(self):
+        units = []
+        for i in range(self.unit_num):
+            id = 'RN_' + str(i)
+            units.append(threading.Thread(target=self.multi_unit, name=id))
+            print('Unit', id, 'Ready')
+        # Time to work
+        print('\nSending All Units\n')
+        if self.silent: sys.stdout = open(os.devnull, 'w')
+        # Start each unit
+        for unit in units: unit.start()
+        # Wait till all thread terminates
+        for unit in units: unit.join()
+        if self.silent: sys.stdout = sys.__stdout__
+        print('Units RTB\n')
+
+    # Model selection and regulon contruction part run parallel
+    def multi_unit(self,):
+        new_unit = copy.deepcopy(self.basic_unit)
+        new_unit.select_models()
+        # lock here since SHAP would bring Error
+        self.lockon.acquire()
+        new_unit.launch()
+        self.lockon.release()
+        new_unit.generate_regulons()
+        self.reports.append(new_unit.regulon)
+        del new_unit
 
     # Combine information from reports returned by each unit
     def combine_unit_reports(self):
@@ -253,18 +271,6 @@ class Launch:
         regulon.change_regulon_list_to_dict()
         return regulon
 
-    # Model selection and regulon contruction part run parallel
-    def proto_multi(self,):
-        new_unit = copy.deepcopy(self.basic_unit)
-        new_unit.select_models()
-        # lock here since SHAP would bring Error
-        self.lockon.acquire()
-        new_unit.launch()
-        self.lockon.release()
-        new_unit.generate_regulons()
-        self.reports.append(new_unit.regulon)
-        del new_unit
-
     # get pseudo-cGRNs from GEMs or GRNs
     def get_pseudo_grns(self,
                         database_info = None,
@@ -293,7 +299,7 @@ class Launch:
                 load_path = meta_load_path
             )
             print('Time to cast Meta GRN : ', time.time() - start1)
-            psGRNs = grn.Make(
+            psGRNs = psgrn.Make(
                 database_info = database_info,
                 std_value_thread = std_value_thread,
                 std_ratio_thread = std_ratio_thread,
@@ -315,17 +321,27 @@ class Launch:
 
     # combine information of same GRP form different reports
     def _combine_grp_records(self, record_1, record_2):
-        answer = record_1.copy()
-        if answer['type'] != record_2['type']:
-            if answer['type'] == GRP_TYPES[2]:
-                assert answer['score'] == 0
-                if record_2['type'] != GRP_TYPES[2]:
-                    answer['type'] = record_2['type']
-                    answer['score'] = record_2['score']
+        answer = copy.deepcopy(record_1)
+        if answer.type != record_2.type:
+            if answer.type == GRP_TYPES[2]:
+                assert answer.score == 0
+                if record_2.type != GRP_TYPES[2]:
+                    answer.type = record_2.type
+                    answer.score = record_2.score
             else:
-                if record_2['type'] != GRP_TYPES[2]:
-                    answer['type'] = GRP_TYPES[3]
-                    answer['score'] = max(answer['score'], record_2['score'])
+                if record_2.type != GRP_TYPES[2]:
+                    answer.type = GRP_TYPES[3]
+                    answer.score = max(answer.score, record_2.score)
         else:
-            answer['score'] = max(answer['score'], record_2['score'])
+            answer.score = max(answer.score, record_2.score)
         return answer
+
+    # change class objects to dicts and save regulons in JSON format
+    def _save_regulon_as_json(self, regulons, path):
+        saving = dict()
+        for k,v in regulons.items():
+            saving[k] = {
+                'genes':v['genes'],
+                'grps':{i:j.as_dict() for i,j in v['grps'].items()}
+            }
+        json.encode(saving, path)

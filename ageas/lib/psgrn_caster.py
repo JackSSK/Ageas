@@ -13,6 +13,7 @@ gem_data method also need to be done <- higher priority
 import os
 import statistics as sta
 import ageas.tool as tool
+import ageas.tool.grn as grn
 import ageas.tool.gem as gem
 import ageas.tool.json as json
 from scipy.stats import pearsonr
@@ -134,9 +135,9 @@ class Make:
     # as named
     def __process_sample_with_metaGRN(self, gem, meta_grn):
         grn = {}
-        for grp in meta_grn['grps']:
-            source_ID = meta_grn['grps'][grp]['regulatory_source']
-            target_ID = meta_grn['grps'][grp]['regulatory_target']
+        for grp in meta_grn.grps:
+            source_ID = meta_grn.grps[grp].regulatory_source
+            target_ID = meta_grn.grps[grp].regulatory_target
             try:
                 source_exp = list(gem.loc[[source_ID]].values[0])
                 target_exp = list(gem.loc[[target_ID]].values[0])
@@ -167,16 +168,16 @@ class Make:
             for target_ID in gem.index:
                 if source_ID == target_ID:
                     continue
-                grp = tool.Cast_GRP_ID(source_ID, target_ID)
-                if grp not in grn:
+                grp_id = grn.GRP(source_ID, target_ID).id
+                if grp_id not in grn:
                     # No need to compute if one array is constant
                     s_exp = gem[source_ID]
                     t_exp = gem[target_ID]
                     if len(set(s_exp)) == 1 or len(set(t_exp)) == 1: continue
                     cor = pearsonr(s_exp, t_exp)[0]
                     if abs(cor) > self.correlation_thread:
-                        grn[grp] = {
-                            'id': grp,
+                        grn[grp_id] = {
+                            'id': grp_id,
                             'regulatory_source': source_ID,
                             'source_expression_mean': float(sta.mean(s_exp)),
                             'regulatory_target': target_ID,
@@ -184,7 +185,7 @@ class Make:
                             'correlation':cor
                         }
                     else:
-                        grn[grp] = None
+                        grn[grp_id] = None
         return grn
 
     # Readin Gene Expression Matrices in given class path

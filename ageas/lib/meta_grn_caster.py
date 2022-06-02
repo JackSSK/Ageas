@@ -11,8 +11,8 @@ import pandas as pd
 from collections import Counter
 import ageas.lib as lib
 import ageas.tool as tool
+import ageas.tool.grn as grn
 import ageas.tool.json as json
-import ageas.lib.psgrn_caster as grn
 import ageas.lib.grp_predictor as grp
 
 
@@ -24,9 +24,9 @@ class Analysis(object):
 		super(Analysis, self).__init__()
 		self.top = top
 		temp = {}
-		for ele in meta_grn['grps']:
-			source = meta_grn['grps'][ele]['regulatory_source']
-			target = meta_grn['grps'][ele]['regulatory_target']
+		for ele in meta_grn.grps:
+			source = meta_grn.grps[ele].regulatory_source
+			target = meta_grn.grps[ele].regulatory_target
 
 			if source not in temp:
 				temp[source] = 1
@@ -43,7 +43,7 @@ class Analysis(object):
 
 		# adding log2FC
 		for ele in temp:
-			exp = meta_grn['mean_gene_expressions'][ele[0]]
+			exp = meta_grn.genes[ele[0]].expression_mean
 			ele.append(abs(math.log2((exp['class1']+1) / (exp['class2']+1))))
 
 		# changing to dataframe type
@@ -65,15 +65,11 @@ class Cast:
 				load_path = None):
 		super(Cast, self).__init__()
 		# Initialization
-		self.grn = {'mean_gene_expressions':{}, 'grps':{}}
+		self.grn = grn.GRN(id = 'Meta')
 		self.tfs_no_interaction_rec = {}
 		# Choose process
-		if load_path is not None: self.__load(load_path)
+		if load_path is not None: self.grn.load_json(path = load_path)
 		else: self.__cast(gem_data, prediction_thread, correlation_thread)
-
-	def __load(self, load_path):
-		self.grn = json.decode(load_path)
-		return
 
 	# Process to Cast out GRN construction guidance
 	def __cast(self, gem_data, prediction_thread, correlation_thread):
@@ -94,16 +90,16 @@ class Cast:
 
 		# Start GRNBoost2-like process if thread is set
 		if prediction_thread is not None and len(self.tfs_no_interaction_rec)>0:
-			gBoost = grp.Predict(gem_data, self.grn['grps'], prediction_thread)
+			gBoost = grp.Predict(gem_data, self.grn.grps, prediction_thread)
 			""" ToDo: this condition may need to revise """
 			if len(self.tfs_no_interaction_rec) == 0:
-				genes = gem_data.genes
+				print('Nope')
+				# genes = gem_data.genes
 			else:
 				genes = self.tfs_no_interaction_rec
 			self.grn = gBoost.expand_meta_grn(self.grn,genes,correlation_thread)
-		print('	Total amount of GRPs in Meta GRN:', len(self.grn['grps']))
-		print('	Total amount of Genes in Meta GRN:',
-				len(self.grn['mean_gene_expressions']))
+		print('	Total amount of GRPs in Meta GRN:', len(self.grn.grps))
+		print('	Total amount of Genes in Meta GRN:', len(self.grn.genes))
 		# else: raise lib.Error('Sorry, such mode is not supported yet!')
 		""" ToDo: if more than 1 guide can be casted, make agreement """
 		return
@@ -146,13 +142,12 @@ class Cast:
 			for target in data.genes:
 				# Handle source TFs with record in target database
 				if target in reg_target:
-					tool.Update_Meta_GRN(
-						self.grn,
-						source,
-						target,
-						data.class1,
-						data.class2,
-						correlation_thread
+					self.grn.update_grn(
+						source = source,
+						target = target,
+						gem1 = data.class1,
+						gem2 = data.class2,
+						correlation_thread = correlation_thread
 					)
 		return
 
@@ -195,13 +190,12 @@ class Cast:
 							passing = True
 
 				if passing:
-					tool.Update_Meta_GRN(
-						self.grn,
-						source,
-						target,
-						data.class1,
-						data.class2,
-						correlation_thread
+					self.grn.update_grn(
+						source = source,
+						target = target,
+						gem1 = data.class1,
+						gem2 = data.class2,
+						correlation_thread = correlation_thread
 					)
 		return
 
@@ -213,17 +207,11 @@ class Cast:
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
 			for target in data.genes:
-				tool.Update_Meta_GRN(
-					self.grn,
-					source,
-					target,
-					data.class1,
-					data.class2,
-					correlation_thread
+				self.grn.update_grn(
+					source = source,
+					target = target,
+					gem1 = data.class1,
+					gem2 = data.class2,
+					correlation_thread = correlation_thread
 				)
-		return
-
-	# Save guide file to given path
-	def save_guide(self, path:str = None):
-		json.encode(self.grn, path)
 		return

@@ -6,7 +6,7 @@ Predict potential Gene Regulatory Pathways(GRPs) using GRNBoost-Like algo
 author: jy, nkmtmsys
 """
 
-import ageas.tool as tool
+import ageas.tool.grn as grn
 from xgboost import XGBRegressor
 from collections import OrderedDict
 import ageas.lib as lib
@@ -64,15 +64,15 @@ class Predict:
         for i in range(len(gene_list)):
             tar = gene_list[i]
             if feature_importances[i] > self.thread:
-                if tool.Cast_GRP_ID(gene, tar) not in meta_grn:
-                    tool.Update_Meta_GRN(
-                        meta_grn,
-                        gene,
-                        tar,
-                        self.class1_gem,
-                        self.class2_gem,
-                        correlation_thread
-                    )
+                grp_id = grn.GRP(gene, tar).id
+                if grp_id not in meta_grn.grps:
+                    meta_grn.update_grn(
+						source = gene,
+						target = tar,
+						gem1 = self.class1_gem,
+						gem2 = self.class2_gem,
+						correlation_thread = correlation_thread
+					)
         return
 
     # Automatically set prediction thread by tuning with sample GRPs
@@ -82,7 +82,7 @@ class Predict:
     def __auto_set_thread(self, sample_grps):
         regulatory_sources = {}
         for grp in sample_grps:
-            source = sample_grps[grp]['regulatory_source']
+            source = sample_grps[grp].regulatory_source
             if source not in regulatory_sources:
                 regulatory_sources[source] = [grp]
             else:
@@ -101,7 +101,15 @@ class Predict:
         class1FeatImpts, class2FeatImpts = self._getFeatureImportences(src,True)
         assert len(self.class1_gem.index) == len(class1FeatImpts)
         assert len(self.class2_gem.index) == len(class2FeatImpts)
-        genes = tool.Get_GRP_Genes(grps)
+
+        # Extract all genes influenced among regulon/GRPs
+        genes = {}
+        for grp_id in grps:
+            fators = grp_id.split('_')
+            assert len(fators) == 2
+            if fators[0] not in genes: genes[fators[0]] = 0
+            if fators[1] not in genes: genes[fators[1]] = 0
+
         # assign feature importances to each gene in selected reg source's GRPs
         for i in range(len(self.class1_gem.index)):
             if self.class1_gem.index[i] in genes and class1FeatImpts[i] > 0:
@@ -122,15 +130,15 @@ class Predict:
     def _getFeatureImportences(self, key, checked_in_gem = False):
         if checked_in_gem or key in self.class1_gem.index:
             c1_result = self.__gbm_feature_importances_calculat(
-                            self.class1_gem,
-                            key
-                        )
+                self.class1_gem,
+                key
+            )
         else: c1_result = None
         if checked_in_gem or key in self.class2_gem.index:
             c2_result = self.__gbm_feature_importances_calculat(
-                            self.class2_gem,
-                            key
-                        )
+                self.class2_gem,
+                key
+            )
         else: c2_result = None
         return c1_result, c2_result
 
