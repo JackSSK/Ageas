@@ -8,7 +8,7 @@ author: jy, nkmtmsys
 import os
 import re
 import math
-import numpy as  np
+import numpy as np
 import pandas as pd
 import ageas.lib as lib
 import ageas.tool as tool
@@ -268,24 +268,24 @@ class Process(object):
     # Update training and testing set based on given expression data
     def __update_train_test(self, grns, train_set, test_set):
         for sample in grns:
-            grn = grns[sample]
-            grn_copy = {ele:'' for ele in grn}
-            features = ''
-            for ele in self.all_grp_ids:
-                if ele in grn:
-                    features += str(grn[ele]['correlation']) + ';'
-                    # Update grn_cop if ele already in allIDs
-                    del grn_copy[ele]
-                else: features += '0.0;'
-            for ele in grn_copy:
-                self.all_grp_ids[ele] = ''
-                features += str(grn[ele]['correlation']) + ';'
+            grps = grns[sample].grps
+            grps_ids_copy = {ele:None for ele in grps}
+            values = ''
+            for id in self.all_grp_ids:
+                if id in grps:
+                    values += str(list(grps[id].correlations.values())[0]) + ';'
+                    # Update grn_cop if id already in allIDs
+                    del grps_ids_copy[id]
+                else: values += '0.0;'
+            for id in grps_ids_copy:
+                self.all_grp_ids[id] = None
+                values += str(list(grps[id].correlations.values())[0]) + ';'
             # Change every elements into float type
-            features = list(map(float, features.split(';')[:-1]))
+            values = list(map(float, values.split(';')[:-1]))
             if sample in train_set:
-                self.dataTrain.append(features)
+                self.dataTrain.append(values)
             elif sample in test_set:
-                self.dataTest.append(features)
+                self.dataTest.append(values)
 
     # Makke training/testing data and lable arrays based on given full data
     def __iterating_protocool(self, fullData, fullLabel):
@@ -349,6 +349,6 @@ class Process(object):
             fakeID_Num = aim*aim - total
             for i in range(fakeID_Num):
                 id = fakeID + str(i)
-                self.all_grp_ids[id] = ''
+                self.all_grp_ids[id] = None
         self.__append_zeros(self.dataTrain)
         self.__append_zeros(self.dataTest)

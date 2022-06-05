@@ -52,24 +52,36 @@ class Make:
     # main controller to cast pseudo cell GRNs (psGRNs)
     def __make_psGRNs(self, gem_data, meta_grn):
         if gem_data is not None:
-            class1_psGRNs = self.__loaded_gem_method(gem_data.class1, meta_grn)
-            class2_psGRNs = self.__loaded_gem_method(gem_data.class2, meta_grn)
+            class1_psGRNs = self.__loaded_gem_method(
+                class_type = 'class1',
+                gem = gem_data.class1,
+                meta_grn = meta_grn
+            )
+            class2_psGRNs = self.__loaded_gem_method(
+                class_type = 'class2',
+                gem = gem_data.class2,
+                meta_grn = meta_grn
+            )
         elif self.database_info.type == 'gem_folder':
             class1_psGRNs = self.__folder_method(
+                'class1',
                 self.database_info.class1_path,
                 meta_grn
             )
             class2_psGRNs = self.__folder_method(
+                'class2',
                 self.database_info.class2_path,
                 meta_grn
             )
         elif self.database_info.type == 'gem_file':
             # need to revise here!
             class1_psGRNs = self.__file_method(
+                'class1',
                 self.database_info.class1_path,
                 meta_grn
             )
             class2_psGRNs = self.__file_method(
+                'class2',
                 self.database_info.class2_path,
                 meta_grn
             )
@@ -78,14 +90,14 @@ class Make:
         return class1_psGRNs, class2_psGRNs
 
     # as named
-    def __file_method(self, path, meta_grn):
-        psGRNs = {}
+    def __file_method(self, class_type, path, meta_grn):
+        psGRNs = dict()
         print('psgrn_caster.py:class Make: need to do something here')
         return psGRNs
 
     # as named
-    def __loaded_gem_method(self, gem, meta_grn):
-        psGRNs = {}
+    def __loaded_gem_method(self, class_type, gem, meta_grn):
+        psGRNs = dict()
         sample_num = 0
         start = 0
         end = self.database_info.sliding_window_size
@@ -94,7 +106,7 @@ class Make:
             stride = self.database_info.sliding_window_stride
         else:
             stride = end
-        # use sliding window techinque to set pseudo cell
+        # use sliding window techinque to set pseudo samples
         loop = True
         while loop:
             if start >= len(gem.columns):
@@ -105,36 +117,54 @@ class Make:
             sample_id = 'sample' + str(sample_num)
             sample = gem.iloc[:, start:end]
             if meta_grn is not None:
-                grn = self.__process_sample_with_metaGRN(sample, meta_grn)
+                pseudo_sample = self.__process_sample_with_metaGRN(
+                    class_type,
+                    sample,
+                    sample_id,
+                    meta_grn
+                )
             else:
-                grn = self.__process_sample_without_guidance(sample)
+                pseudo_sample = self.__process_sample_without_guidance(
+                    class_type,
+                    sample,
+                    sample_id
+                )
             # Save data into psGRNs
-            psGRNs[sample_id] = self.__reform_grn(grn)
+            psGRNs[sample_id] = pseudo_sample
             start += stride
             end += stride
             sample_num += 1
         return psGRNs
 
     # as named
-    def __folder_method(self, path, meta_grn):
+    def __folder_method(self, class_type, path, meta_grn):
         data = self.__readin_folder(path)
-        psGRNs = {}
-        for sample in data:
+        psGRNs = dict()
+        for sample_id in data:
             if meta_grn is not None:
-                grn = self.__process_sample_with_metaGRN(data[sample], meta_grn)
+                pseudo_sample = self.__process_sample_with_metaGRN(
+                    class_type,
+                    data[sample_id],
+                    path,
+                    meta_grn
+                )
             else:
-                grn = self.__process_sample_without_guidance(data[sample])
+                pseudo_sample = self.__process_sample_without_guidance(
+                    class_type,
+                    data[sample_id],
+                    path
+                )
             # Save data into psGRNs
-            psGRNs[sample] = self.__reform_grn(grn)
+            psGRNs[sample_id] = pseudo_sample
         return psGRNs
 
-    # again, as named
-    def __reform_grn(self, grn):
-        return {pth:data for pth,data in grn.items() if data is not None}
-
     # as named
-    def __process_sample_with_metaGRN(self, gem, meta_grn):
-        grn = {}
+    def __process_sample_with_metaGRN(self,
+                                        class_type,
+                                        gem,
+                                        sample_id,
+                                        meta_grn):
+        pseudo_sample = grn.GRN(id = sample_id)
         for grp in meta_grn.grps:
             source_ID = meta_grn.grps[grp].regulatory_source
             target_ID = meta_grn.grps[grp].regulatory_target
@@ -148,20 +178,33 @@ class Make:
                 continue
             cor = pearsonr(source_exp, target_exp)[0]
             if abs(cor) > self.correlation_thread:
-                grn[grp] = {
-                    'id': grp,
-                    'regulatory_source': source_ID,
-                    'source_expression_mean': float(sta.mean(source_exp)),
-                    'regulatory_target': target_ID,
-                    'target_expression_mean': float(sta.mean(target_exp)),
-                    'correlation':cor
-                }
-        return grn
+                if grp not in pseudo_sample.grps:
+                    pseudo_sample.add_grp(
+                        id = grp,
+                        source = source_ID,
+                        target = target_ID,
+                        correlations = {class_type: cor}
+                    )
+                if source_ID not in pseudo_sample.genes:
+                    pseudo_sample.genes[source_ID] = grn.Gene(
+                        id = source_ID,
+                        expression_mean = {
+                            class_type: float(sta.mean(source_exp))
+                        }
+                    )
+                if target_ID not in pseudo_sample.genes:
+                    pseudo_sample.genes[target_ID] = grn.Gene(
+                        id = target_ID,
+                        expression_mean = {
+                            class_type: float(sta.mean(target_exp))
+                        }
+                    )
+        return pseudo_sample
 
     # Process data without guidance
     # May need to revise later
-    def __process_sample_without_guidance(self, gem):
-        grn = {}
+    def __process_sample_without_guidance(self, class_type, gem, sample_id):
+        pseudo_sample = grn.GRN(id = sample_id)
         # Get source TF
         for source_ID in gem.index:
             # Get target gene
@@ -169,28 +212,42 @@ class Make:
                 if source_ID == target_ID:
                     continue
                 grp_id = grn.GRP(source_ID, target_ID).id
-                if grp_id not in grn:
+                if grp_id not in pseudo_sample.grps:
                     # No need to compute if one array is constant
-                    s_exp = gem[source_ID]
-                    t_exp = gem[target_ID]
-                    if len(set(s_exp)) == 1 or len(set(t_exp)) == 1: continue
-                    cor = pearsonr(s_exp, t_exp)[0]
+                    source_exp = gem[source_ID]
+                    target_exp = gem[target_ID]
+                    if len(set(source_exp)) == 1 or len(set(target_exp)) == 1:
+                        continue
+                    cor = pearsonr(source_exp, target_exp)[0]
                     if abs(cor) > self.correlation_thread:
-                        grn[grp_id] = {
-                            'id': grp_id,
-                            'regulatory_source': source_ID,
-                            'source_expression_mean': float(sta.mean(s_exp)),
-                            'regulatory_target': target_ID,
-                            'target_expression_mean': float(sta.mean(t_exp)),
-                            'correlation':cor
-                        }
+                        if grp not in pseudo_sample.grps:
+                            pseudo_sample.add_grp(
+                                id = grp_id,
+                                source = source_ID,
+                                target = target_ID,
+                                correlations = {class_type: cor}
+                            )
+                        if source_ID not in pseudo_sample.genes:
+                            pseudo_sample.genes[source_ID] = grn.Gene(
+                                id = source_ID,
+                                expression_mean = {
+                                    class_type: float(sta.mean(source_exp))
+                                }
+                            )
+                        if target_ID not in pseudo_sample.genes:
+                            pseudo_sample.genes[target_ID] = grn.Gene(
+                                id = target_ID,
+                                expression_mean = {
+                                    class_type: float(sta.mean(target_exp))
+                                }
+                            )
                     else:
-                        grn[grp_id] = None
-        return grn
+                        pseudo_sample[grp_id] = None
+        return pseudo_sample
 
     # Readin Gene Expression Matrices in given class path
     def __readin_folder(self, path):
-        result = {}
+        result = dict()
         for filename in os.listdir(path):
             filename = path + '/' + filename
             # read in GEM files
@@ -206,27 +263,41 @@ class Make:
     def update_with_remove_list(self, remove_list):
         for sample in self.class1_psGRNs:
             for id in remove_list:
-                if id in self.class1_psGRNs[sample]:
-                    del self.class1_psGRNs[sample][id]
+                if id in self.class1_psGRNs[sample].grps:
+                    del self.class1_psGRNs[sample].grps[id]
         for sample in self.class2_psGRNs:
             for id in remove_list:
-                if id in self.class2_psGRNs[sample]:
-                    del self.class2_psGRNs[sample][id]
+                if id in self.class2_psGRNs[sample].grps:
+                    del self.class2_psGRNs[sample].grps[id]
+        return
 
     # temporal psGRN saving method
     """ need to be revised later to save psGRNs file by file"""
     def save(self, save_path):
         json.encode(
-            {'class1':self.class1_psGRNs, 'class2':self.class2_psGRNs},
+            {
+                'class1':{k:v.as_dict() for k,v in self.class1_psGRNs.items()},
+                'class2':{k:v.as_dict() for k,v in self.class2_psGRNs.items()}
+            },
             save_path
         )
+        return
 
     # load in psGRNs from files
     """ need to be revised later with save_psGRNs"""
     def __load_psGRNs(self, load_path):
         data = json.decode(load_path)
-        return data['class1'], data['class2']
-
+        class1_psGRNs = dict()
+        class2_psGRNs = dict()
+        for k,v in data['class1'].items():
+            temp = grn.GRN(id = k)
+            temp.load_dict(dict = v)
+            class1_psGRNs[k] = temp
+        for k,v in data['class2'].items():
+            temp = grn.GRN(id = k)
+            temp.load_dict(dict = v)
+            class2_psGRNs[k] = temp
+        return class1_psGRNs, class2_psGRNs
 
 
     # OLD: Save GRN files as js.gz in new folder

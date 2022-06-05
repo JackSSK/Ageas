@@ -66,10 +66,13 @@ class Cast:
 		super(Cast, self).__init__()
 		# Initialization
 		self.grn = grn.GRN(id = 'Meta')
-		self.tfs_no_interaction_rec = {}
-		# Choose process
-		if load_path is not None: self.grn.load_json(path = load_path)
-		else: self.__cast(gem_data, prediction_thread, correlation_thread)
+		self.tfs_no_interaction_rec = dict()
+
+		# Load or Cast
+		if load_path is not None:
+			self.grn.load_dict(dict = json.decode(load_path))
+		else:
+			self.__cast(gem_data, prediction_thread, correlation_thread)
 
 	# Process to Cast out GRN construction guidance
 	def __cast(self, gem_data, prediction_thread, correlation_thread):

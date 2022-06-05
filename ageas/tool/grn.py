@@ -61,21 +61,24 @@ class GRN(object):
                 passed = True
         # update GRN if passed correlation filter
         if passed:
-            self.add_grp(grp_id, source, target, cor_class1, cor_class2)
-            if source not in self.genes: self.add_gene(source, gem1, gem2)
-            if target not in self.genes: self.add_gene(target, gem1, gem2)
+            correlations = {
+                'class1':float(cor_class1),
+                'class2':float(cor_class2)
+            }
+            self.add_grp(grp_id, source, target, correlations)
+            if source not in self.genes:
+                self.add_gene(source, gem1, gem2)
+            if target not in self.genes:
+                self.add_gene(target, gem1, gem2)
 
-    def add_grp(self, id, source, target, cor_class1, cor_class2):
+    def add_grp(self, id, source, target, correlations):
         assert id not in self.grps
         # may change it to a class later
         self.grps[id] = GRP(
             id = id,
             regulatory_source = source,
             regulatory_target = target,
-            correlations = {
-                'class1':float(cor_class1),
-                'class2':float(cor_class2)
-            }
+            correlations = correlations
         )
         return
 
@@ -106,10 +109,9 @@ class GRN(object):
         json.encode(self.as_dict(), path)
         return
 
-    def load_json(self, path):
-        grn = json.decode(path)
-        self.genes = {id:Gene(**grn['genes'][id]) for id in grn['genes']}
-        self.grps = {id:GRP(**grn['grps'][id]) for id in grn['grps']}
+    def load_dict(self, dict):
+        self.genes = {id: Gene(**dict['genes'][id]) for id in dict['genes']}
+        self.grps = {id: GRP(**dict['grps'][id]) for id in dict['grps']}
         return
 
 
