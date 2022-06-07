@@ -8,7 +8,7 @@ author: jy, nkmtmsys
 import time
 import ageas.lib.clf_trainer as trainer
 import ageas.lib.clf_interpreter as interpreter
-import ageas.lib.regulon_extractor as extractor
+import ageas.lib.atlas_extractor as extractor
 
 
 
@@ -92,7 +92,7 @@ class Unit:
     def launch(self,):
         start = time.time()
         self.grp_importances = interpreter.Interpret(self.clf)
-        self.regulon = extractor.Extract(
+        self.atlas = extractor.Extract(
             self.correlation_thread,
             self.grp_importances,
             self.z_score_extract_thread,
@@ -107,7 +107,7 @@ class Unit:
             print('\nEntering Feature Selection')
             for i in range(self.feature_select_iteration):
                 start = time.time()
-                prev_grps = self.regulon.top_grps.index
+                prev_grps = self.atlas.top_grps.index
                 rm = self.__get_grp_remove_list(
                             self.grp_importances.result,
                             self.feature_dropout_ratio,
@@ -122,7 +122,7 @@ class Unit:
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
                 self.grp_importances = interpreter.Interpret(self.clf)
-                self.regulon = extractor.Extract(
+                self.atlas = extractor.Extract(
                     self.correlation_thread,
                     self.grp_importances,
                     self.z_score_extract_thread,
@@ -130,7 +130,7 @@ class Unit:
                     self.top_grp_amount
                 )
                 print('Time to do a feature selection : ', time.time() - start)
-                if self.__early_stop(prev_grps, self.regulon.top_grps.index):
+                if self.__early_stop(prev_grps, self.atlas.top_grps.index):
                     self.stabilize_iteration = None
                     break
         print('Total Length of Outlier GRPs is:', len(self.far_out_grps))
@@ -143,24 +143,24 @@ class Unit:
             denominator = 1
             for i in range(self.stabilize_iteration):
                 denominator += i
-                prev_grps = self.regulon.top_grps.index
+                prev_grps = self.atlas.top_grps.index
                 self.clf.general_process(
                     train_size = self.max_train_size,
                     clf_keep_ratio = self.clf_keep_ratio,
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
                 self.grp_importances.add(interpreter.Interpret(self.clf).result)
-                self.regulon = extractor.Extract(
+                self.atlas = extractor.Extract(
                     self.correlation_thread,
                     self.grp_importances,
                     self.z_score_extract_thread,
                     self.far_out_grps,
                     self.top_grp_amount
                 )
-                if self.__early_stop(prev_grps, self.regulon.top_grps.index):
+                if self.__early_stop(prev_grps, self.atlas.top_grps.index):
                     break
             self.grp_importances.divide(denominator)
-            self.regulon = extractor.Extract(
+            self.atlas = extractor.Extract(
                 self.correlation_thread,
                 self.grp_importances,
                 self.z_score_extract_thread,
@@ -174,19 +174,19 @@ class Unit:
     def generate_regulons(self,):
         print('\nBuilding Regulons with key GRPs')
         start = time.time()
-        self.regulon.build_regulon(
+        self.atlas.build_regulon(
             meta_grn = self.meta.grn,
             impact_depth = self.impact_depth
         )
         # Attempting to Connect Regulons if necessary
         if (self.link_step_allowrance is not None and
             self.link_step_allowrance > 0 and
-            len(self.regulon.regulons) > 1):
-            self.regulon.link_regulon(
+            len(self.atlas.regulons) > 1):
+            self.atlas.link_regulon(
                 meta_grn = self.meta.grn,
                 allowrance = self.link_step_allowrance
             )
-        self.regulon.change_regulon_list_to_dict()
+        self.atlas.change_regulon_list_to_dict()
         print('Time to build key regulons : ', time.time() - start)
 
     # take out some GRPs based on feature dropout ratio

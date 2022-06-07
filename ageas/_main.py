@@ -17,7 +17,7 @@ import ageas.tool.json as json
 import ageas.lib.psgrn_caster as psgrn
 import ageas.lib.meta_grn_caster as meta_grn
 import ageas.lib.config_maker as config_maker
-import ageas.lib.regulon_extractor as extractor
+import ageas.lib.atlas_extractor as extractor
 import ageas.database_setup.binary_class as binary_db
 
 
@@ -48,7 +48,7 @@ class Launch:
                 top_grp_amount:int = 100,
                 grp_changing_thread:float = 0.05,
                 log2fc_thread:float = None,
-                link_step_allowrance:int = 0,
+                link_step_allowrance:int = 1,
                 meta_load_path:str = None,
                 meta_save_path:str = None,
                 model_config_path :str= None,
@@ -187,7 +187,7 @@ class Launch:
             print('Generating Report Files')
             self._save_regulon_as_json(
                 self.regulon.regulons,
-                self.report_folder_path + 'regulons.js'
+                self.report_folder_path + 'key_atlas.js'
             )
 
             self.regulon.report(self.meta.grn).to_csv(
@@ -208,7 +208,7 @@ class Launch:
             new_unit.select_models()
             new_unit.launch()
             new_unit.generate_regulons()
-            self.reports.append(new_unit.regulon)
+            self.reports.append(new_unit.atlas)
             if self.silent: sys.stdout = sys.__stdout__
             print(id, 'RTB\n')
 
@@ -238,23 +238,23 @@ class Launch:
         new_unit.launch()
         self.lockon.release()
         new_unit.generate_regulons()
-        self.reports.append(new_unit.regulon)
+        self.reports.append(new_unit.atlas)
         del new_unit
 
     # Combine information from reports returned by each unit
     def combine_unit_reports(self):
         all_grps = dict()
-        for index, report in enumerate(self.reports):
+        for index, atlas in enumerate(self.reports):
 
             # save unit report if asking
             if self.save_unit_reports:
                 report_path = self.report_folder_path + 'no_' + str(index) + '/'
                 if not os.path.exists(report_path): os.makedirs(report_path)
-                report.grps.save(report_path + 'grps_importances.txt')
-                json.encode(report.outlier_grps, report_path+'outlier_grps.js')
+                atlas.grps.save(report_path + 'grps_importances.txt')
+                json.encode(atlas.outlier_grps, report_path+'outlier_grps.js')
 
-            for regulon in report.regulons.values():
-                for id, record in regulon['grps'].items():
+            for regulon in atlas.regulons.values():
+                for id, record in regulon.grps.items():
                     if id not in all_grps:
                         all_grps[id] = record
                     elif id in all_grps:
@@ -336,10 +336,4 @@ class Launch:
 
     # change class objects to dicts and save regulons in JSON format
     def _save_regulon_as_json(self, regulons, path):
-        saving = dict()
-        for k,v in regulons.items():
-            saving[k] = {
-                'genes':v['genes'],
-                'grps':{i:j.as_dict() for i,j in v['grps'].items()}
-            }
-        json.encode(saving, path)
+        json.encode({k:v.as_dict() for k,v in regulons.items()}, path)

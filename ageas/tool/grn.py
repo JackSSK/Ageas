@@ -6,6 +6,7 @@ author: jy, nkmtmsys
 """
 
 import re
+import networkx as nx
 import statistics as sta
 import ageas.tool as tool
 import ageas.tool.json as json
@@ -105,6 +106,22 @@ class GRN(object):
             'grps':{id:record.as_dict() for id, record in self.grps.items()}
         }
 
+    def as_digraph(self):
+        print('Under Constuction')
+        graph = nx.DiGraph()
+        for gene_id in self.genes:
+            graph.add_node(gene_id, )
+        for grp_id in self.grps:
+            graph.add_edge(
+                self.grps[grp_id].regulatory_source,
+                self.grps[grp_id].regulatory_target
+            )
+            if self.grps[grp_id].reversable:
+                graph.add_edge(
+                    self.grps[grp_id].regulatory_target,
+                    self.grps[grp_id].regulatory_source
+                )
+
     def save_json(self, path):
         json.encode(self.as_dict(), path)
         return
@@ -127,14 +144,17 @@ class Gene(object):
                 ens_id = None,
                 uniprot_id = None,
                 type = None,
-                expression_mean = dict()):
+                expression_mean = None):
         super(Gene, self).__init__()
         self.id = id
         self.type = type
         self.name = name
         self.ens_id = ens_id
         self.uniprot_id = uniprot_id
+        self.source = list()
+        self.target = list()
         self.expression_mean = expression_mean
+
 
     def as_dict(self):
         return {
@@ -143,7 +163,9 @@ class Gene(object):
             'ens_id': self.ens_id,
             'uniprot_id': self.uniprot_id,
             'type': self.type,
-            'expression_mean': self.expression_mean
+            'source': self.source,
+            'target': self.target,
+            'expression_mean': self.expression_mean,
         }
 
     def get_name(self):
@@ -172,7 +194,7 @@ class GRP(object):
                 type = None,
                 score = None,
                 reversable = False,
-                correlations = dict()):
+                correlations = None):
         super(GRP, self).__init__()
         self.id = id
         self.type = type
