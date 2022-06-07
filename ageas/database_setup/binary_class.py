@@ -13,6 +13,7 @@ import pandas as pd
 import ageas.lib as lib
 import ageas.tool as tool
 import ageas.tool.gem as gem
+import ageas.tool.mex as mex
 import ageas.tool.json as json
 import ageas.tool.gtrd as gtrd
 import ageas.tool.biogrid as biogrid
@@ -30,7 +31,7 @@ class Setup:
 
     def __init__(self,
                 database_path = None,
-                database_type = 'gem_file',
+                database_type = 'gem_files',
                 class1_path = 'CT1',
                 class2_path = 'CT2',
                 specie = 'mouse',
@@ -131,13 +132,18 @@ class Load_GEM:
             assert self.database_info.factor_name_type == 'gene_name'
             self.interactions = biogrid.Processor(specie_path = specie)
         # process file or folder based on database type
-        if self.database_info.type == 'gem_folder':
+        if self.database_info.type == 'gem_folders':
             class1, class2 = self.__process_gem_folder(
                 std_value_thread,
                 std_ratio_thread
             )
-        elif self.database_info.type == 'gem_file':
+        elif self.database_info.type == 'gem_files':
             class1, class2 = self.__process_gem_file(
+                std_value_thread,
+                std_ratio_thread
+            )
+        elif self.database_info.type == 'mex_folders':
+            class1, class2 = self.__process_mex_folders(
                 std_value_thread,
                 std_ratio_thread
             )
@@ -189,6 +195,64 @@ class Load_GEM:
         )
         return tool.STD_Filter(df, std_value_thread, std_ratio_thread)
 
+    # Process in expression matrix file (dataframe) scenario
+    def __process_mex_folders(self, std_value_thread, std_ratio_thread):
+        class1 = self.__read_mex(
+            self.database_info.class1_path,
+            std_value_thread,
+            std_ratio_thread
+        )
+        class2 = self.__read_mex(
+            self.database_info.class2_path,
+            std_value_thread,
+            std_ratio_thread
+        )
+        return class1, class2
+
+    # Read in gem files
+    def __read_mex(self, path, std_value_thread, std_ratio_thread):
+        keyword = None
+        matrix_path = None
+        features_path = None
+        barcodes_path = None
+        # get gene id type
+        if self.database_info.factor_name_type == 'gene_name':
+            gene_id_type = 1
+        else:
+            print('Under Construction')
+        # check whether input path contains keyword
+        if path[-1] != '/':
+            ele = path.split('/')
+            keyword = ele[-1]
+            path = ''.join(ele[:-1])
+            print('Under Construction')
+            print(path, keyword)
+
+        for ele in os.listdir(path):
+            # skip files without keyword
+            if keyword is not None and not re.search(keyword, ele): continue
+            # get matrix path
+            if re.search(r'matrix.mtx', ele):
+                matrix_path = path + ele
+            # get feature path
+            elif re.search(r'genes.tsv', ele):
+                features_path = path + ele
+            # get barcodes path
+            elif re.search(r'barcodes.tsv', ele):
+                barcodes_path = path + ele
+
+        assert matrix_path is not None
+        assert features_path is not None
+        assert barcodes_path is not None
+
+        gem = mex.Reader(
+            matrix_path = matrix_path,
+        	features_path = features_path,
+            barcodes_path = barcodes_path
+        )
+        gem.get_gem(gene_id_type = gene_id_type)
+        return tool.STD_Filter(gem.data, std_value_thread, std_ratio_thread)
+
     # Process in Database scenario
     def __process_gem_folder(self, std_value_thread, std_ratio_thread):
         class1 = gem.Folder(self.database_info.class1_path).combine(
@@ -209,12 +273,13 @@ class Process(object):
     by given ratio
     Then prepare sample data to be ready for training and analysis process
     """
-    def __init__(self, database_info = None,
-                        grnData = None,
-                        train_size = 0.7,
-                        ramdom_state = None,
-                        fullData = None,
-                        fullLabel = None,):
+    def __init__(self,
+                database_info = None,
+                grnData = None,
+                train_size = 0.7,
+                ramdom_state = None,
+                fullData = None,
+                fullLabel = None,):
         super(Process, self).__init__()
         # Initialization
         self.train_size = train_size

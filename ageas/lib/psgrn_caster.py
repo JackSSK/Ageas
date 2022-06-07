@@ -7,7 +7,6 @@ author: jy, nkmtmsys
 
 ToDo:
 __file_method not done at all
-gem_data method also need to be done <- higher priority
 """
 
 import os
@@ -62,7 +61,7 @@ class Make:
                 gem = gem_data.class2,
                 meta_grn = meta_grn
             )
-        elif self.database_info.type == 'gem_folder':
+        elif self.database_info.type == 'gem_folders':
             class1_psGRNs = self.__folder_method(
                 'class1',
                 self.database_info.class1_path,
@@ -73,7 +72,7 @@ class Make:
                 self.database_info.class2_path,
                 meta_grn
             )
-        elif self.database_info.type == 'gem_file':
+        elif self.database_info.type == 'gem_files':
             # need to revise here!
             class1_psGRNs = self.__file_method(
                 'class1',

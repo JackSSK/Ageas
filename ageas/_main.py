@@ -39,7 +39,7 @@ class Launch:
                 clf_accuracy_thread:float = 0.8,
                 correlation_thread:float = 0.2,
                 database_path:str = None,
-                database_type:str = 'gem_file',
+                database_type:str = 'gem_files',
                 factor_name_type:str = 'gene_name',
                 feature_dropout_ratio:float = 0.1,
                 feature_select_iteration:int = 1,
@@ -195,7 +195,7 @@ class Launch:
                 index = False
             )
 
-        print('\nFin\n')
+        print('\nComplete\n')
 
     # Protocol SOLO
     def proto_solo(self):
@@ -283,7 +283,9 @@ class Launch:
                         meta_load_path = None):
         meta = None
         # if reading in GEMs, we need to construct pseudo-cGRNs first
-        if re.search(r'gem' , database_info.type):
+        # or if we are reading in MEX, make GEM first and then mimic GEM mode
+        if (re.search(r'gem' , database_info.type) or
+            re.search(r'mex' , database_info.type)):
             gem_data = binary_db.Load_GEM(
                 database_info,
                 mww_p_val_thread,
@@ -307,10 +309,6 @@ class Launch:
                 gem_data = gem_data,
                 meta_grn = meta.grn
             )
-        # if we are reading in MEX, make GEM first and then mimic GEM mode
-        elif re.search(r'mex' , database_info.type):
-            psGRNs = None
-            print('trainer.py: mode MEX need to be revised here')
         # if we are reading in GRNs directly, just process them
         elif re.search(r'grn' , database_info.type):
             psGRNs = None

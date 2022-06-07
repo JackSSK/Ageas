@@ -16,6 +16,7 @@ import ageas.tool.json as json
 import ageas.lib.grp_predictor as grp
 
 
+
 class Analysis(object):
 	"""
 	Find important factors simply by GRN degree.
