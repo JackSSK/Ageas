@@ -180,17 +180,17 @@ class Launch:
         # Multithreading protocol
         elif self.protocol == 'multi': self.proto_multi()
 
-        self.regulon = self.combine_unit_reports()
+        self.atlas = self.combine_unit_reports()
         print('Operation Time: ', time.time() - start)
 
         if self.report_folder_path is not None:
             print('Generating Report Files')
-            self._save_regulon_as_json(
-                self.regulon.regulons,
+            self._save_atlas_as_json(
+                self.atlas.regulons,
                 self.report_folder_path + 'key_atlas.js'
             )
 
-            self.regulon.report(self.meta.grn).to_csv(
+            self.atlas.report(self.meta.grn).to_csv(
                 self.report_folder_path + 'report.csv',
                 index = False
             )
@@ -335,5 +335,5 @@ class Launch:
         return answer
 
     # change class objects to dicts and save regulons in JSON format
-    def _save_regulon_as_json(self, regulons, path):
+    def _save_atlas_as_json(self, regulons, path):
         json.encode({k:v.as_dict() for k,v in regulons.items()}, path)
