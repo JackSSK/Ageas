@@ -18,11 +18,12 @@ class GRN(object):
     docstring for Meta_GRN.
     """
 
-    def __init__(self, id = None):
+    def __init__(self, id = None, **kwargs):
         super(GRN, self).__init__()
         self.id = id
         self.genes = dict()
         self.grps = dict()
+        for key in kwargs: setattr(self, key, kwargs[key])
 
     def update_grn(self, source, target, gem1, gem2, correlation_thread):
         # Skip if processing self-regulating pathway
@@ -106,21 +107,23 @@ class GRN(object):
             'grps':{id:record.as_dict() for id, record in self.grps.items()}
         }
 
-    def as_digraph(self):
-        print('Under Constuction')
+    def as_digraph(self, grp_ids = None):
         graph = nx.DiGraph()
-        for gene_id in self.genes:
-            graph.add_node(gene_id, )
-        for grp_id in self.grps:
-            graph.add_edge(
-                self.grps[grp_id].regulatory_source,
-                self.grps[grp_id].regulatory_target
-            )
+        # Use all GRPs if not further specified
+        if grp_ids is None: grp_ids = self.grps.keys()
+        for grp_id in grp_ids:
+            source = self.grps[grp_id].regulatory_source
+            target = self.grps[grp_id].regulatory_target
+            # add GRP as an edge
+            graph.add_edge(source, target, **self.grps[grp_id].as_dict())
             if self.grps[grp_id].reversable:
-                graph.add_edge(
-                    self.grps[grp_id].regulatory_target,
-                    self.grps[grp_id].regulatory_source
-                )
+                graph.add_edge(target, source, **self.grps[grp_id].as_dict())
+            # add regulatory source and target genes to nodes
+            if not graph.has_node(source):
+                graph.add_node(source, **self.genes[source].as_dict())
+            if not graph.has_node(target):
+                graph.add_node(target, **self.genes[target].as_dict())
+        return graph
 
     def save_json(self, path):
         json.encode(self.as_dict(), path)
@@ -140,45 +143,30 @@ class Gene(object):
 
     def __init__(self,
                 id = None,
-                name = None,
-                ens_id = None,
-                uniprot_id = None,
-                type = None,
-                expression_mean = None):
+                type = 'Gene',
+                expression_mean = None,
+                **kwargs):
         super(Gene, self).__init__()
         self.id = id
         self.type = type
-        self.name = name
-        self.ens_id = ens_id
-        self.uniprot_id = uniprot_id
         self.source = list()
         self.target = list()
         self.expression_mean = expression_mean
+        for key in kwargs: setattr(self, key, kwargs[key])
 
+    def as_dict(self): return self.__dict__
 
-    def as_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'ens_id': self.ens_id,
-            'uniprot_id': self.uniprot_id,
-            'type': self.type,
-            'source': self.source,
-            'target': self.target,
-            'expression_mean': self.expression_mean,
-        }
+    def add_name(self, name):
+        if not hasattr(self, 'names'): self.names = list()
+        self.names.append(name)
 
-    def get_name(self):
-        print('Under Construction')
-        self.name = None
+    def add_ens_id(self, ens_id):
+        if not hasattr(self, 'ens_ids'): self.ens_ids = list()
+        self.ens_ids.append(ens_id)
 
-    def get_ens_id(self):
-        print('Under Construction')
-        self.ens_id = None
-
-    def get_uniprot_id(self):
-        print('Under Construction')
-        self.uniprot_id = None
+    def add_uniprot_id(self, uniprot_id):
+        if not hasattr(self, 'uniprot_ids'): self.uniprot_ids = list()
+        self.uniprot_ids.append(uniprot_id)
 
 
 
@@ -194,7 +182,8 @@ class GRP(object):
                 type = None,
                 score = None,
                 reversable = False,
-                correlations = None):
+                correlations = None,
+                **kwargs):
         super(GRP, self).__init__()
         self.id = id
         self.type = type
@@ -205,17 +194,9 @@ class GRP(object):
         self.regulatory_target = regulatory_target
         if self.id is None:
             self.id = self.cast_id(regulatory_source, regulatory_target)
+        for key in kwargs: setattr(self, key, kwargs[key])
 
-    def as_dict(self):
-        return {
-            'id': self.id,
-            'type': self.type,
-            'score': self.score,
-            'reversable': self.reversable,
-            'regulatory_source': self.regulatory_source,
-            'regulatory_target': self.regulatory_target,
-            'correlations':self.correlations
-        }
+    def as_dict(self): return self.__dict__
 
     def cast_id(self, source, target):
         if source > target: return source + '_' + target

@@ -5,12 +5,14 @@ Ageas Reborn
 author: jy, nkmtmsys
 """
 import math
-from warnings import warn
 import numpy as np
+import networkx as nx
+from warnings import warn
 import matplotlib.pyplot as plt
+from netgraph import InteractiveGraph
 import ageas.tool.grn as grn
 import ageas.tool.json as json
-from netgraph import InteractiveGraph
+
 
 
 TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
@@ -18,59 +20,70 @@ TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 class Plot_Regulon(object):
     """
-    Visualize full or partial Regulon
-
-    Interactive mode cannot be saved yet...
-    save in PDF format
+    Visualize full or partial Regulon and save in PDF format by default
     """
 
     def __init__(self,
                 scale:int = 10,
-                regulon_id:str = 'regulon_0',
-                remove_bridge:bool = True,
-                bridge_special_color:str = None,
-                cor_thread:float = 0.0,
-                type:str = 'all',
-                file_path:str = None,
                 root_gene:str = None,
-                impact_depth:int = 1):
+                cor_thread:float = 0.0,
+                graph_type:str = 'all',
+                impact_depth:int = 1,
+                hide_bridge:bool = True,
+                bridge_color:str = None,
+                file_path:str = None,
+                regulon_id:str = 'regulon_0',):
         super(Plot_Regulon, self).__init__()
-        self.plot = None
         self.scale = scale
-        self.type = str(type)
         self.root_gene = root_gene
         self.cor_thread = cor_thread
+        self.graph_type = str(graph_type)
         self.impact_depth = impact_depth
-        self.remove_bridge = remove_bridge
-        self.bridge_color = bridge_special_color
-        self.regulon = json.decode(file_path)[regulon_id]
 
+        self.hide_bridge = hide_bridge
+        self.bridge_color = bridge_color
         # if removing all the bridges, why specify a color?
-        if self.remove_bridge and self.bridge_color is not None:
-            warn('bridge_special_color ignored since removing bridges')
+        if self.hide_bridge and self.bridge_color is not None:
+            warn('bridge_color ignored since hiding bridges')
+
+        # Load in regulon to plot
+        self.regulon = grn.GRN(id = regulon_id)
+        self.regulon.load_dict(json.decode(file_path)[regulon_id])
 
         # Plot the whole regulon or set a node as root?
         if self.root_gene is None:
-            self.plot = self._process_full()
+            # add every qualified GRP in given regulon
+            grps_to_plot = {
+                k:0 for k,v in self.regulon.grps.items() if self.__check(v.type)
+            }
         else:
-            self.plot = self._process_root(root_gene, impact_depth)
+            # only testify GRPs reachable to root_gene in given depth
+            grps_to_plot = dict()
+            self.__find_grps(root_gene, grps_to_plot, impact_depth)
 
-    # testify every GRP in given regulon
-    def _process_full(self):
-        grps_to_plot = dict()
-        for id, grp in self.regulon['grps'].items():
-            # ignore bridge GRPs
-            if grp['type'] == TYPES[2] and self.remove_bridge:
-                continue
-            grps_to_plot[id] = None
-        # now we make the plot
-        self.plot = self._draw(grps_to_plot = grps_to_plot)
+        # filter GRPs based on correlation thread if set
+        if self.cor_thread:
+            print('Under Construction')
 
-    # only testify GRPs reachable to root_gene in given depth
-    def _process_root(self, root_gene, impact_depth):
-        grps_to_plot = dict()
-        self.__find_grps(root_gene, grps_to_plot, impact_depth)
-        self.plot = self._draw(grps_to_plot = grps_to_plot)
+        # now we make the graph
+        self.graph = self.regulon.as_digraph(grp_ids = grps_to_plot.keys())
+
+    # check type
+    def __check(self, type): return type != TYPES[2] or not self.hide_bridge
+
+    # recursively find GRPs able to link with root_gene in given depth
+    def __find_grps(self, gene, dict, depth):
+        if depth >= 1:
+            depth -= 1
+            reg_targets = self.regulon.genes[gene].target
+            reg_sources = self.regulon.genes[gene].source
+            for tar in reg_targets + reg_sources:
+                id = grn.GRP(gene, tar).id
+                # add id to dict accordingly
+                if id not in dict and self.__check(self.regulon.grps[id].type):
+                    dict[id] = None
+                # recurssion
+                self.__find_grps(tar, dict, depth)
 
     # make sure which GRPs are qualified and plot them
     def _draw(self, grps_to_plot):
@@ -83,23 +96,23 @@ class Plot_Regulon(object):
         edge_width = dict()
 
         for id in grps_to_plot:
-            grp = self.regulon['grps'][id]
-            weight, color = self.get_weight_color(grp['correlations'])
+            grp = self.regulon.grps[id]
+            weight, color = self.get_weight_color(grp.correlations)
 
             # ignore GRPs with no significant correlation
             if abs(weight) <= self.cor_thread:
                 continue
             # add GRP as an edge
-            source = grp['regulatory_source']
-            target = grp['regulatory_target']
+            source = grp.regulatory_source
+            target = grp.regulatory_target
             # change color to silver if it's a bridge
-            if self.bridge_color is not None and grp['type'] == TYPES[2]:
+            if self.bridge_color is not None and grp.type == TYPES[2]:
                 color = self.bridge_color
             edge_color[(source, target)] = color
             edge_width[(source, target)] = 20 * (weight**2)
             graph.append((source, target, weight))
             # add reverse edge if reversable
-            if grp['reversable']:
+            if grp.reversable:
                 edge_color[(target, source)] = color
                 edge_width[(target, source)] = 20 * (weight**2)
                 graph.append((target, source, weight))
@@ -110,57 +123,24 @@ class Plot_Regulon(object):
 
         # make sure we have something to plot
         if len(graph) <= 0: raise Exception('No GRPs to plot!')
-        # then we plot the interactive graph
-        # NOTE: it's not interactive when saved to file now
-        plot = InteractiveGraph(
-            graph,
-            node_labels = True,
-            node_size = node_size,
-            node_shape = node_shape,
-            node_color = node_color,
-            # node_layout ='spring',
-            # node_label_fontdict = dict(size=2),
-            edge_width = edge_width,
-            edge_color = edge_color,
-            scale = (self.scale, self.scale),
-            arrows = True
-        )
-
-        return plot
 
     # just as named
     def get_weight_color(self, correlations):
-        if self.type == 'class1' or self.type == '1':
+        if self.graph_type == 'class1' or self.graph_type == '1':
             weight = correlations['class1']
-        elif self.type == 'class2' or self.type == '2':
+        elif self.graph_type == 'class2' or self.graph_type == '2':
             weight = correlations['class2']
-        elif self.type == 'all':
+        elif self.graph_type == 'all':
             weight = abs(correlations['class1']) - abs(correlations['class2'])
         if weight >= 0:
             return weight, 'red'
         else:
             return weight, 'blue'
 
-    # recursively find GRPs able to link with root_gene in given depth
-    def __find_grps(self, gene, grps_to_plot, depth):
-        if depth >= 1:
-            depth -= 1
-            reg_targets = self.regulon['genes'][gene]['target']
-            reg_sources = self.regulon['genes'][gene]['source']
-            for tar in reg_targets + reg_sources:
-                grp_id = grn.GRP(gene, tar).id
-                if grp_id not in grps_to_plot:
-                    # ignore bridges if asked to
-                    if (self.regulon['grps'][grp_id]['type'] == TYPES[2] and
-                        self.remove_bridge):
-                        continue
-                    grps_to_plot[grp_id] = None
-                self.__find_grps(tar, grps_to_plot, depth)
-
     # Update Node's (which is a gene) plot setting
     def __update_node(self, gene, node_shape, node_size, node_color):
         if gene not in node_shape:
-            target_num = len(self.regulon['genes'][gene]['target'])
+            target_num = len(self.regulon.genes[gene].target)
             # this gene does have regulatory power on others
             if target_num > 0:
                 factor = 1
@@ -177,7 +157,7 @@ class Plot_Regulon(object):
             node_shape[gene] = shape
             if shape == 'd':
                 if (self.bridge_color is not None and
-                    self.regulon['genes'][gene]['type'] == TYPES[2]):
+                    self.regulon.genes[gene].type == TYPES[2]):
                     node_color[gene] = self.bridge_color
                 else:
                     node_color[gene] = 'gold'
@@ -198,8 +178,8 @@ class Plot_Regulon(object):
 #     a = Plot_Regulon(
 #         file_path = 'regulons.js',
 #         regulon_id = 'regulon_0',
-#         # remove_bridge = False,
-#         # bridge_special_color = 'silver',
+#         # hide_bridge = False,
+#         # bridge_color = 'silver',
 #         # type = 'class1',
 #         # root_gene = 'ACTA2',
 #         # impact_depth = 1,

@@ -126,8 +126,8 @@ class Cast:
 
 			# pass this TF if no recorded interactions in GTRD
 			if len(uniprot_ids) == 0:
-					self.tfs_no_interaction_rec[source] = ''
-					continue
+				self.tfs_no_interaction_rec[source] = ''
+				continue
 
 			# get potential regulatory targets
 			reg_target = {}
@@ -153,6 +153,18 @@ class Cast:
 						gem2 = data.class2,
 						correlation_thread = correlation_thread
 					)
+
+		# update Gene informations
+		for gene in self.grn.genes:
+			if data.database_info.factor_name_type == 'gene_name':
+				self.grn.genes[gene].add_name(gene)
+			elif data.database_info.factor_name_type == 'ens_id':
+				self.grn.genes[gene].add_ens_id(gene)
+			if data.tf_list is not None and gene in data.tf_list:
+				self.grn.genes[gene].type = 'TF'
+			if gene in data.interactions.idmap:
+				for id in data.interactions.idmap[gene].split(';'):
+					self.grn.genes[gene].add_uniprot_id(id)
 		return
 
 	# Make GRN casting guide with bioGRID data

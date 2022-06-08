@@ -24,5 +24,6 @@ def decode(file):
             data = json.load(json_file)
         return data
     else:
-        with open(file, 'r') as json_file: data = json.load(json_file)
+        with open(file, 'r') as json_file:
+            data = json.load(json_file)
         return data

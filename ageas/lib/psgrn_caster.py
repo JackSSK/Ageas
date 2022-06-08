@@ -10,6 +10,7 @@ __file_method not done at all
 """
 
 import os
+import copy
 import statistics as sta
 import ageas.tool as tool
 import ageas.tool.grn as grn
@@ -123,7 +124,7 @@ class Make:
                     meta_grn
                 )
             else:
-                pseudo_sample = self.__process_sample_without_guidance(
+                pseudo_sample = self.__process_sample_without_metaGRN(
                     class_type,
                     sample,
                     sample_id
@@ -148,7 +149,7 @@ class Make:
                     meta_grn
                 )
             else:
-                pseudo_sample = self.__process_sample_without_guidance(
+                pseudo_sample = self.__process_sample_without_metaGRN(
                     class_type,
                     data[sample_id],
                     path
@@ -185,24 +186,24 @@ class Make:
                         correlations = {class_type: cor}
                     )
                 if source_ID not in pseudo_sample.genes:
-                    pseudo_sample.genes[source_ID] = grn.Gene(
-                        id = source_ID,
-                        expression_mean = {
-                            class_type: float(sta.mean(source_exp))
-                        }
+                    pseudo_sample.genes[source_ID] = copy.deepcopy(
+                        meta_grn.genes[source_ID]
                     )
+                    pseudo_sample.genes[source_ID].expression_mean = {
+                        class_type: float(sta.mean(source_exp))
+                    }
                 if target_ID not in pseudo_sample.genes:
-                    pseudo_sample.genes[target_ID] = grn.Gene(
-                        id = target_ID,
-                        expression_mean = {
-                            class_type: float(sta.mean(target_exp))
-                        }
+                    pseudo_sample.genes[target_ID] = copy.deepcopy(
+                        meta_grn.genes[target_ID]
                     )
+                    pseudo_sample.genes[target_ID].expression_mean = {
+                        class_type: float(sta.mean(target_exp))
+                    }
         return pseudo_sample
 
     # Process data without guidance
     # May need to revise later
-    def __process_sample_without_guidance(self, class_type, gem, sample_id):
+    def __process_sample_without_metaGRN(self, class_type, gem, sample_id):
         pseudo_sample = grn.GRN(id = sample_id)
         # Get source TF
         for source_ID in gem.index:

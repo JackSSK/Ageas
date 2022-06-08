@@ -39,7 +39,7 @@ class Reader(tool.Reader_Template):
                 name = content[2].strip().upper()
                 uniID = content[0].strip().upper()
                 if name in result:
-                    result[name] += ';'+uniID
+                    result[name] += ';' + uniID
                 else:
                     result[name] = uniID
         return result
