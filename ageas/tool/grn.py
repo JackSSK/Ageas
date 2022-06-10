@@ -114,15 +114,15 @@ class GRN(object):
         for grp_id in grp_ids:
             source = self.grps[grp_id].regulatory_source
             target = self.grps[grp_id].regulatory_target
-            # add GRP as an edge
-            graph.add_edge(source, target, **self.grps[grp_id].as_dict())
-            if self.grps[grp_id].reversable:
-                graph.add_edge(target, source, **self.grps[grp_id].as_dict())
             # add regulatory source and target genes to nodes
             if not graph.has_node(source):
                 graph.add_node(source, **self.genes[source].as_dict())
             if not graph.has_node(target):
                 graph.add_node(target, **self.genes[target].as_dict())
+            # add GRP as an edge
+            graph.add_edge(source, target, **self.grps[grp_id].as_dict())
+            if self.grps[grp_id].reversable:
+                graph.add_edge(target, source, **self.grps[grp_id].as_dict())
         return graph
 
     def save_json(self, path):
