@@ -40,7 +40,9 @@ class Analysis(object):
 				temp[target] += 1
 
 		if self.top is None: self.top = len(temp)
-		temp = [[k[0],k[1]] for k in Counter(temp).most_common(self.top)]
+		temp = [[k[0],
+				meta_grn.genes[k[0]].type,
+				k[1]] for k in Counter(temp).most_common(self.top)]
 
 		# adding log2FC
 		for ele in temp:
@@ -48,7 +50,7 @@ class Analysis(object):
 			ele.append(abs(math.log2((exp['class1']+1) / (exp['class2']+1))))
 
 		# changing to dataframe type
-		self.result = pd.DataFrame(temp, columns = ['Gene', 'Degree', 'Log2FC'])
+		self.result = pd.DataFrame(temp,columns=['ID','Type','Degree','Log2FC'])
 
 	def save(self, path):
 		self.result.to_csv(path, index = False )

@@ -265,7 +265,10 @@ class Launch:
         # now we build regulons
         regulon = extractor.Extract()
         for id, grp in all_grps.items():
-            regulon.update_regulon_with_grp(grp)
+            regulon.update_regulon_with_grp(
+                grp = grp,
+                meta_grn = self.meta.grn
+            )
         regulon.find_bridges(meta_grn = self.meta.grn)
         regulon.update_genes(impact_depth = self.impact_depth)
         regulon.change_regulon_list_to_dict()

@@ -5,6 +5,7 @@ Ageas Reborn
 author: jy, nkmtmsys
 """
 import math
+import copy
 import itertools
 import pandas as pd
 import ageas.lib as lib
@@ -52,7 +53,7 @@ class Extract(object):
 				raise lib.Error('GRP', id, 'not in Meta GRN')
 			grp.type = GRP_TYPES[0]
 			grp.score = self.top_grps.loc[id]['importance']
-			self.update_regulon_with_grp(grp)
+			self.update_regulon_with_grp(grp, meta_grn)
 		del self.top_grps
 		for id in self.outlier_grps:
 			try:
@@ -61,7 +62,7 @@ class Extract(object):
 				raise lib.Error('GRP', id, 'not in Meta GRN')
 			grp.type = GRP_TYPES[1]
 			grp.score = self.outlier_grps[id] + outlier_bonus_score
-			self.update_regulon_with_grp(grp)
+			self.update_regulon_with_grp(grp, meta_grn)
 		# del self.outlier_grps
 		# link regulons if bridge can be build with factors already in regulons
 		self.find_bridges(meta_grn = meta_grn)
@@ -104,22 +105,6 @@ class Extract(object):
 			for grp in regulon.grps.values():
 				source = grp.regulatory_source
 				target = grp.regulatory_target
-				# update genes type based on GRP type
-				if grp.type == GRP_TYPES[3]:
-					regulon.genes[source].type = GRP_TYPES[3]
-					regulon.genes[target].type = GRP_TYPES[3]
-				elif grp.type == GRP_TYPES[1]:
-					if regulon.genes[source].type != GRP_TYPES[3]:
-						regulon.genes[source].type = GRP_TYPES[1]
-					if regulon.genes[target].type != GRP_TYPES[3]:
-						regulon.genes[target].type = GRP_TYPES[1]
-				elif grp.type == GRP_TYPES[0]:
-					if (regulon.genes[source].type != GRP_TYPES[1] and
-						regulon.genes[source].type != GRP_TYPES[3]):
-						regulon.genes[source].type = GRP_TYPES[0]
-					if (regulon.genes[target].type != GRP_TYPES[1] and
-						regulon.genes[target].type != GRP_TYPES[3]):
-						regulon.genes[target].type = GRP_TYPES[0]
 				self.__update_regulon_gene_list(
 					source = source,
 					target = target,
@@ -167,14 +152,12 @@ class Extract(object):
 				source = meta_grn.grps[grp_id].regulatory_source
 				target = meta_grn.grps[grp_id].regulatory_target
 				if source not in extend_regulon.genes:
-					extend_regulon.genes[source] = grn.Gene(
-						id = source,
-						type = GRP_TYPES[2]
+					extend_regulon.genes[source] = copy.deepcopy(
+						meta_grn.genes[source]
 					)
 				if target not in extend_regulon.genes:
-					extend_regulon.genes[target] = grn.Gene(
-						id = target,
-						type = GRP_TYPES[2]
+					extend_regulon.genes[target] = copy.deepcopy(
+						meta_grn.genes[target]
 					)
 				self.__update_regulon_gene_list(
 					source = source,
@@ -378,7 +361,7 @@ class Extract(object):
 			gene_list[source].source.append(target)
 			gene_list[target].target.append(source)
 
-	def update_regulon_with_grp(self, grp):
+	def update_regulon_with_grp(self, grp, meta_grn):
 		update_ind = None
 		combine_ind = None
 		source_regulon_ind = None
@@ -399,8 +382,8 @@ class Extract(object):
 			# make new regulon data
 			regulon = grn.GRN()
 			regulon.grps[grp.id] = grp
-			regulon.genes[source] = grn.Gene(id=source, type=GRP_TYPES[2])
-			regulon.genes[target] = grn.Gene(id=target, type=GRP_TYPES[2])
+			regulon.genes[source] = copy.deepcopy(meta_grn.genes[source])
+			regulon.genes[target] = copy.deepcopy(meta_grn.genes[target])
 			self.regulons.append(regulon)
 			return
 		elif source_regulon_ind is not None and target_regulon_ind is not None:
@@ -424,14 +407,12 @@ class Extract(object):
 			self.regulons[update_ind].grps[grp.id] = grp
 			# update gene list
 			if source not in self.regulons[update_ind].genes:
-				self.regulons[update_ind].genes[source] = grn.Gene(
-					id = source,
-					type = GRP_TYPES[2]
+				self.regulons[update_ind].genes[source] = copy.deepcopy(
+					meta_grn.genes[source]
 				)
 			elif target not in self.regulons[update_ind].genes:
-				self.regulons[update_ind].genes[target] = grn.Gene(
-					id = target,
-					type = GRP_TYPES[2]
+				self.regulons[update_ind].genes[target] = copy.deepcopy(
+					meta_grn.genes[target]
 				)
 
 		# combine 2 regulons if new GRP can connect two
