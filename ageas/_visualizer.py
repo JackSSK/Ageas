@@ -10,6 +10,8 @@ import networkx as nx
 from warnings import warn
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.image as img
+import matplotlib.colors as colors
 from scipy.special import softmax
 from netgraph import Graph
 from netgraph import InteractiveGraph
@@ -95,8 +97,9 @@ class Plot_Regulon(object):
              scale:int = 1,
              seed:int = 1936,
              figure_size:int = 10,
-             method:str = 'networkx',
+             method:str = 'netgraph',
              layout:str = 'spring',
+             colorbar_shrink:float = 0.25,
              font_size:int = 5,
              hide_target_labels:bool = False,
              edge_width_scale:float = 1.0,
@@ -134,6 +137,7 @@ class Plot_Regulon(object):
                 edge_width_scale = edge_width_scale,
                 bridge_color = bridge_color
             )
+        self.set_color_bar(ax = ax, shrink = colorbar_shrink)
         if save_path is not None:
             self.save(save_path)
 
@@ -199,14 +203,18 @@ class Plot_Regulon(object):
         node_size, node_color, node_alhpa, node_labels = self.get_node_info(
             base_size = base_size,
             hide_target_labels = hide_target_labels,
-            return_type = 'list'
         )
         edge_width, edge_style, edge_color, edge_alpha = self.get_edge_info(
             base_alpha = base_alpha,
             width_scale = edge_width_scale,
             bridge_color = bridge_color,
-            return_type = 'list'
         )
+        node_size = [node_size[node] for node in self.graph.nodes]
+        node_color = [node_color[node] for node in self.graph.nodes]
+        edge_width = [edge_width[(u,v)] for (u,v) in self.graph.edges]
+        edge_style = [edge_style[(u,v)] for (u,v) in self.graph.edges]
+        edge_color = [edge_color[(u,v)] for (u,v) in self.graph.edges]
+        edge_alpha = [edge_alpha[(u,v)] for (u,v) in self.graph.edges]
 
         # specify layout
         if layout == 'circular':
@@ -261,20 +269,6 @@ class Plot_Regulon(object):
         for i in range(self.graph.number_of_edges()):
             edges[i].set_alpha(edge_alpha[i])
 
-        # set color bar
-        pc = mpl.collections.PatchCollection(edges, cmap = self.edge_cmap)
-        pc.set_array(edge_color)
-        cbar = plt.colorbar(pc, ax = ax, shrink = 0.25)
-        if self.graph_type == 'all':
-            labels = ['Stronger in Class2']  + ['']*3 + ['No Difference']
-            labels += ['']*3 + ['Stronger in Class1']
-            cbar.set_ticklabels(labels)
-        cbar.ax.set_ylabel(
-            'Gene Expression Correlation',
-            labelpad = 12.0,
-            rotation = 270
-        )
-
     # Get Edge Information
     def get_edge_info(self,
                       base_alpha = 0.3,
@@ -315,15 +309,8 @@ class Plot_Regulon(object):
                 elif color_type == 'rgba':
                     edge_color[key] = self.edge_cmap(1)
 
-        # return info by instructed type
-        if return_type == 'dict':
-            return edge_width, edge_style, edge_color, edge_alpha
-        elif return_type == 'list':
-            edge_width = [edge_width[(u,v)] for (u,v) in self.graph.edges]
-            edge_style = [edge_style[(u,v)] for (u,v) in self.graph.edges]
-            edge_color = [edge_color[(u,v)] for (u,v) in self.graph.edges]
-            edge_alpha = [edge_alpha[(u,v)] for (u,v) in self.graph.edges]
-            return edge_width, edge_style, edge_color, edge_alpha
+        return edge_width, edge_style, edge_color, edge_alpha
+
 
     # Get Node information
     def get_node_info(self,
@@ -357,13 +344,7 @@ class Plot_Regulon(object):
             size = base_size * factor
             node_size[node] = size
 
-        # return info by instructed type
-        if return_type == 'dict':
-            return node_size, node_color, node_alhpa, node_labels
-        elif return_type == 'list':
-            node_size = [node_size[node] for node in self.graph.nodes]
-            node_color = [node_color[node] for node in self.graph.nodes]
-            return node_size, node_color, node_alhpa, node_labels
+        return node_size, node_color, node_alhpa, node_labels
 
     # just as named
     def get_weight(self, correlations):
@@ -374,6 +355,28 @@ class Plot_Regulon(object):
         elif self.graph_type == 'all':
             weight = abs(correlations['class1']) - abs(correlations['class2'])
         return weight
+
+    # Set up a color bar with fixed scale from -1.0 to 1.0
+    def set_color_bar(self, ax, shrink = 1):
+        pc = img.AxesImage(
+            ax = ax,
+            cmap = self.edge_cmap,
+            norm = colors.Normalize(vmin = -1, vmax = 1, clip = True),
+        )
+        cbar = plt.colorbar(pc, ax = ax, shrink = shrink)
+        if self.graph_type == 'all':
+            labels = cbar.ax.get_yticklabels()
+            labels[0] = 'Stronger in Class2'
+            # only set mid tick label when it's odd length
+            if (len(labels) % 2) == 1:
+                labels[int(len(labels) / 2)] = 'No Difference'
+            labels[-1] = 'Stronger in Class1'
+            cbar.set_ticklabels(labels)
+        cbar.ax.set_ylabel(
+            'Gene Expression Correlation',
+            labelpad = 12.0,
+            rotation = 270
+        )
 
     # save the plot. PDF by default
     def save(self, path:str = None, format:str = 'pdf'):
@@ -396,24 +399,24 @@ if __name__ == '__main__':
         a = Plot_Regulon(
             file_path = atlas_path,
             regulon_id = 'regulon_0',
-            hide_bridge = False,
-            # graph_type = 'class1',
-            # root_gene = 'HAND2',
+            # hide_bridge = False,
+            # graph_type = 'class2',
+            root_gene = 'HAND2',
             # impact_depth = 1,
         )
-        # a.draw(
-        #     method = 'netgraph',
-        #     figure_size = 20,
-        #     font_size = 10,
-        #     edge_width_scale = 0.3,
-        #     save_path = folder_path + 'ultimate_useless_mess.pdf',
-        # )
         a.draw(
+            figure_size = 10,
+            colorbar_shrink = 0.25,
+            font_size = 10,
+            edge_width_scale = 0.3,
+            save_path = folder_path + 'ultimate_useless_mess.pdf',
+        )
+        a.draw(
+            method = 'networkx',
             figure_size = 20,
             font_size = 10,
             save_path = folder_path + 'ultimate_useless_mess.pdf',
         )
-        # a.show()
 
         # a = ageas.Plot_Regulon(
         #     figure_size = 10,
@@ -425,5 +428,3 @@ if __name__ == '__main__':
         #     # root_gene = 'ACTA2',
         #     # impact_depth = 1,
         # )
-        # # a.show()
-        # a.save(path = folder_path + 'useless_mess.pdf')
