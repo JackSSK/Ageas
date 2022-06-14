@@ -55,11 +55,11 @@ class Folder(object):
 	Manipulations on Gene Expressio Matrices in given folder
 	"""
 	def __init__(self,
-				path:str = None,
-				file_type = 'csv', 				# type of file considering GEM
-				compression_method = 'infer',	# compression method of files
-				header_row = 0, 				# header row for all GEM
-				index_col = 0, 					# index column for all GEM
+				 path:str = None,
+				 file_type = 'csv', 			# type of file considering GEM
+				 compression_method = 'infer',	# compression method of files
+				 header_row = 0, 				# header row for all GEM
+				 index_col = 0, 				# index column for all GEM
 				):
 		self.path = path
 		self.header_row = header_row
@@ -80,7 +80,7 @@ class Folder(object):
 				std_value_thread = None,
 				std_ratio_thread = None,
 				outpath = None
-				):
+			   ):
 		# Grab all necessary samples first
 		result = None
 		for filename in os.listdir(self.path):

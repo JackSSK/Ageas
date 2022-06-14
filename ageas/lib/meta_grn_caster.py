@@ -62,10 +62,11 @@ class Cast:
 	Cast Meta GRN based on GEMs
 	"""
 	def __init__(self,
-				gem_data = None,
-				prediction_thread = None,
-				correlation_thread = 0.2,
-				load_path = None):
+				 gem_data = None,
+				 prediction_thread = None,
+				 correlation_thread = 0.2,
+				 load_path = None
+				):
 		super(Cast, self).__init__()
 		# Initialization
 		self.grn = grn.GRN(id = 'Meta')
@@ -97,13 +98,11 @@ class Cast:
 		# Start GRNBoost2-like process if thread is set
 		if prediction_thread is not None and len(self.tfs_no_interaction_rec)>0:
 			gBoost = grp.Predict(gem_data, self.grn.grps, prediction_thread)
-			""" ToDo: this condition may need to revise """
-			if len(self.tfs_no_interaction_rec) == 0:
-				print('Nope')
-				# genes = gem_data.genes
-			else:
-				genes = self.tfs_no_interaction_rec
-			self.grn = gBoost.expand_meta_grn(self.grn,genes,correlation_thread)
+			self.grn = gBoost.expand_meta_grn(
+				self.grn,
+				self.tfs_no_interaction_rec,
+				correlation_thread
+			)
 		print('	Total amount of GRPs in Meta GRN:', len(self.grn.grps))
 		print('	Total amount of Genes in Meta GRN:', len(self.grn.genes))
 		# else: raise lib.Error('Sorry, such mode is not supported yet!')
@@ -128,7 +127,7 @@ class Cast:
 
 			# pass this TF if no recorded interactions in GTRD
 			if len(uniprot_ids) == 0:
-				self.tfs_no_interaction_rec[source] = ''
+				self.tfs_no_interaction_rec[source] = None
 				continue
 
 			# get potential regulatory targets
@@ -139,7 +138,7 @@ class Cast:
 			# Handle source TFs with no record in target database
 			if len(reg_target) == 0:
 				if source not in self.tfs_no_interaction_rec:
-					self.tfs_no_interaction_rec[source] = ''
+					self.tfs_no_interaction_rec[source] = None
 					continue
 				else:
 					raise lib.Error('Duplicat source TF when __with_gtrd')
@@ -178,14 +177,14 @@ class Cast:
 				continue
 			reg_target = {}
 			if source in data.interactions.data:
-				reg_target = {tar:'' for tar in data.interactions.data[source]}
+				reg_target = {i:None for i in data.interactions.data[source]}
 			elif source in data.interactions.alias:
 				alias_list = data.interactions.alias[source]
 				for ele in alias_list:
-					temp = {tar:'' for tar in data.interactions.data[ele]}
+					temp = {tar:None for tar in data.interactions.data[ele]}
 					reg_target.update(temp)
 			else:
-				self.tfs_no_interaction_rec[source] = ''
+				self.tfs_no_interaction_rec[source] = None
 				continue
 
 			# Handle source TFs with no record in target database

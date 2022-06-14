@@ -18,27 +18,28 @@ class Unit:
     and write report files into given folder
     """
     def __init__(self,
-                # Processed in Launch Initialization
-                database_info = None,
-                meta = None,
-                model_config = None,
-                pseudo_grns = None,
-                # Parameters
-                clf_keep_ratio:float = 0.5,
-                clf_accuracy_thread:float = 0.8,
-                correlation_thread:float = 0.0,
-                feature_dropout_ratio:float = 0.1,
-                feature_select_iteration:int = 1,
-                grp_changing_thread:float = 0.05,
-                impact_depth:int = 3,
-                link_step_allowrance:int = 0,
-                max_train_size:float = 0.95,
-                model_select_iteration:int = 2,
-                outlier_thread:float = 3.0,
-                patient:int = 3,
-                stabilize_iteration:int = 10,
-                top_grp_amount:int = 100,
-                z_score_extract_thread:float = 0.0,):
+                 # Processed in Launch Initialization
+                 database_info = None,
+                 meta = None,
+                 model_config = None,
+                 pseudo_grns = None,
+                 # Parameters
+                 clf_keep_ratio:float = 0.5,
+                 clf_accuracy_thread:float = 0.8,
+                 correlation_thread:float = 0.0,
+                 feature_dropout_ratio:float = 0.1,
+                 feature_select_iteration:int = 1,
+                 grp_changing_thread:float = 0.05,
+                 impact_depth:int = 3,
+                 link_step_allowrance:int = 0,
+                 max_train_size:float = 0.95,
+                 model_select_iteration:int = 2,
+                 outlier_thread:float = 3.0,
+                 patient:int = 3,
+                 stabilize_iteration:int = 10,
+                 top_grp_amount:int = 100,
+                 z_score_extract_thread:float = 0.0,
+                ):
         super(Unit, self).__init__()
 
         """ Initialization """
@@ -191,9 +192,10 @@ class Unit:
 
     # take out some GRPs based on feature dropout ratio
     def __get_grp_remove_list(self,
-                                df = None,
-                                feature_dropout_ratio = 0.2,
-                                outlier_thread = 3):
+                              df = None,
+                              feature_dropout_ratio = 0.2,
+                              outlier_thread = 3
+                             ):
         total_grp = len(df.index)
         gate_index = int(total_grp * (1 - feature_dropout_ratio))
         remove_list = list(df.index[gate_index:])

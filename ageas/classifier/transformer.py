@@ -65,16 +65,17 @@ class Transformer(nn.Module):
     Container module with an encoder, a transformer module, and a decoder.
     """
     def __init__(self,
-                id, # model id
-                num_features, # the number of expected features
-                has_mask = True, # whether using mask or not
-                emsize = 512, # size after encoder
-                nhead = 8, # number of heads in the multiheadattention models
-                nhid = 200, # number of hidden units per layer
-                nlayers = 2, # number of layers
-                dropout = 0.5, # dropout ratio
-                learning_rate = 0.1,
-                n_class = 2, ): # number of class for classification
+                 id, # model id
+                 num_features, # the number of expected features
+                 has_mask = True, # whether using mask or not
+                 emsize = 512, # size after encoder
+                 nhead = 8, # number of heads in the multiheadattention models
+                 nhid = 200, # number of hidden units per layer
+                 nlayers = 2, # number of layers
+                 dropout = 0.5, # dropout ratio
+                 learning_rate = 0.1,
+                 n_class = 2, # number of class for classification
+                ):
         super(Transformer, self).__init__()
         self.id = id
         self.has_mask = has_mask
@@ -97,9 +98,10 @@ class Transformer(nn.Module):
 
     def _make_square_subsequent_mask(self, size):
         mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
-        return mask.float().masked_fill(mask == 0,
-                                        float('-inf')).masked_fill(mask == 1,
-                                                                    float(0.0))
+        return mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(
+                                                                    mask == 1,
+                                                                    float(0.0)
+                                                                )
 
     def forward(self, input):
         if self.has_mask:

@@ -142,10 +142,11 @@ class Gene(object):
     """
 
     def __init__(self,
-                id = None,
-                type = 'Gene',
-                expression_mean = None,
-                **kwargs):
+                 id = None,
+                 type = 'Gene',
+                 expression_mean = None,
+                 **kwargs
+                ):
         super(Gene, self).__init__()
         self.id = id
         self.type = type
@@ -176,14 +177,15 @@ class GRP(object):
     """
 
     def __init__(self,
-                regulatory_source = None,
-                regulatory_target = None,
-                id = None,
-                type = None,
-                score = None,
-                reversable = False,
-                correlations = None,
-                **kwargs):
+                 regulatory_source = None,
+                 regulatory_target = None,
+                 id = None,
+                 type = None,
+                 score = None,
+                 reversable = False,
+                 correlations = None,
+                 **kwargs
+                ):
         super(GRP, self).__init__()
         self.id = id
         self.type = type

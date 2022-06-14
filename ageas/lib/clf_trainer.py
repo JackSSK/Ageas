@@ -35,11 +35,12 @@ class Train(clf.Make_Template):
     Train out well performing classification models
     """
     def __init__(self,
-                psGRNs = None,
-                database_info = None,
-                model_config = None,
-                random_state = None,
-                test_split_set = False,):
+                 psGRNs = None,
+                 database_info = None,
+                 model_config = None,
+                 random_state = None,
+                 test_split_set = False,
+                ):
         super(Train, self).__init__()
         # Initialization
         self.grns = psGRNs
@@ -54,7 +55,8 @@ class Train(clf.Make_Template):
     def general_process(self,
                         train_size = 0.3,
                         clf_keep_ratio = None,
-                        clf_accuracy_thread = None):
+                        clf_accuracy_thread = None
+                       ):
         """
         Generate training data and testing data iteratively
         Then train out models in model sets
@@ -107,10 +109,11 @@ class Train(clf.Make_Template):
 
 
     def successive_pruning(self,
-                            iteration = 2,
-                            clf_keep_ratio = 0.5,
-                            clf_accuracy_thread = 0.9,
-                            last_train_size = 0.9,):
+                           iteration = 2,
+                           clf_keep_ratio = 0.5,
+                           clf_accuracy_thread = 0.9,
+                           last_train_size = 0.9,
+                          ):
         """
         Train out models in Successive Halving manner
         Amount of training data is set as limited resouce

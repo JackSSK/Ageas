@@ -284,7 +284,8 @@ class Launch:
                         log2fc_thread = 0.1,
                         prediction_thread = 'auto',
                         correlation_thread = 0.2,
-                        meta_load_path = None):
+                        meta_load_path = None
+                       ):
         meta = None
         # if reading in GEMs, we need to construct pseudo-cGRNs first
         # or if we are reading in MEX, make GEM first and then mimic GEM mode

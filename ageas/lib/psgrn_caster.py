@@ -25,13 +25,14 @@ class Make:
     Make grns for gene expression datas
     """
     def __init__(self,
-                database_info = None,
-                std_value_thread = None,
-                std_ratio_thread = None,
-                correlation_thread = 0.2,
-                gem_data = None,
-                meta_grn = None,
-                load_path = None):
+                 database_info = None,
+                 std_value_thread = None,
+                 std_ratio_thread = None,
+                 correlation_thread = 0.2,
+                 gem_data = None,
+                 meta_grn = None,
+                 load_path = None
+                ):
         super(Make, self).__init__()
         # Initialize
         self.database_info = database_info
@@ -160,10 +161,11 @@ class Make:
 
     # as named
     def __process_sample_with_metaGRN(self,
-                                        class_type,
-                                        gem,
-                                        sample_id,
-                                        meta_grn):
+                                      class_type,
+                                      gem,
+                                      sample_id,
+                                      meta_grn
+                                     ):
         pseudo_sample = grn.GRN(id = sample_id)
         for grp in meta_grn.grps:
             source_ID = meta_grn.grps[grp].regulatory_source

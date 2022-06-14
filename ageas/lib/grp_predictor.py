@@ -55,11 +55,12 @@ class Predict:
 
     # decide whether update GRPs associated with given gene into GRN guidance
     def __update_grps_to_meta_grn(self,
-                                    meta_grn,
-                                    correlation_thread,
-                                    gene,
-                                    gene_list,
-                                    feature_importances,):
+                                  meta_grn,
+                                  correlation_thread,
+                                  gene,
+                                  gene_list,
+                                  feature_importances,
+                                 ):
         if feature_importances is None: return
         for i in range(len(gene_list)):
             tar = gene_list[i]
@@ -134,12 +135,15 @@ class Predict:
                 key
             )
         else: c1_result = None
+
         if checked_in_gem or key in self.class2_gem.index:
             c2_result = self.__gbm_feature_importances_calculat(
                 self.class2_gem,
                 key
             )
-        else: c2_result = None
+        else:
+            c2_result = None
+
         return c1_result, c2_result
 
     # as named

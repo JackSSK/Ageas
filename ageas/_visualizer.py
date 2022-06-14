@@ -31,13 +31,14 @@ class Plot_Regulon(object):
     """
 
     def __init__(self,
-                root_gene:str = None,
-                weight_thread:float = 0.0,
-                graph_type:str = 'all',
-                impact_depth:int = 1,
-                hide_bridge:bool = True,
-                file_path:str = None,
-                regulon_id:str = 'regulon_0',):
+                 root_gene:str = None,
+                 weight_thread:float = 0.0,
+                 graph_type:str = 'all',
+                 impact_depth:int = 1,
+                 hide_bridge:bool = True,
+                 file_path:str = None,
+                 regulon_id:str = 'regulon_0',
+                ):
         super(Plot_Regulon, self).__init__()
         self.root_gene = root_gene
         self.graph_type = str(graph_type)
@@ -106,7 +107,8 @@ class Plot_Regulon(object):
              font_size:int = 10,
              hide_target_labels:bool = False,
              edge_width_scale:float = 4.0,
-             save_path:str = None):
+             save_path:str = None
+            ):
         # initialization
         self.node_cmap = plt.cm.Set3
         self.edge_cmap = plt.cm.coolwarm
@@ -172,7 +174,8 @@ class Plot_Regulon(object):
                            layout:str = 'spring',
                            font_size:int = 5,
                            hide_target_labels:bool = False,
-                           edge_width_scale:float = 0.1,):
+                           edge_width_scale:float = 0.1,
+                          ):
         node_size, node_color, node_alhpa, node_labels = self.get_node_info(
             base_size = base_size,
             color_type = 'rgba',
@@ -212,7 +215,8 @@ class Plot_Regulon(object):
                            layout:str = 'spring',
                            font_size:int = 5,
                            hide_target_labels:bool = False,
-                           edge_width_scale:float = 1.0,):
+                           edge_width_scale:float = 1.0,
+                          ):
         node_size, node_color, node_alhpa, node_labels = self.get_node_info(
             base_size = base_size,
             hide_target_labels = hide_target_labels,
@@ -284,7 +288,8 @@ class Plot_Regulon(object):
     def get_edge_info(self,
                       width_scale = 1,
                       color_type = 'int',
-                      return_type = 'dict'):
+                      return_type = 'dict'
+                     ):
         edge_width = dict()
         edge_style = dict()
         edge_color = dict()
@@ -317,7 +322,8 @@ class Plot_Regulon(object):
                       base_size = 800,
                       hide_target_labels = False,
                       color_type = 'int',
-                      return_type = 'dict'):
+                      return_type = 'dict'
+                     ):
         node_size = dict()
         node_color = dict()
         node_alhpa = 0.8

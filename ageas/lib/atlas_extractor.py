@@ -22,11 +22,12 @@ class Extract(object):
 	"""
 
 	def __init__(self,
-				correlation_thread:float = 0.2,
-				grp_importances = None,
-				score_thread = None,
-				outlier_grps = {},
-				top_grp_amount = None):
+				 correlation_thread:float = 0.2,
+				 grp_importances = None,
+				 score_thread = None,
+				 outlier_grps = {},
+				 top_grp_amount = None
+				):
 		super(Extract, self).__init__()
 		self.regulons = list()
 		self.regulatory_sources = None
@@ -116,9 +117,10 @@ class Extract(object):
 
 	# Use extra GRPs from meta GRN to link different Regulons
 	def link_regulon(self,
-					meta_grn = None,
-					allowrance:int = 1,
-					correlation_thread:float = 0.2):
+					 meta_grn = None,
+					 allowrance:int = 1,
+					 correlation_thread:float = 0.2
+					):
 		# initialize
 		grp_skip_list = {}
 		for regulon in self.regulons:
@@ -195,7 +197,8 @@ class Extract(object):
 							gene:str = None,
 							depth:int = 3,
 							dict = None,
-							prev_cor:float = 1.0,):
+							prev_cor:float = 1.0,
+						   ):
 		if depth > 0:
 			depth -= 1
 			for target in regulon.genes[gene].target:
@@ -263,13 +266,14 @@ class Extract(object):
 
 	# Find potential bridge GRPs with specific gene to link 2 regulons
 	def __find_bridges_by_gene(self,
-								gene,
-								from_regulon,
-								meta_grn,
-								allowrance,
-								grp_skip_list,
-								combine_list,
-								prev_grps):
+							   gene,
+							   from_regulon,
+							   meta_grn,
+							   allowrance,
+							   grp_skip_list,
+							   combine_list,
+							   prev_grps
+							  ):
 		# last round to attempt find a bridge
 		if allowrance == 0:
 			for anchor, record in self.regulatory_sources.items():

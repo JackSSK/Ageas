@@ -17,13 +17,14 @@ import ageas.classifier as classifier
 
 class RNN(nn.Module):
     def __init__(self,
-                id,
-                input_size,
-                num_layers,
-                hidden_size,
-                dropout,
-                learning_rate,
-                n_class = 2):
+                 id,
+                 input_size,
+                 num_layers,
+                 hidden_size,
+                 dropout,
+                 learning_rate,
+                 n_class = 2
+                ):
         super(RNN, self).__init__()
         self.id = id
         self.model_type = 'RNN'

@@ -27,9 +27,10 @@ class Processor:
 
 class Reader(tool.Reader_Template):
     def __init__(self,
-                filepath: str,
-                organism_a_id: str = '10090', # human is 9606, mouse is 10090
-                organism_b_id = None):
+                 filepath: str,
+                 organism_a_id: str = '10090', # human is 9606, mouse is 10090
+                 organism_b_id = None
+                ):
         if organism_b_id is None:
             organism_b_id = organism_a_id
         self.load(filepath)

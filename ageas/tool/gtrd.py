@@ -37,12 +37,16 @@ class Packer:
         for ele in filenames:
             tf = ele.split('.txt')[0].upper()
             if tf not in self.dict:
-                self.dict[tf] = self._processGene(database_path + '/' + ele,
-                                                        sep = "\t",
-                                                        header = 0)
-            else: raise tool.Error('Duplicated TF file in:', database_path)
-        if outpath is None: return
-        else: json.encode(self.dict, outpath)
+                self.dict[tf] = self._processGene(
+                    database_path + '/' + ele,
+                    sep = "\t",
+                    header = 0
+                )
+            else:
+                raise tool.Error('Duplicated TF file in:', database_path)
+
+        if outpath is not None:
+            json.encode(self.dict, outpath)
 
     def _processFull(self, filepath, sep, header):
         result = {}
@@ -57,5 +61,5 @@ class Packer:
 
     def _processGene(self, filepath, sep, header):
         tarTable = pd.read_csv(filepath, sep = sep, header = header)
-        return dict(zip(tarTable['Gene symbol'].str.upper(),
-                        tarTable['SiteCount']))
+        t = dict(zip(tarTable['Gene symbol'].str.upper(),tarTable['SiteCount']))
+        return t

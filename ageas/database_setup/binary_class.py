@@ -30,15 +30,16 @@ class Setup:
     """
 
     def __init__(self,
-                database_path = None,
-                database_type = 'gem_files',
-                class1_path = 'CT1',
-                class2_path = 'CT2',
-                specie = 'mouse',
-                factor_name_type = 'gene_name',
-                interaction_db = 'biogrid',
-                sliding_window_size = None,
-                sliding_window_stride = None):
+                 database_path = None,
+                 database_type = 'gem_files',
+                 class1_path = 'CT1',
+                 class2_path = 'CT2',
+                 specie = 'mouse',
+                 factor_name_type = 'gene_name',
+                 interaction_db = 'biogrid',
+                 sliding_window_size = None,
+                 sliding_window_stride = None
+                ):
         super(Setup, self).__init__()
         # Auto GEM folder finder
         if database_path is None:
@@ -106,11 +107,12 @@ class Load_GEM:
     Load in GEM data sets
     """
     def __init__(self,
-                database_info,
-                mww_thread = 0.05,
-                log2fc_thread = 0.1,
-                std_value_thread = 100,
-                std_ratio_thread = None):
+                 database_info,
+                 mww_thread = 0.05,
+                 log2fc_thread = 0.1,
+                 std_value_thread = 100,
+                 std_ratio_thread = None
+                ):
         super(Load_GEM, self).__init__()
         # Initialization
         self.database_info = database_info
@@ -256,13 +258,13 @@ class Load_GEM:
     # Process in Database scenario
     def __process_gem_folder(self, std_value_thread, std_ratio_thread):
         class1 = gem.Folder(self.database_info.class1_path).combine(
-                                            std_value_thread = std_value_thread,
-                                            std_ratio_thread = std_ratio_thread
-                                            )
+            std_value_thread = std_value_thread,
+            std_ratio_thread = std_ratio_thread
+        )
         class2 = gem.Folder(self.database_info.class2_path).combine(
-                                            std_value_thread = std_value_thread,
-                                            std_ratio_thread = std_ratio_thread
-                                            )
+            std_value_thread = std_value_thread,
+            std_ratio_thread = std_ratio_thread
+        )
         return class1, class2
 
 
@@ -274,12 +276,13 @@ class Process(object):
     Then prepare sample data to be ready for training and analysis process
     """
     def __init__(self,
-                database_info = None,
-                grnData = None,
-                train_size = 0.7,
-                ramdom_state = None,
-                fullData = None,
-                fullLabel = None,):
+                 database_info = None,
+                 grnData = None,
+                 train_size = 0.7,
+                 ramdom_state = None,
+                 fullData = None,
+                 fullLabel = None,
+                ):
         super(Process, self).__init__()
         # Initialization
         self.train_size = train_size
