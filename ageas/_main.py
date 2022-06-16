@@ -28,8 +28,223 @@ GRP_TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 class Launch:
     """
-    Get candidate key factors and pathways
-    and write report files into given folder
+    Main function to launch AGEAS
+
+    Args:
+        class1_path: <str> Default = None
+            Path to file or folder being considered as type class 1 data
+
+        class2_path: <str> Default = None
+            Path to file or folder being considered as type class 2 data
+
+        clf_keep_ratio: <float> Default = 0.5
+            Portion of classifier model to keep after each model selection
+            iteration.
+            .. note::
+                When performing SHA based model selection, this value is
+                set as lower bound to keep models
+
+        clf_accuracy_thread: <float> Default = 0.8
+            Filter thread of classifier's accuracy in local test performed at
+            each model selection iteration
+            .. note::
+                When performing SHA based model selection, this value is
+                only used at last iteration
+
+        correlation_thread: <float> Default = 0.2
+            Gene expression correlation thread value of GRPs
+            Potential GRPs failed to reach this value will be dropped
+
+        database_path: <str> Default = None
+            Database header. If specified, class1_path and class2_path will be
+            rooted here.
+
+        database_type: <str> Default = 'gem_files'
+            Type of data class1_path and class1_path are directing to
+            Supporting:
+                'gem_files': Each path is directing to a GEM file.
+                    Pseudo samples will be generated with sliding window algo
+                'gem_folders': Each path is directing to a GEM folder. Files in
+                    each folder will be used to generate pseudo samples
+                'mex_folders': Each path is directing to a folder consisting MEX
+                    files(***matrix.mtx***, ***genes.tsv***, ***barcodes.tsv***)
+                    Pseudo samples will be generated with sliding window tech
+
+        factor_name_type: <str> Default = 'gene_name'
+            What type of ID name to use for each gene.
+            Supporting:
+                'gene_name': Gene Symbols/Names
+                'ens_id': Ensembl ID
+                .. note::
+                    If using BioGRID as interaction database, factor_name_type
+                    must be set to 'gene_name' for now.
+                    # TODO: Find a way to map gene names with Ensembl IDs
+
+        feature_dropout_ratio: <float> Default = 0.1
+            Portion of features(GRPs) to be dropped out after each iteration of
+            feature selection.
+
+        feature_select_iteration: <int> Default = 1
+            Number of iteration for feature(GRP) selection before
+            key GRP extraction
+
+        interaction_database: <str> Default = 'gtrd'
+            Which interaction database to use for confirming a GRP has a high
+            possibility to exist.
+            Supporting:
+                None: No database will be used. As long as a GRP can pass all
+                    related filters, it's good to go.
+                'gtrd': Using GTRD as regulatory pathway reference
+                    https://gtrd.biouml.org/
+                'biogrid': Using BioGRID as regulatory pathway reference
+                    https://thebiogrid.org/
+
+        impact_depth: <int> Default = 3
+            When calculating
+
+        top_grp_amount: <int> Default = 100
+            Amount of GRPs an AGEAS unit would extract.
+            .. note::
+                If outlier_thread is set, since outlier GRPs are extracted
+                during feature selection part and will also be considered as
+                key GRPs, actual amount of key GRPs would be greater.
+
+        grp_changing_thread: <float> Default = 0.05
+            If changing portion of key GRPs extracted by AGEAS unit from two
+            stabilize iterations lower than this thread, these two iterations
+            will be considered as having consistent result.
+
+        log2fc_thread: <float> Default = None
+            Log2 fold change thread to filer non-differntial expressing genes.
+            .. note::
+                It's generally not encouraged to set up this filter since it can
+                result in lossing key TFs not having great changes on overall
+                expression volume but having changes on expression pattern.
+                If local computational power is relatively limited, setting up
+                this thread can help a lot to keep program runable.
+
+        link_step_allowrance: <int> Default = 1
+            During key atlas extraction, when finding bridge GRPs to link 2
+            separate regulons, how many steps will be allowed.
+            link_step_allowrance == 1 means, no intermediate gene can be used
+            and portential regulatory source must be able to interact with gene
+            from another regulon.
+
+        meta_load_path: <str> Default = None
+            Path to load meta_GRN
+
+        meta_save_path: <str> Default = None
+            Path to save meta_GRN
+
+        model_config_path: <str> Default = None
+            Path to load model config file which will be used to initialize
+            classifiers
+
+        model_select_iteration: <int> Default = 2
+            Number of iteration for classification model selection before
+            the mandatory filter.
+
+        mute_unit: <bool> Default = True
+            Whether AGEAS unit print out log while running.
+            .. note::
+                It's not mandatory but encouraged to remain True especially
+                when using multi protocol
+
+        mww_p_val_thread: <str> Default = 0.05
+            Gene expression Mann–Whitney–Wilcoxon test p-value thread.
+            To make sure one gene's expression profile is not constant among
+            differnt classes.
+
+        outlier_thread: <float> Default = 3.0
+            The lower bound of Z-score scaled importance value to consider a GRP
+            as outlier need to be retain.
+
+        protocol: <str> Default = 'solo'
+            AGEAS unit launching protocol.
+            Supporting:
+                'solo': All units will run separately
+                'multi': All units will run parallelly by multithreading
+
+        patient: <int> Default = 3
+            If stabilize iterations continuously having consistent result for
+            this value, an early stop on result stabilization will be executed.
+
+        psgrn_load_path: <str> Default = None
+            Path to load pseudo-sample GRNs.
+
+        psgrn_save_path: <str> Default = None
+            Path to save pseudo-sample GRNs.
+
+        prediction_thread: <str> or <float> Default = 'auto'
+            The importance thread for a GRP predicted with GRNBoost2-like algo
+            to be included.
+            Supporting:
+                'auto': Automatically set up thread value by minimum imporatnace
+                    value of a interaction database recorded GRP of TF having
+                    most amount of GRPs. If not using interaction database, it
+                    will be set by (1 / amount of genes)
+                float type: Value will be set as thread directly
+
+        report_folder_path: <str> Default = None
+            Path to create folder for saving AGEAS report files.
+
+        save_unit_reports: <bool> Default = False
+            Whether saving key GRPs extracted by each AGEAS Unit or not.
+            If True, reports will be saved in report_folder_path under folders
+            named 'no_{}'.format(unit_num) starting from 0.
+
+        specie: <str> Default = 'mouse'
+            Specify which sepcie's interaction database shall be used.
+            Supporting:
+                'mouse'
+                'human'
+
+        sliding_window_size: <int> Default = 10
+            Number of samples a pseudo-sample generated with
+            sliding window technique contains.
+
+        sliding_window_stride: <int> Default = None
+            Stride of sliding window when generating pseudo-samples.
+
+        std_value_thread: <float> Default = None
+            Set up gene expression standard deviation thread by value.
+            To rule out genes having relatively constant expression in each type
+            class.
+
+        std_ratio_thread: <float> Default = None
+            Set up gene expression standard deviation thread by portion.
+            Only genes reaching top portion will be kept in each type class.
+
+        stabilize_iteration: <int> Default = 10
+            Number of iteration for a AGEAS unit to repeat key GRP extraction
+            after model and feature selections in order to find key GRPs
+            consistently being important.
+
+        max_train_size: <float> Default = 0.95
+            The largest portion of avaliable data can be used to train models.
+            At the mandatory model filter, this portion of data will be given to
+            each model to train.
+
+        unit_num: <int> Default = 2
+            Number of AGEAS units to launch.
+
+        warning_filter: <str> Default = 'ignore'
+            How warnings should be filtered.
+            For other options, please check 'The Warnings Filter' section in:
+                https://docs.python.org/3/library/warnings.html#warning-filter
+
+        z_score_extract_thread: <float> Default = 0.0
+            The lower bound of Z-score scaled importance value to extract a GRP.
+
+    Inputs: None
+    Outputs: None
+    Attributes:
+
+    Examples::
+        >>> easy = ageas.Launch(
+            	class1_path = 'Odysseia/2kTest/ips.csv',
+            	class2_path = 'Odysseia/2kTest/mef.csv',
+            )
     """
     def __init__(self,
                  class1_path:str = None,
@@ -50,7 +265,7 @@ class Launch:
                  link_step_allowrance:int = 1,
                  meta_load_path:str = None,
                  meta_save_path:str = None,
-                 model_config_path :str= None,
+                 model_config_path:str= None,
                  model_select_iteration:int = 2,
                  mww_p_val_thread:str = 0.05,
                  outlier_thread:float = 3.0,
@@ -58,7 +273,7 @@ class Launch:
                  patient:int = 3,
                  psgrn_load_path:str = None,
                  psgrn_save_path:str = None,
-                 prediction_thread:str = 'auto',
+                 prediction_thread = 'auto',
                  report_folder_path:str = None,
                  save_unit_reports:bool = False,
                  specie:str = 'mouse',
@@ -70,15 +285,15 @@ class Launch:
                  max_train_size:float = 0.95,
                  unit_num:int = 2,
                  unit_silent:bool = True,
-                 warning:bool = False,
+                 warning_filter:str = 'ignore',
                  z_score_extract_thread:float = 0.0,
                 ):
         super(Launch, self).__init__()
 
         """ Initialization """
         print('Launching Ageas')
+        warnings.filterwarnings(warning_filter)
         start = time.time()
-        if not warning: warnings.filterwarnings('ignore')
         self.reports = list()
         self.protocol = protocol
         self.unit_num = unit_num

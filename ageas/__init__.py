@@ -26,12 +26,19 @@ AGEAS
 Summary
 -------
 AutoML-based Genomic fEatrue extrAction System
+
+This is an AutoML-based Genetic Feature Extraction System for
+finding phenotype deterministic Genetic Factors and
+correspond Regulatory Pathways based on Genetic Regulatory Networks.
+For more information, please visit our GitHub repo:
+https://github.com/nkmtmsys/Ageas/
 --------
 
 """
 
 __version__ = "0.0.1a5"
 __author__ = "JackSSK"
+__author__ = "nkmtmsys"
 __email__ = "gyu17@jh.edu"
 
 from ._main import (

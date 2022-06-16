@@ -88,8 +88,9 @@ class Predict:
                 regulatory_sources[source] = [grp]
             else:
                 regulatory_sources[source].append(grp)
-        regulatory_sources = OrderedDict(sorted(regulatory_sources.items(),
-                                                key = lambda x: x[1]))
+        regulatory_sources = OrderedDict(
+            sorted(regulatory_sources.items(), key = lambda x: x[1])
+        )
         # Choose a key presenting in both classes
         i = 0
         for src in regulatory_sources:
