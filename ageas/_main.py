@@ -100,7 +100,11 @@ class Launch:
                     https://thebiogrid.org/
 
         impact_depth: <int> Default = 3
-            When calculating
+            When assessing a TF's regulatory impact on other genes, how far the
+            distance between TF and potential regulatory source can be.
+            .. note::
+                The correlation strength of stepped correlation strength of TF
+                and gene still need to be greater than correlation_thread.
 
         top_grp_amount: <int> Default = 100
             Amount of GRPs an AGEAS unit would extract.
