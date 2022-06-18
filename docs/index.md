@@ -33,9 +33,9 @@ pip install .
 
 ## Contents
 
-### [API Reference](https://nkmtmsys.github.io/Ageas/tutorial)
-## [Launch](https://github.com/nkmtmsys/Ageas/)
+## [API Reference](https://nkmtmsys.github.io/Ageas/tutorial)
+### [Launch](https://github.com/nkmtmsys/Ageas/)
 
-## [Unit](https://github.com/nkmtmsys/Ageas/)
+### [Unit](https://github.com/nkmtmsys/Ageas/)
 
-## [Plot_Regulon](https://github.com/nkmtmsys/Ageas/)
+### [Plot_Regulon](https://github.com/nkmtmsys/Ageas/)
