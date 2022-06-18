@@ -1,9 +1,7 @@
 # AGEAS
 [![python 3.7](https://img.shields.io/badge/python-3.7-brightgreen)](https://www.python.org/)
 
-AutoML-based Genomic fEatrue extrAction System
-
-This is an AutoML-based Genetic Feature Extraction System for finding phenotype deterministic Genetic Factors and correspond Regulatory Pathways based on Genetic Regulatory Networks.
+**AGEAS (AutoML-based Genomic fEatrue extrAction System)** is to find key genomic factors, including genes and regulatory pathways, in determining cellular phenotype.
 
 
 
@@ -27,6 +25,10 @@ Ageas can be installed from [PyPI](https://pypi.org/project/Ageas/):
 pip install ageas
 </pre>
 
+
+# Tutorial
+
+Please visit [Documentation Page](https://nkmtmsys.github.io/Ageas/) for detailed API documentations and examples
 
 # Contributors
 
