@@ -2,3 +2,4 @@ include CODE_OF_CONDUCT.md
 include LICENSE
 include README.md
 recursive-include ageas/data *
+recursive-include ageas/test *

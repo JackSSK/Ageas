@@ -30,10 +30,18 @@ cd ageas
 pip install .
 </pre>
 
+For running tests:
+<pre>
+import ageas
+ageas.Test(cpu_mode = False)
+</pre>
+
 
 # Contents
 
 ## [API Reference](https://nkmtmsys.github.io/Ageas/tutorial)
+- ### [Test](https://github.com/nkmtmsys/Ageas/)
+
 - ### [Launch](https://github.com/nkmtmsys/Ageas/)
 
 - ### [Unit](https://github.com/nkmtmsys/Ageas/)

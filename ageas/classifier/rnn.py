@@ -31,10 +31,12 @@ class RNN(nn.Module):
         self.num_layers = num_layers
         self.hidden_size = hidden_size
         self.dropout = nn.Dropout(p = dropout)
-        self.rnn = nn.RNN(input_size,
-                            self.hidden_size,
-                            self.num_layers,
-                            batch_first=True)
+        self.rnn = nn.RNN(
+            input_size,
+            self.hidden_size,
+            self.num_layers,
+            batch_first = True
+        )
         self.fc = nn.Linear(self.hidden_size, n_class)
         self.optimizer = torch.optim.Adam(self.parameters(), lr = learning_rate)
         self.loss_func = nn.CrossEntropyLoss()

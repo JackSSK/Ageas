@@ -15,8 +15,10 @@ from sklearn.naive_bayes import GaussianNB
 # Cast input data into tensor format
 # Then reshape the data in format of [#data, 1(only 1 chgannel), len(data)]
 def reshape_tensor(data):
-    return torch.reshape(torch.tensor(data, dtype = torch.float),
-                                        (len(data), 1, len(data[0])))
+    return torch.reshape(
+        torch.tensor(data, dtype = torch.float),
+        (len(data), 1, len(data[0]))
+    )
 
 
 class Error(Exception):
@@ -51,10 +53,11 @@ class Make_Template:
     Analysis the performances of models with different hyperparameters
     Find the top settings to build models
     """
-    def __init__(self, config = None):
+    def __init__(self, config = None, cpu_mode = False):
         super(Make_Template, self).__init__()
-        self.configs = config
         self.models = []
+        self.configs = config
+        self.cpu_mode = cpu_mode
 
     # Perform classifier training process for given times
     # and keep given ratio of top performing classifiers
@@ -92,7 +95,10 @@ class Make_Template:
 
     # generalized pytorch model training process
     def _train_torch(self, epoch, batch_size, model, dataSets):
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        if self.cpu_mode or not torch.cuda.is_available():
+            device = torch.device('cpu')
+        else:
+            device = torch.device('cuda')
         for ep in range(epoch):
             index_set = DataLoader(
                 dataset = range(len(dataSets.dataTrain)),

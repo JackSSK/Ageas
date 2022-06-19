@@ -24,6 +24,7 @@ class Unit:
                  model_config = None,
                  pseudo_grns = None,
                  # Parameters
+                 cpu_mode:bool = False,
                  clf_keep_ratio:float = 0.5,
                  clf_accuracy_thread:float = 0.8,
                  correlation_thread:float = 0.0,
@@ -51,6 +52,7 @@ class Unit:
         self.model_config = model_config
         self.database_info = database_info
 
+        self.cpu_mode = cpu_mode
         self.correlation_thread = correlation_thread
         self.top_grp_amount = top_grp_amount
         self.z_score_extract_thread = z_score_extract_thread
@@ -78,6 +80,7 @@ class Unit:
         # initialize trainer
         self.clf = trainer.Train(
             psGRNs = self.pseudo_grns,
+            cpu_mode = self.cpu_mode,
             database_info = self.database_info,
             model_config = self.model_config,
         )
@@ -113,7 +116,7 @@ class Unit:
                             self.grp_importances.result,
                             self.feature_dropout_ratio,
                             self.outlier_thread
-                        )
+                )
                 self.pseudo_grns.update_with_remove_list(rm)
                 self.clf.clear_data()
                 self.clf.grns = self.pseudo_grns

@@ -208,10 +208,11 @@ class Make(classifier.Make_Template):
     with different hyperparameters
     Find the top settings to build CNN
     """
-    def __init__(self, config, grp_amount):
+    def __init__(self, config, cpu_mode, grp_amount):
         self.configs = config
         self.__check_input_matrix_size(grp_amount)
         self.models = []
+        self.cpu_mode = cpu_mode
 
     # Perform classifier training process for given times
     def train(self, dataSets, test_split_set):

@@ -52,7 +52,12 @@ from ._visualizer import (
     Plot_Regulon
 )
 
+from .test import (
+    Test
+)
+
 __all__ = [
+    'Test',
     'Launch',
     'Unit',
     'Plot_Regulon',

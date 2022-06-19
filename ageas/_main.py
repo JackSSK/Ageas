@@ -55,6 +55,9 @@ class Launch:
             Gene expression correlation thread value of GRPs
             Potential GRPs failed to reach this value will be dropped
 
+        cpu_mode: <bool> Default = False
+            Whether force to use CPU only or not
+
         database_path: <str> Default = None
             Database header. If specified, class1_path and class2_path will be
             rooted here.
@@ -256,6 +259,7 @@ class Launch:
                  clf_keep_ratio:float = 0.5,
                  clf_accuracy_thread:float = 0.8,
                  correlation_thread:float = 0.2,
+                 cpu_mode:bool = False,
                  database_path:str = None,
                  database_type:str = 'gem_files',
                  factor_name_type:str = 'gene_name',
@@ -369,6 +373,7 @@ class Launch:
             model_config = self.model_config,
             database_info = self.database_info,
 
+            cpu_mode = cpu_mode,
             correlation_thread = correlation_thread,
             top_grp_amount = top_grp_amount,
             z_score_extract_thread = z_score_extract_thread,
@@ -395,10 +400,12 @@ class Launch:
         print('Silent:', self.silent)
 
         # Do everything unit by unit
-        if self.protocol == 'solo': self.proto_solo()
+        if self.protocol == 'solo':
+            self.proto_solo()
 
         # Multithreading protocol
-        elif self.protocol == 'multi': self.proto_multi()
+        elif self.protocol == 'multi':
+            self.proto_multi()
 
         self.atlas = self.combine_unit_reports()
         print('Operation Time: ', time.time() - start)

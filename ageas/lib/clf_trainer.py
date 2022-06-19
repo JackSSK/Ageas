@@ -36,6 +36,7 @@ class Train(clf.Make_Template):
     """
     def __init__(self,
                  psGRNs = None,
+                 cpu_mode = False,
                  database_info = None,
                  model_config = None,
                  random_state = None,
@@ -47,6 +48,7 @@ class Train(clf.Make_Template):
         self.models = None
         self.allData = None
         self.allLabel = None
+        self.cpu_mode = cpu_mode
         self.random_state = random_state
         self.model_config = model_config
         self.database_info = database_info
@@ -221,31 +223,72 @@ class Train(clf.Make_Template):
     def __initialize_classifiers(self, config):
         list = []
         if 'Logit' in config:
-            list.append(logit.Make(config = config['Logit']))
+            list.append(logit.Make(
+                    config = config['Logit'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'Transformer' in config:
-            list.append(transformer.Make(config = config['Transformer']))
+            list.append(transformer.Make(
+                    config = config['Transformer'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'RFC' in config:
-            list.append(rfc.Make(config = config['RFC']))
+            list.append(rfc.Make(
+                    config = config['RFC'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'GNB' in config:
-            list.append(gnb.Make(config = config['GNB']))
+            list.append(gnb.Make(
+                    config = config['GNB'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'GBM' in config:
-            list.append(xgb.Make(config = config['GBM']))
+            list.append(xgb.Make(
+                    config = config['GBM'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'SVM' in config:
-            list.append(svm.Make(config = config['SVM']))
+            list.append(svm.Make(
+                    config = config['SVM'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'CNN_1D' in config:
-            list.append(cnn_1d.Make(config = config['CNN_1D']))
+            list.append(cnn_1d.Make(
+                    config = config['CNN_1D'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'CNN_Hybrid' in config:
             list.append(cnn_hybrid.Make(
                     config = config['CNN_Hybrid'],
-                    grp_amount = len(self.allData.columns)
+                    cpu_mode = self.cpu_mode,
+                    grp_amount = len(self.allData.columns),
                 )
             )
         if 'RNN' in config:
-            list.append(rnn.Make(config = config['RNN']))
+            list.append(rnn.Make(
+                    config = config['RNN'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'LSTM' in config:
-            list.append(lstm.Make(config = config['LSTM']))
+            list.append(lstm.Make(
+                    config = config['LSTM'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         if 'GRU' in config:
-            list.append(gru.Make(config = config['GRU']))
+            list.append(gru.Make(
+                    config = config['GRU'],
+                    cpu_mode = self.cpu_mode,
+                )
+            )
         return list
 
     # delete model configs not on while list(dict)
