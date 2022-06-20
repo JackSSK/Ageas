@@ -8,7 +8,7 @@ D3E seems interesting: https://github.com/hemberg-lab/D3E
 author: jy, nkmtmsys
 """
 
-import math
+import numpy as np
 import statistics as sta
 from scipy.stats import mannwhitneyu
 
@@ -28,9 +28,7 @@ def MWW_Test(list1, list2, threshold = 0.05):
 
 # Calculate absolute value of log2 fold-change between 2 lists
 def Log2FC_Calculate(list1, list2):
-    return abs(math.log2( (sta.mean(list1) + 1) / (sta.mean(list2) + 1) ))
-
-
+    return abs(np.log2(sum(list1) + 1) - np.log2(sum(list2) + 1))
 
 class Find:
     """
@@ -49,11 +47,11 @@ class Find:
             gene:'' for gene in gem1.index.symmetric_difference(gem2.index)
         }
         for gene in gem1.index.intersection(gem2.index):
-            class1_gene_exps = gem1.loc[[gene]].values[0]
-            class2_gene_exps = gem2.loc[[gene]].values[0]
-            log2FC = Log2FC_Calculate(class1_gene_exps, class2_gene_exps)
+            group1_gene_exps = gem1.loc[[gene]].values[0]
+            group2_gene_exps = gem2.loc[[gene]].values[0]
+            log2FC = Log2FC_Calculate(group1_gene_exps, group2_gene_exps)
             # log2FC filter
             if log2fc_thread is not None and log2FC < log2fc_thread: continue
             # MWW filter
-            if MWW_Test(class1_gene_exps, class2_gene_exps, mww_thread):
+            if MWW_Test(group1_gene_exps, group2_gene_exps, mww_thread):
                 self.degs[gene] = ''

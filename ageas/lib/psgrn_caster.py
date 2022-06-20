@@ -42,10 +42,10 @@ class Make:
         if self.correlation_thread is None: self.correlation_thread = 0
         # load in
         if load_path is not None:
-            self.class1_psGRNs,self.class2_psGRNs= self.__load_psGRNs(load_path)
+            self.group1_psGRNs,self.group2_psGRNs= self.__load_psGRNs(load_path)
         # Make GRNs
         else:
-            self.class1_psGRNs, self.class2_psGRNs = self.__make_psGRNs(
+            self.group1_psGRNs, self.group2_psGRNs = self.__make_psGRNs(
                 gem_data = gem_data,
                 meta_grn = meta_grn
             )
@@ -53,42 +53,42 @@ class Make:
     # main controller to cast pseudo cell GRNs (psGRNs)
     def __make_psGRNs(self, gem_data, meta_grn):
         if gem_data is not None:
-            class1_psGRNs = self.__loaded_gem_method(
-                class_type = 'class1',
-                gem = gem_data.class1,
+            group1_psGRNs = self.__loaded_gem_method(
+                class_type = 'group1',
+                gem = gem_data.group1,
                 meta_grn = meta_grn
             )
-            class2_psGRNs = self.__loaded_gem_method(
-                class_type = 'class2',
-                gem = gem_data.class2,
+            group2_psGRNs = self.__loaded_gem_method(
+                class_type = 'group2',
+                gem = gem_data.group2,
                 meta_grn = meta_grn
             )
         elif self.database_info.type == 'gem_folders':
-            class1_psGRNs = self.__folder_method(
-                'class1',
-                self.database_info.class1_path,
+            group1_psGRNs = self.__folder_method(
+                'group1',
+                self.database_info.group1_path,
                 meta_grn
             )
-            class2_psGRNs = self.__folder_method(
-                'class2',
-                self.database_info.class2_path,
+            group2_psGRNs = self.__folder_method(
+                'group2',
+                self.database_info.group2_path,
                 meta_grn
             )
         elif self.database_info.type == 'gem_files':
             # need to revise here!
-            class1_psGRNs = self.__file_method(
-                'class1',
-                self.database_info.class1_path,
+            group1_psGRNs = self.__file_method(
+                'group1',
+                self.database_info.group1_path,
                 meta_grn
             )
-            class2_psGRNs = self.__file_method(
-                'class2',
-                self.database_info.class2_path,
+            group2_psGRNs = self.__file_method(
+                'group2',
+                self.database_info.group2_path,
                 meta_grn
             )
         else:
             raise tool.Error('psGRN Caster Error: Unsupported database type')
-        return class1_psGRNs, class2_psGRNs
+        return group1_psGRNs, group2_psGRNs
 
     # as named
     def __file_method(self, class_type, path, meta_grn):
@@ -191,14 +191,14 @@ class Make:
                     pseudo_sample.genes[source_ID] = copy.deepcopy(
                         meta_grn.genes[source_ID]
                     )
-                    pseudo_sample.genes[source_ID].expression_mean = {
+                    pseudo_sample.genes[source_ID].expression_sum = {
                         class_type: float(sta.mean(source_exp))
                     }
                 if target_ID not in pseudo_sample.genes:
                     pseudo_sample.genes[target_ID] = copy.deepcopy(
                         meta_grn.genes[target_ID]
                     )
-                    pseudo_sample.genes[target_ID].expression_mean = {
+                    pseudo_sample.genes[target_ID].expression_sum = {
                         class_type: float(sta.mean(target_exp))
                     }
         return pseudo_sample
@@ -232,14 +232,14 @@ class Make:
                         if source_ID not in pseudo_sample.genes:
                             pseudo_sample.genes[source_ID] = grn.Gene(
                                 id = source_ID,
-                                expression_mean = {
+                                expression_sum = {
                                     class_type: float(sta.mean(source_exp))
                                 }
                             )
                         if target_ID not in pseudo_sample.genes:
                             pseudo_sample.genes[target_ID] = grn.Gene(
                                 id = target_ID,
-                                expression_mean = {
+                                expression_sum = {
                                     class_type: float(sta.mean(target_exp))
                                 }
                             )
@@ -263,14 +263,14 @@ class Make:
 
     # as named
     def update_with_remove_list(self, remove_list):
-        for sample in self.class1_psGRNs:
+        for sample in self.group1_psGRNs:
             for id in remove_list:
-                if id in self.class1_psGRNs[sample].grps:
-                    del self.class1_psGRNs[sample].grps[id]
-        for sample in self.class2_psGRNs:
+                if id in self.group1_psGRNs[sample].grps:
+                    del self.group1_psGRNs[sample].grps[id]
+        for sample in self.group2_psGRNs:
             for id in remove_list:
-                if id in self.class2_psGRNs[sample].grps:
-                    del self.class2_psGRNs[sample].grps[id]
+                if id in self.group2_psGRNs[sample].grps:
+                    del self.group2_psGRNs[sample].grps[id]
         return
 
     # temporal psGRN saving method
@@ -278,8 +278,8 @@ class Make:
     def save(self, save_path):
         json.encode(
             {
-                'class1':{k:v.as_dict() for k,v in self.class1_psGRNs.items()},
-                'class2':{k:v.as_dict() for k,v in self.class2_psGRNs.items()}
+                'group1':{k:v.as_dict() for k,v in self.group1_psGRNs.items()},
+                'group2':{k:v.as_dict() for k,v in self.group2_psGRNs.items()}
             },
             save_path
         )
@@ -289,17 +289,17 @@ class Make:
     """ need to be revised later with save_psGRNs"""
     def __load_psGRNs(self, load_path):
         data = json.decode(load_path)
-        class1_psGRNs = dict()
-        class2_psGRNs = dict()
-        for k,v in data['class1'].items():
+        group1_psGRNs = dict()
+        group2_psGRNs = dict()
+        for k,v in data['group1'].items():
             temp = grn.GRN(id = k)
             temp.load_dict(dict = v)
-            class1_psGRNs[k] = temp
-        for k,v in data['class2'].items():
+            group1_psGRNs[k] = temp
+        for k,v in data['group2'].items():
             temp = grn.GRN(id = k)
             temp.load_dict(dict = v)
-            class2_psGRNs[k] = temp
-        return class1_psGRNs, class2_psGRNs
+            group2_psGRNs[k] = temp
+        return group1_psGRNs, group2_psGRNs
 
 
     # OLD: Save GRN files as js.gz in new folder

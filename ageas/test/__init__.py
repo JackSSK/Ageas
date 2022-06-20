@@ -6,8 +6,8 @@ author: jy, nkmtmsys
 """
 import ageas
 from pkg_resources import resource_filename
-class1_path = resource_filename(__name__, 'ips.csv')
-class2_path = resource_filename(__name__, 'mef.csv')
+group1_path = resource_filename(__name__, 'ips.csv')
+group2_path = resource_filename(__name__, 'mef.csv')
 
 
 # Automatically select device
@@ -16,7 +16,7 @@ def Test(cpu_mode = False):
 	print('Start Test')
 	easy = ageas.Launch(
 		cpu_mode = cpu_mode,
-		class1_path = class1_path,
-		class2_path = class2_path,
+		group1_path = group1_path,
+		group2_path = group2_path,
 	)
 	print('Finished Test. LGTM')

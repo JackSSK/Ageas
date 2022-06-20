@@ -23,7 +23,8 @@ class Reader(gem.Reader):
 	def __init__(self,
 				 matrix_path:str = None,
 				 features_path:str = None,
-				 barcodes_path:str = None
+				 barcodes_path:str = None,
+				 handle_repeat:str = 'sum',
 				):
 		self.matrix_path = matrix_path
 		self.features_path = features_path
@@ -47,12 +48,18 @@ class Reader(gem.Reader):
 		# sum up data sharing same gene name if any
 		if len(self.data.columns) != len(list(set(self.data.columns))):
 			warn('Found repeated barcodes in '+self.barcodes_path+' Merging.')
-			self.data = self.data.groupby(self.data.columns).sum()
+			if handle_repeat == 'first':
+				self.data=self.data[~self.data.columns.duplicated(keep='first')]
+			elif handle_repeat == 'sum':
+				self.data = self.data.groupby(self.data.columns).sum()
 
 		# summ up data sharing same barcode if any
 		if len(self.data.index) != len(list(set(self.data.index))):
 			warn('Found repeated genes in '+self.features_path+' Merging.')
-			self.data = self.data.groupby(self.data.index).sum()
+			if handle_repeat == 'first':
+				self.data = self.data[~self.data.index.duplicated(keep='first')]
+			elif handle_repeat == 'sum':
+				self.data = self.data.groupby(self.data.index).sum()
 
 		# assertion part
 		assert len(self.data.columns) == len(list(set(self.data.columns)))

@@ -22,8 +22,8 @@ class Predict:
     def __init__(self, gem_data, sample_grps = None, thread = None):
         super(Predict, self).__init__()
         assert sample_grps is not None or thread is not None
-        self.class1_gem = gem_data.class1
-        self.class2_gem = gem_data.class2
+        self.group1_gem = gem_data.group1
+        self.group2_gem = gem_data.group2
         self.thread = 1 / len(gem_data.genes)
         if thread is not None and thread != 'auto':
             self.thread = float(thread)
@@ -36,20 +36,20 @@ class Predict:
     # documented targets
     def expand_meta_grn(self, meta_grn, genes, correlation_thread):
         for gene in genes:
-            class1FeatImpts, class2FeatImpts = self._getFeatureImportences(gene)
+            group1FeatImpts, group2FeatImpts = self._getFeatureImportences(gene)
             self.__update_grps_to_meta_grn(
                 meta_grn,
                 correlation_thread,
                 gene,
-                self.class1_gem.index,
-                class1FeatImpts,
+                self.group1_gem.index,
+                group1FeatImpts,
             )
             self.__update_grps_to_meta_grn(
                 meta_grn,
                 correlation_thread,
                 gene,
-                self.class2_gem.index,
-                class2FeatImpts,
+                self.group2_gem.index,
+                group2FeatImpts,
             )
         return meta_grn
 
@@ -70,8 +70,8 @@ class Predict:
                     meta_grn.update_grn(
 						source = gene,
 						target = tar,
-						gem1 = self.class1_gem,
-						gem2 = self.class2_gem,
+						gem1 = self.group1_gem,
+						gem2 = self.group2_gem,
 						correlation_thread = correlation_thread
 					)
         return
@@ -94,15 +94,15 @@ class Predict:
         # Choose a key presenting in both classes
         i = 0
         for src in regulatory_sources:
-            if src in self.class1_gem.index and src in self.class2_gem.index:
+            if src in self.group1_gem.index and src in self.group2_gem.index:
                 break
             if i == len(regulatory_sources) - 1:
                 return self.thread
             i += 1
         grps = regulatory_sources[src]
-        class1FeatImpts, class2FeatImpts = self._getFeatureImportences(src,True)
-        assert len(self.class1_gem.index) == len(class1FeatImpts)
-        assert len(self.class2_gem.index) == len(class2FeatImpts)
+        group1FeatImpts, group2FeatImpts = self._getFeatureImportences(src,True)
+        assert len(self.group1_gem.index) == len(group1FeatImpts)
+        assert len(self.group2_gem.index) == len(group2FeatImpts)
 
         # Extract all genes influenced among regulon/GRPs
         genes = {}
@@ -113,16 +113,16 @@ class Predict:
             if fators[1] not in genes: genes[fators[1]] = 0
 
         # assign feature importances to each gene in selected reg source's GRPs
-        for i in range(len(self.class1_gem.index)):
-            if self.class1_gem.index[i] in genes and class1FeatImpts[i] > 0:
-                genes[self.class1_gem.index[i]] = class1FeatImpts[i]
-        for i in range(len(self.class2_gem.index)):
-            gene = self.class2_gem.index[i]
-            if gene in genes and class2FeatImpts[i] > 0:
+        for i in range(len(self.group1_gem.index)):
+            if self.group1_gem.index[i] in genes and group1FeatImpts[i] > 0:
+                genes[self.group1_gem.index[i]] = group1FeatImpts[i]
+        for i in range(len(self.group2_gem.index)):
+            gene = self.group2_gem.index[i]
+            if gene in genes and group2FeatImpts[i] > 0:
                 if genes[gene] == 0:
-                    genes[gene] = class2FeatImpts[i]
+                    genes[gene] = group2FeatImpts[i]
                 else:
-                    genes[gene] = (genes[gene] + class2FeatImpts[i]) / 2
+                    genes[gene] = (genes[gene] + group2FeatImpts[i]) / 2
         # take out genes with 0 importances and reorder the dict
         genes = {x:genes[x] for x in genes if genes[x] > 0}
         genes = OrderedDict(sorted(genes.items(), key = lambda x: x[1]))
@@ -130,16 +130,16 @@ class Predict:
 
     # Basically, this part mimicing what GRNBoost2 does
     def _getFeatureImportences(self, key, checked_in_gem = False):
-        if checked_in_gem or key in self.class1_gem.index:
+        if checked_in_gem or key in self.group1_gem.index:
             c1_result = self.__gbm_feature_importances_calculat(
-                self.class1_gem,
+                self.group1_gem,
                 key
             )
         else: c1_result = None
 
-        if checked_in_gem or key in self.class2_gem.index:
+        if checked_in_gem or key in self.group2_gem.index:
             c2_result = self.__gbm_feature_importances_calculat(
-                self.class2_gem,
+                self.group2_gem,
                 key
             )
         else:

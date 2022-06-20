@@ -31,11 +31,11 @@ class Launch:
     Main function to launch AGEAS
 
     Args:
-        class1_path: <str> Default = None
-            Path to file or folder being considered as type class 1 data
+        group1_path: <str> Default = None
+            Path to file or folder being considered as sample group 1 data
 
-        class2_path: <str> Default = None
-            Path to file or folder being considered as type class 2 data
+        group2_path: <str> Default = None
+            Path to file or folder being considered as sample group 2 data
 
         clf_keep_ratio: <float> Default = 0.5
             Portion of classifier model to keep after each model selection
@@ -59,11 +59,11 @@ class Launch:
             Whether force to use CPU only or not
 
         database_path: <str> Default = None
-            Database header. If specified, class1_path and class2_path will be
+            Database header. If specified, group1_path and group2_path will be
             rooted here.
 
         database_type: <str> Default = 'gem_files'
-            Type of data class1_path and class1_path are directing to
+            Type of data group1_path and group1_path are directing to
             Supporting:
                 'gem_files': Each path is directing to a GEM file.
                     Pseudo samples will be generated with sliding window algo
@@ -213,14 +213,14 @@ class Launch:
         sliding_window_stride: <int> Default = None
             Stride of sliding window when generating pseudo-samples.
 
-        std_value_thread: <float> Default = None
+        std_value_thread: <float> Default = 1.0
             Set up gene expression standard deviation thread by value.
             To rule out genes having relatively constant expression in each type
             class.
 
         std_ratio_thread: <float> Default = None
             Set up gene expression standard deviation thread by portion.
-            Only genes reaching top portion will be kept in each type class.
+            Only genes reaching top portion will be kept in each sample group.
 
         stabilize_iteration: <int> Default = 10
             Number of iteration for a AGEAS unit to repeat key GRP extraction
@@ -249,13 +249,13 @@ class Launch:
 
     Examples::
         >>> easy = ageas.Launch(
-            	class1_path = 'Odysseia/2kTest/ips.csv',
-            	class2_path = 'Odysseia/2kTest/mef.csv',
+            	group1_path = 'test/ips.csv',
+            	group2_path = 'test/mef.csv',
             )
     """
     def __init__(self,
-                 class1_path:str = None,
-                 class2_path:str = None,
+                 group1_path:str = None,
+                 group2_path:str = None,
                  clf_keep_ratio:float = 0.5,
                  clf_accuracy_thread:float = 0.8,
                  correlation_thread:float = 0.2,
@@ -287,7 +287,7 @@ class Launch:
                  specie:str = 'mouse',
                  sliding_window_size:int = 10,
                  sliding_window_stride:int = None,
-                 std_value_thread:float = None,
+                 std_value_thread:float = 1.0,
                  std_ratio_thread:float = None,
                  stabilize_iteration:int = 10,
                  max_train_size:float = 0.95,
@@ -307,24 +307,27 @@ class Launch:
         self.unit_num = unit_num
         self.silent = unit_silent
         self.impact_depth = impact_depth
+        
         # Get database information
         self.database_info = binary_db.Setup(
             database_path,
             database_type,
-            class1_path,
-            class2_path,
+            group1_path,
+            group2_path,
             specie,
             factor_name_type,
             interaction_database,
             sliding_window_size,
             sliding_window_stride
         )
+
         # Get model configs
         if model_config_path is None:
             path = resource_filename(__name__, 'data/config/list_config.js')
             self.model_config = config_maker.List_Config_Reader(path)
         else:
             self.model_config = json.decode(model_config_path)
+
         # Prepare report folder
         self.report_folder_path = report_folder_path
         if self.report_folder_path is not None:
@@ -353,8 +356,10 @@ class Launch:
                 correlation_thread = correlation_thread,
                 meta_load_path = meta_load_path,
             )
+
         # Meta GRN Analysis
         self.meta_report = meta_grn.Analysis(self.meta.grn)
+
         # Save docs if specified path
         if self.report_folder_path is not None:
             self.meta_report.save(self.report_folder_path + 'meta_report.csv')
@@ -446,11 +451,14 @@ class Launch:
             id = 'RN_' + str(i)
             units.append(threading.Thread(target=self.multi_unit, name=id))
             print('Unit', id, 'Ready')
+
         # Time to work
         print('\nSending All Units\n')
         if self.silent: sys.stdout = open(os.devnull, 'w')
+
         # Start each unit
         for unit in units: unit.start()
+
         # Wait till all thread terminates
         for unit in units: unit.join()
         if self.silent: sys.stdout = sys.__stdout__
@@ -489,6 +497,7 @@ class Launch:
                             record_1 = all_grps[id],
                             record_2 = record
                         )
+
         # now we build regulons
         regulon = extractor.Extract()
         for id, grp in all_grps.items():
@@ -524,6 +533,7 @@ class Launch:
                 std_value_thread
             )
             start1 = time.time()
+
             # Let kirke casts GRN construction guidance first
             meta = meta_grn.Cast(
                 gem_data = gem_data,
@@ -540,6 +550,7 @@ class Launch:
                 gem_data = gem_data,
                 meta_grn = meta.grn
             )
+
         # if we are reading in GRNs directly, just process them
         elif re.search(r'grn' , database_info.type):
             psGRNs = None
@@ -552,17 +563,21 @@ class Launch:
     def _combine_grp_records(self, record_1, record_2):
         answer = copy.deepcopy(record_1)
         if answer.type != record_2.type:
+
             if answer.type == GRP_TYPES[2]:
                 assert answer.score == 0
                 if record_2.type != GRP_TYPES[2]:
                     answer.type = record_2.type
                     answer.score = record_2.score
+
             else:
                 if record_2.type != GRP_TYPES[2]:
                     answer.type = GRP_TYPES[3]
                     answer.score = max(answer.score, record_2.score)
+
         else:
             answer.score = max(answer.score, record_2.score)
+
         return answer
 
     # change class objects to dicts and save regulons in JSON format

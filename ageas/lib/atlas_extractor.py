@@ -4,9 +4,10 @@ Ageas Reborn
 
 author: jy, nkmtmsys
 """
-import math
+
 import copy
 import itertools
+import numpy as np
 import pandas as pd
 import ageas.lib as lib
 import ageas.tool.grn as grn
@@ -176,8 +177,8 @@ class Extract(object):
 		for k, v in self.regulatory_sources.items():
 			if v['impact_score'] >= impact_score_thread:
 				v['regulon_id'] = 'regulon_' + str(v['regulon_id'])
-				exps = meta_grn.genes[k].expression_mean
-				fc = abs(math.log2( (exps['class1']+1) / (exps['class2']+1) ))
+				exps = meta_grn.genes[k].expression_sum
+				fc = abs(np.log2(exps['group1']+1) - np.log2(exps['group2']+1))
 				df.append([k] + list(v.values()) + [fc])
 		df = pd.DataFrame(sorted(df, key=lambda x:x[-1], reverse = True))
 		df.columns = [
@@ -206,10 +207,10 @@ class Extract(object):
 					# get regulatory correlation strength
 					link_grp = grn.GRP(gene, target).id
 					cors = regulon.grps[link_grp].correlations
-					if cors['class1'] == 0.0 or cors['class2'] == 0.0:
-						cor = abs(max(cors['class1'], cors['class2']))
-					elif cors['class1'] != 0.0 and cors['class2'] != 0.0:
-						cor = (abs(cors['class1']) + abs(cors['class2'])) / 2
+					if cors['group1'] == 0.0 or cors['group2'] == 0.0:
+						cor = abs(max(cors['group1'], cors['group2']))
+					elif cors['group1'] != 0.0 and cors['group2'] != 0.0:
+						cor = (abs(cors['group1']) + abs(cors['group2'])) / 2
 					else:
 						raise lib.Error(link_grp, 'Cor in meta GRN is creepy')
 					# count it if passing conditions

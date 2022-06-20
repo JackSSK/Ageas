@@ -6,7 +6,7 @@ author: jy, nkmtmsys
 """
 
 import warnings
-import math
+import numpy as np
 import pandas as pd
 from collections import Counter
 import ageas.lib as lib
@@ -46,8 +46,8 @@ class Analysis(object):
 
 		# adding log2FC
 		for ele in temp:
-			exp = meta_grn.genes[ele[0]].expression_mean
-			ele.append(abs(math.log2((exp['class1']+1) / (exp['class2']+1))))
+			exp = meta_grn.genes[ele[0]].expression_sum
+			ele.append(abs(np.log2(exp['group1']+1) - np.log2(exp['group2']+1)))
 
 		# changing to dataframe type
 		self.result = pd.DataFrame(temp,columns=['ID','Type','Degree','Log2FC'])
@@ -150,8 +150,8 @@ class Cast:
 					self.grn.update_grn(
 						source = source,
 						target = target,
-						gem1 = data.class1,
-						gem2 = data.class2,
+						gem1 = data.group1,
+						gem2 = data.group2,
 						correlation_thread = correlation_thread
 					)
 
@@ -210,8 +210,8 @@ class Cast:
 					self.grn.update_grn(
 						source = source,
 						target = target,
-						gem1 = data.class1,
-						gem2 = data.class2,
+						gem1 = data.group1,
+						gem2 = data.group2,
 						correlation_thread = correlation_thread
 					)
 		return
@@ -227,8 +227,8 @@ class Cast:
 				self.grn.update_grn(
 					source = source,
 					target = target,
-					gem1 = data.class1,
-					gem2 = data.class2,
+					gem1 = data.group1,
+					gem2 = data.group2,
 					correlation_thread = correlation_thread
 				)
 		return

@@ -21,11 +21,13 @@ class Reader(object):
 	Class to read in scRNA-seq or bulk RNA-seq based Gene Expression Matrices
 	Only suppordt .cvs and .txt for now
 	"""
-	def __init__(self, path:str = None, **kwargs):
+	def __init__(self, path:str = None, handle_repeat:str = 'sum', **kwargs):
 		super(Reader, self).__init__()
+
 		# Decide which seperation mark to use
 		if re.search(r'csv', path): 	self.sep = ','
 		elif re.search(r'txt', path): 	self.vsep = '\t'
+
 		# determine compression method
 		if re.search(r'.gz', path): 	self.compression = 'gzip'
 		elif re.search(r'.zip', path):	self.compression = 'zip'
@@ -39,6 +41,12 @@ class Reader(object):
 			)
 		except Exception as GEM_Reader_Error:
 			raise tool.Error('Unsupported File Type: ', path)
+
+		# Just in case, repeated genes need to be solved
+		if handle_repeat == 'first':
+			self.data = self.data[~self.data.index.duplicated(keep = 'first')]
+		elif handle_repeat == 'sum':
+			self.data = self.data.groupby(self.data.index).sum()
 
 	# filter data frame based on standered deviations
 	def STD_Filter(self, std_value_thread = None, std_ratio_thread = None):
@@ -77,6 +85,7 @@ class Folder(object):
 	def combine(self,
 				method = 'inner',
 				keep_repeated_samples = False,
+				handle_repeat_gene = 'sum',
 				std_value_thread = None,
 				std_ratio_thread = None,
 				outpath = None
@@ -94,6 +103,7 @@ class Folder(object):
 				index_col = self.index_col,
 				compression = self.compression_method
 			)
+
 			# Initialize output df if still empty
 			if result is None:
 				result = gem
@@ -102,6 +112,7 @@ class Folder(object):
 				result = result.join(gem, how = method)
 			else:
 				unique_samples = gem.columns.difference(result.columns)
+
 				# if nothing new, move forward
 				if len(unique_samples) == 0: continue
 				result = pd.merge(
@@ -111,8 +122,12 @@ class Folder(object):
 					right_index = True,
 					how = method
 				)
-			# Just in case
-			result = result[~result.index.duplicated(keep='first')]
+				
+			# Just in case, repeated genes need to be solved
+			if handle_repeat_gene == 'first':
+				result = result[~result.index.duplicated(keep = 'first')]
+			elif handle_repeat_gene == 'sum':
+				result = result.groupby(result.index).sum()
 		del gem
 
 		# filter by standard deviations if needed

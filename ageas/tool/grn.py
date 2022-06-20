@@ -14,195 +14,202 @@ import ageas.tool.json as json
 
 
 class GRN(object):
-    """
-    docstring for Meta_GRN.
-    """
+	"""
+	docstring for Meta_GRN.
+	"""
 
-    def __init__(self, id = None, **kwargs):
-        super(GRN, self).__init__()
-        self.id = id
-        self.genes = dict()
-        self.grps = dict()
-        for key in kwargs: setattr(self, key, kwargs[key])
+	def __init__(self, id = None, **kwargs):
+		super(GRN, self).__init__()
+		self.id = id
+		self.genes = dict()
+		self.grps = dict()
+		for key in kwargs: setattr(self, key, kwargs[key])
 
-    def update_grn(self, source, target, gem1, gem2, correlation_thread):
-        # Skip if processing self-regulating pathway
-        if source == target: return
-        grp_id = GRP(source, target).id
-        if grp_id in self.grps:
-            if not self.grps[grp_id].reversable:
-                self.grps[grp_id].reversable = True
-            return
-        # Test out global scale correlation
-        cor_class1 = None
-        cor_class2 = None
-        passed = False
-        # check cor_class1
-        if source in gem1.index and target in gem1.index:
-            cor_class1 = tool.Get_Pearson(
-                gem1.loc[[source]].values[0],
-                gem1.loc[[target]].values[0]
-            )
-        # check cor_class2
-        if source in gem2.index and target in gem2.index:
-            cor_class2 = tool.Get_Pearson(
-                gem2.loc[[source]].values[0],
-                gem2.loc[[target]].values[0]
-            )
-        # Go through abs(correlation) threshod check
-        if cor_class1 is None and cor_class2 is None:
-            return
-        if cor_class1 is None and abs(cor_class2) > correlation_thread:
-            passed = True
-            cor_class1 = 0
-        elif cor_class2 is None and abs(cor_class1) > correlation_thread:
-            passed = True
-            cor_class2 = 0
-        elif cor_class1 is not None and cor_class2 is not None:
-            if abs(cor_class1 - cor_class2) > correlation_thread:
-                passed = True
-        # update GRN if passed correlation filter
-        if passed:
-            correlations = {
-                'class1':float(cor_class1),
-                'class2':float(cor_class2)
-            }
-            self.add_grp(grp_id, source, target, correlations)
-            if source not in self.genes:
-                self.add_gene(source, gem1, gem2)
-            if target not in self.genes:
-                self.add_gene(target, gem1, gem2)
+	def update_grn(self, source, target, gem1, gem2, correlation_thread):
+		# Skip if processing self-regulating pathway
+		if source == target: return
+		grp_id = GRP(source, target).id
+		if grp_id in self.grps:
+			if not self.grps[grp_id].reversable:
+				self.grps[grp_id].reversable = True
+			return
 
-    def add_grp(self, id, source, target, correlations):
-        assert id not in self.grps
-        # may change it to a class later
-        self.grps[id] = GRP(
-            id = id,
-            regulatory_source = source,
-            regulatory_target = target,
-            correlations = correlations
-        )
-        return
+		# Test out global scale correlation
+		cor_group1 = None
+		cor_group2 = None
+		passed = False
 
-    def add_gene(self, id, gem1, gem2):
-        assert id not in self.genes
-        # get expression mean values
-        if id in gem1.index:    class1_exp = sta.mean(gem1.loc[[id]].values[0])
-        else:                   class1_exp = 0
-        if id in gem2.index:    class2_exp = sta.mean(gem2.loc[[id]].values[0])
-        else:                   class2_exp = 0
-        # may change it to a class later
-        self.genes[id] = Gene(
-            id = id,
-            expression_mean = {
-                'class1': float(class1_exp),
-                'class2': float(class2_exp)
-            }
-        )
-        return
+		# check cor_group1
+		if source in gem1.index and target in gem1.index:
+			cor_group1 = tool.Get_Pearson(
+				gem1.loc[[source]].values[0],
+				gem1.loc[[target]].values[0]
+			)
 
-    def as_dict(self):
-        return {
-            'genes': {id:record.as_dict() for id, record in self.genes.items()},
-            'grps':{id:record.as_dict() for id, record in self.grps.items()}
-        }
+		# check cor_group2
+		if source in gem2.index and target in gem2.index:
+			cor_group2 = tool.Get_Pearson(
+				gem2.loc[[source]].values[0],
+				gem2.loc[[target]].values[0]
+			)
 
-    def as_digraph(self, grp_ids = None):
-        graph = nx.DiGraph()
-        # Use all GRPs if not further specified
-        if grp_ids is None: grp_ids = self.grps.keys()
-        for grp_id in grp_ids:
-            source = self.grps[grp_id].regulatory_source
-            target = self.grps[grp_id].regulatory_target
-            # add regulatory source and target genes to nodes
-            if not graph.has_node(source):
-                graph.add_node(source, **self.genes[source].as_dict())
-            if not graph.has_node(target):
-                graph.add_node(target, **self.genes[target].as_dict())
-            # add GRP as an edge
-            graph.add_edge(source, target, **self.grps[grp_id].as_dict())
-            if self.grps[grp_id].reversable:
-                graph.add_edge(target, source, **self.grps[grp_id].as_dict())
-        return graph
+		# Go through abs(correlation) threshod check
+		if cor_group1 is None and cor_group2 is None:
+			return
+		if cor_group1 is None and abs(cor_group2) > correlation_thread:
+			passed = True
+			cor_group1 = 0
+		elif cor_group2 is None and abs(cor_group1) > correlation_thread:
+			passed = True
+			cor_group2 = 0
+		elif cor_group1 is not None and cor_group2 is not None:
+			if abs(cor_group1 - cor_group2) > correlation_thread:
+				passed = True
 
-    def save_json(self, path):
-        json.encode(self.as_dict(), path)
-        return
+		# update GRN if passed correlation filter
+		if passed:
+			correlations = {
+				'group1':float(cor_group1),
+				'group2':float(cor_group2)
+			}
+			self.add_grp(grp_id, source, target, correlations)
+			if source not in self.genes:
+				self.add_gene(source, gem1, gem2)
+			if target not in self.genes:
+				self.add_gene(target, gem1, gem2)
 
-    def load_dict(self, dict):
-        self.genes = {id: Gene(**dict['genes'][id]) for id in dict['genes']}
-        self.grps = {id: GRP(**dict['grps'][id]) for id in dict['grps']}
-        return
+	def add_grp(self, id, source, target, correlations):
+		assert id not in self.grps
+		# may change it to a class later
+		self.grps[id] = GRP(
+			id = id,
+			regulatory_source = source,
+			regulatory_target = target,
+			correlations = correlations
+		)
+		return
+
+	def add_gene(self, id, gem1, gem2):
+		assert id not in self.genes
+		# get expression sum values
+		if id in gem1.index:    group1_exp = sum(gem1.loc[[id]].values[0])
+		else:                   group1_exp = 0
+		if id in gem2.index:    group2_exp = sum(gem2.loc[[id]].values[0])
+		else:                   group2_exp = 0
+		# may change it to a class later
+		self.genes[id] = Gene(
+			id = id,
+			expression_sum = {
+				'group1': float(group1_exp),
+				'group2': float(group2_exp)
+			}
+		)
+		return
+
+	def as_dict(self):
+		return {
+			'genes': {id:record.as_dict() for id, record in self.genes.items()},
+			'grps':{id:record.as_dict() for id, record in self.grps.items()}
+		}
+
+	def as_digraph(self, grp_ids = None):
+		graph = nx.DiGraph()
+		# Use all GRPs if not further specified
+		if grp_ids is None: grp_ids = self.grps.keys()
+		for grp_id in grp_ids:
+			source = self.grps[grp_id].regulatory_source
+			target = self.grps[grp_id].regulatory_target
+
+			# add regulatory source and target genes to nodes
+			if not graph.has_node(source):
+				graph.add_node(source, **self.genes[source].as_dict())
+			if not graph.has_node(target):
+				graph.add_node(target, **self.genes[target].as_dict())
+
+			# add GRP as an edge
+			graph.add_edge(source, target, **self.grps[grp_id].as_dict())
+			if self.grps[grp_id].reversable:
+				graph.add_edge(target, source, **self.grps[grp_id].as_dict())
+		return graph
+
+	def save_json(self, path):
+		json.encode(self.as_dict(), path)
+		return
+
+	def load_dict(self, dict):
+		self.genes = {id: Gene(**dict['genes'][id]) for id in dict['genes']}
+		self.grps = {id: GRP(**dict['grps'][id]) for id in dict['grps']}
+		return
 
 
 
 class Gene(object):
-    """
-    docstring for Gene.
-    """
+	"""
+	docstring for Gene.
+	"""
 
-    def __init__(self,
-                 id = None,
-                 type = 'Gene',
-                 expression_mean = None,
-                 **kwargs
-                ):
-        super(Gene, self).__init__()
-        self.id = id
-        self.type = type
-        self.source = list()
-        self.target = list()
-        self.expression_mean = expression_mean
-        for key in kwargs: setattr(self, key, kwargs[key])
+	def __init__(self,
+				 id = None,
+				 type = 'Gene',
+				 expression_sum = None,
+				 **kwargs
+				):
+		super(Gene, self).__init__()
+		self.id = id
+		self.type = type
+		self.source = list()
+		self.target = list()
+		self.expression_sum = expression_sum
+		for key in kwargs: setattr(self, key, kwargs[key])
 
-    def as_dict(self): return self.__dict__
+	def as_dict(self): return self.__dict__
 
-    def add_name(self, name):
-        if not hasattr(self, 'names'): self.names = list()
-        self.names.append(name)
+	def add_name(self, name):
+		if not hasattr(self, 'names'): self.names = list()
+		self.names.append(name)
 
-    def add_ens_id(self, ens_id):
-        if not hasattr(self, 'ens_ids'): self.ens_ids = list()
-        self.ens_ids.append(ens_id)
+	def add_ens_id(self, ens_id):
+		if not hasattr(self, 'ens_ids'): self.ens_ids = list()
+		self.ens_ids.append(ens_id)
 
-    def add_uniprot_id(self, uniprot_id):
-        if not hasattr(self, 'uniprot_ids'): self.uniprot_ids = list()
-        self.uniprot_ids.append(uniprot_id)
+	def add_uniprot_id(self, uniprot_id):
+		if not hasattr(self, 'uniprot_ids'): self.uniprot_ids = list()
+		self.uniprot_ids.append(uniprot_id)
 
 
 
 class GRP(object):
-    """
-    docstring for GRP.
-    """
+	"""
+	docstring for GRP.
+	"""
 
-    def __init__(self,
-                 regulatory_source = None,
-                 regulatory_target = None,
-                 id = None,
-                 type = None,
-                 score = None,
-                 reversable = False,
-                 correlations = None,
-                 **kwargs
-                ):
-        super(GRP, self).__init__()
-        self.id = id
-        self.type = type
-        self.score = score
-        self.reversable = reversable
-        self.correlations = correlations
-        self.regulatory_source = regulatory_source
-        self.regulatory_target = regulatory_target
-        if self.id is None:
-            self.id = self.cast_id(regulatory_source, regulatory_target)
-        for key in kwargs: setattr(self, key, kwargs[key])
+	def __init__(self,
+				 regulatory_source = None,
+				 regulatory_target = None,
+				 id = None,
+				 type = None,
+				 score = None,
+				 reversable = False,
+				 correlations = None,
+				 **kwargs
+				):
+		super(GRP, self).__init__()
+		self.id = id
+		self.type = type
+		self.score = score
+		self.reversable = reversable
+		self.correlations = correlations
+		self.regulatory_source = regulatory_source
+		self.regulatory_target = regulatory_target
+		if self.id is None:
+			self.id = self.cast_id(regulatory_source, regulatory_target)
+		for key in kwargs: setattr(self, key, kwargs[key])
 
-    def as_dict(self): return self.__dict__
+	def as_dict(self): return self.__dict__
 
-    def cast_id(self, source, target):
-        if source > target: return source + '_' + target
-        else:               return target + '_' + source
+	def cast_id(self, source, target):
+		if source > target: return source + '_' + target
+		else:               return target + '_' + source
 
 
 class Reader(tool.Reader_Template):
@@ -210,9 +217,9 @@ class Reader(tool.Reader_Template):
 	NOTE:! Very outdated !
 	NOTE:! Very outdated !
 	NOTE:! Very outdated !
-    NOTE:! Don't Use !
-    NOTE:! Don't Use !
-    NOTE:! Don't Use !
+	NOTE:! Don't Use !
+	NOTE:! Don't Use !
+	NOTE:! Don't Use !
 
 
 	Class to read in scRNA-seq or bulk RNA-seq based Gene Expression Matrices
@@ -220,25 +227,32 @@ class Reader(tool.Reader_Template):
 	"""
 	def __init__(self, filename, skipFirst = False, stdevThread = None):
 		super(Reader, self).__init__()
+
 		# Initialization
 		self.load(filename)
 		self.entryCoords = {}
 		self.iteration = 0
+
 		# Determine file type
 		if re.search(r'\.txt', self.filePath): self.split = '\t'
 		elif re.search(r'\.csv', self.filePath): self.split = ','
 		else: raise tool.Error(self.filePath, ' is not supported format')
+
 		# Skip first line
 		if skipFirst: line = self.file.readline()
+
 		# Iterate through all lines
 		while(True):
-			coordinate = self.file.tell()
 			line = self.file.readline().strip()
+
 			# terminate at the end
-			if line == '':break
+			if line == '': break
+
 			# skip comments
 			elif line[:1] == '#': continue
+
 			else:
+				coordinate = self.file.tell()
 				content = line.split(self.split)
 				self._processLine(coordinate, content, stdevThread)
 
@@ -250,6 +264,7 @@ class Reader(tool.Reader_Template):
 				raise tool.Error('Bad GRN format: empty line')
 			else:
 				raise tool.Error('Fatal GRN format: not enough info')
+
 		# Process current record
 		else:
 			id = content[0]
@@ -280,6 +295,7 @@ class Reader(tool.Reader_Template):
 				records.append([id, stdev, data])
 			else:
 				records.append([id, data])
+
 		# Filter records based on keep ratio
 		if stdevKpRatio is not None:
 			records.sort(key = lambda x:x[1], reverse = True)

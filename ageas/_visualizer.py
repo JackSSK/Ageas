@@ -351,12 +351,12 @@ class Plot_Regulon(object):
 
     # just as named
     def get_weight(self, correlations):
-        if self.graph_type == 'class1' or self.graph_type == '1':
-            weight = correlations['class1']
-        elif self.graph_type == 'class2' or self.graph_type == '2':
-            weight = correlations['class2']
+        if self.graph_type == 'group1' or self.graph_type == '1':
+            weight = correlations['group1']
+        elif self.graph_type == 'group2' or self.graph_type == '2':
+            weight = correlations['group2']
         elif self.graph_type == 'all':
-            weight = abs(correlations['class1']) - abs(correlations['class2'])
+            weight = abs(correlations['group1']) - abs(correlations['group2'])
         return weight
 
     # Set up a color bar with fixed scale from -1.0 to 1.0
@@ -364,11 +364,11 @@ class Plot_Regulon(object):
         cbar = plt.colorbar(self.edge_scalar_map, ax = ax, shrink = shrink)
         if self.graph_type == 'all':
             labels = cbar.ax.get_yticklabels()
-            labels[0] = 'Stronger in Class2'
+            labels[0] = 'Stronger in group2'
             # only set mid tick label when it's odd length
             if (len(labels) % 2) == 1:
                 labels[int(len(labels) / 2)] = 'No Difference'
-            labels[-1] = 'Stronger in Class1'
+            labels[-1] = 'Stronger in group1'
             cbar.set_ticklabels(labels)
             cbar.ax.tick_params(labelsize = font_size)
         cbar.ax.set_ylabel(
@@ -444,7 +444,7 @@ if __name__ == '__main__':
             file_path = atlas_path,
             regulon_id = 'regulon_0',
             hide_bridge = False,
-            graph_type = 'class2',
+            graph_type = 'group2',
             root_gene = 'HAND2',
             # impact_depth = 1,
         )
