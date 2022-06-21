@@ -18,5 +18,6 @@ def Test(cpu_mode = False):
 		cpu_mode = cpu_mode,
 		group1_path = group1_path,
 		group2_path = group2_path,
+		protocol = 'multi',
 	)
 	print('Finished Test. LGTM')

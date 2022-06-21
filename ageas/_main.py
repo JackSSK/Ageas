@@ -287,7 +287,7 @@ class Launch:
                  specie:str = 'mouse',
                  sliding_window_size:int = 10,
                  sliding_window_stride:int = None,
-                 std_value_thread:float = 1.0,
+                 std_value_thread:float = None,
                  std_ratio_thread:float = None,
                  stabilize_iteration:int = 10,
                  max_train_size:float = 0.95,
@@ -307,7 +307,7 @@ class Launch:
         self.unit_num = unit_num
         self.silent = unit_silent
         self.impact_depth = impact_depth
-        
+
         # Get database information
         self.database_info = binary_db.Setup(
             database_path,
@@ -486,7 +486,7 @@ class Launch:
                 report_path = self.report_folder_path + 'no_' + str(index) + '/'
                 if not os.path.exists(report_path): os.makedirs(report_path)
                 atlas.grps.save(report_path + 'grps_importances.txt')
-                json.encode(atlas.outlier_grps, report_path+'outlier_grps.js')
+                json.encode(atlas.outlier_grps, report_path + 'outlier_grps.js')
 
             for regulon in atlas.regulons.values():
                 for id, record in regulon.grps.items():
@@ -516,7 +516,7 @@ class Launch:
                         std_value_thread = 100,
                         std_ratio_thread = None,
                         mww_p_val_thread = 0.05,
-                        log2fc_thread = 0.1,
+                        log2fc_thread = None,
                         prediction_thread = 'auto',
                         correlation_thread = 0.2,
                         meta_load_path = None

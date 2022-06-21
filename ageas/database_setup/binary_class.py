@@ -109,8 +109,8 @@ class Load_GEM:
     def __init__(self,
                  database_info,
                  mww_thread = 0.05,
-                 log2fc_thread = 0.1,
-                 std_value_thread = 100,
+                 log2fc_thread = None,
+                 std_value_thread = None,
                  std_ratio_thread = None
                 ):
         super(Load_GEM, self).__init__()
@@ -154,10 +154,6 @@ class Load_GEM:
                 std_ratio_thread
             )
 
-        # Normalization
-        group1 = self.size_factor_normalization(group1)
-        group2 = self.size_factor_normalization(group2)
-
         # Distribuition Filter if threshod is specified
         if mww_thread is not None or log2fc_thread is not None:
             self.genes = Find(
@@ -172,21 +168,6 @@ class Load_GEM:
             self.genes = group1.index.union(group2.index)
             self.group1 = group1
             self.group2 = group2
-
-    # normalize GEMs with median value
-    def size_factor_normalization(self, df):
-        # estimate size factor for every sample in GEM(df)
-        count_per_cell = np.squeeze(np.asarray(df.sum(axis=0)))
-        size_factors=count_per_cell.astype(np.float64)/np.median(count_per_cell)
-
-        # all add 1 if size factor could be 0
-        if 0 in size_factors:
-            size_factors = [x+1 for x in size_factors]
-            
-        # divide values by size factors
-        for i,j in enumerate(df):
-            df[j] = df[j].div(size_factors[i])
-        return df
 
     # Process in expression matrix file (dataframe) scenario
     def __process_gem_file(self, std_value_thread, std_ratio_thread):
