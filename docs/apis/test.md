@@ -14,7 +14,7 @@ Function to test whether AGEAS is performing normally or not using sample GEMs i
 
 
 ## **Outputs**
-    + ageas._main.Launch object
++ ageas._main.Launch object
 
 
 ## **Example**

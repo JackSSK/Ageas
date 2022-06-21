@@ -39,12 +39,13 @@ ageas.Test(cpu_mode = False)
 
 # Contents
 
-## [API Reference](https://nkmtmsys.github.io/Ageas/tutorial)
+## [API References](https://nkmtmsys.github.io/Ageas/tutorial)
+
+- ### [Launch](https://nkmtmsys.github.io/Ageas/apis/launch)
+
 - ### [Test](https://nkmtmsys.github.io/Ageas/apis/test)
 
 - ### [Get_Pseudo_Samples](https://nkmtmsys.github.io/Ageas/apis/get_pseudo_samples)
-
-- ### [Launch](https://nkmtmsys.github.io/Ageas/apis/launch)
 
 - ### [Unit](https://nkmtmsys.github.io/Ageas/apis/unit)
 
