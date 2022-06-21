@@ -1,8 +1,8 @@
 # API Reference
 
 
-## [Launch](https://github.com/nkmtmsys/Ageas/)
-
+## [Launch](https://nkmtmsys.github.io/Ageas/apis/launch)
+Launch AGEAS as a single object.
 
 ## [Unit](https://github.com/nkmtmsys/Ageas/)
 

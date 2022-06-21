@@ -1,10 +1,10 @@
-### [API Refence](https://nkmtmsys.github.io/Ageas/tutorial)
+### [API Refences](https://nkmtmsys.github.io/Ageas/tutorial)
 
 
 # Launch()
 Launch AGEAS as a single object.
-```python
-Launch(
+<pre>
+ageas.Launch(
     model_config_path:str = None,
     mute_unit:bool = True,
     protocol:str = 'solo',
@@ -42,23 +42,23 @@ Launch(
     stabilize_iteration:int = 10,
     max_train_size:float = 0.95,
     z_score_extract_thread:float = 0.0,
-  )
-```
+)
+</pre>
 
 
 ## **Args**
 
-+ **_model_config_path_**: <str> Default = None
++ **_model_config_path_**: Default = None
 
     Path to load model config file which will be used to initialize classifiers
 
 
-+ **_mute_unit_**: <bool> Default = True
++ **_mute_unit_**: Default = True
 
     The studying specie which will determine set of dependent database using for analysis. Only mouse and human are supported now.
 
 
-+ **_protocol_**: <str> Default = 'solo'
++ **_protocol_**: Default = 'solo'
 
     AGEAS unit launching protocol.
 
@@ -67,12 +67,12 @@ Launch(
     - 'multi': All units will run parallelly by multithreading
 
 
-+ **_unit_num_**: <int> Default = 2
++ **_unit_num_**: Default = 2
 
     Number of AGEAS units to launch.
 
 
-+ **_warning_filter_**: <str> Default = 'ignore'
++ **_warning_filter_**: Default = 'ignore'
 
     How warnings should be filtered.
 
@@ -81,18 +81,22 @@ Launch(
 
 
 ## **Methods**
-+ <details><summary>**save_reports()**</summary>
-<p>
+
+
+### **save_reports()**
 
 Save data and reports in given folder
 
 #### **Args**
-- **_folder_path_**: <str> Default = None
-      Folder path to save all files.
-- **_save_unit_reports_**: Whether save key GRPs extracted by each AGEAS
 
-</p>
-</details>
++ **_folder_path_**: <str> Default = None
+
+      Folder path to save all files.
+
+
++ **_save_unit_reports_**:
+
+      Whether save key GRPs extracted by each AGEAS
 
 
 
