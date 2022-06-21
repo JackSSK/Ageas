@@ -12,7 +12,7 @@ group2_path = resource_filename(__name__, 'mef.csv')
 
 # Automatically select device
 # If cpu_mode is on, AGEAS will be forced to only use CPU
-def Test(cpu_mode = False):
+def Test(cpu_mode:bool = False):
 	print('Start Test')
 	easy = ageas.Launch(
 		cpu_mode = cpu_mode,
