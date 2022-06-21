@@ -3,7 +3,7 @@
 
 # Launch()
 Launch AGEAS as a single object.
-'''python
+```python
 ageas.Launch(
     model_config_path:str = None,
     mute_unit:bool = True,
@@ -43,7 +43,7 @@ ageas.Launch(
     max_train_size:float = 0.95,
     z_score_extract_thread:float = 0.0,
 )
-'''
+```
 
 
 ## **Args**
@@ -102,7 +102,7 @@ Save data and reports in given folder
 
 
 ## **Example**
-'''python
+```python
 import ageas
 result = ageas.Launch(
   group1_path = 'test/ips.csv',
@@ -112,4 +112,4 @@ result.save_reports(
 	folder_path = 'easy_test.report',
 	save_unit_reports = True
 )
-'''
+```
