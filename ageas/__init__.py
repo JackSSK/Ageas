@@ -52,12 +52,17 @@ from ._visualizer import (
     Plot_Regulon
 )
 
+from ._psgrn import (
+    Get_Pseudo_Samples
+)
+
 from .test import (
     Test
 )
 
 __all__ = [
     'Test',
+    'Get_Pseudo_Samples',
     'Launch',
     'Unit',
     'Plot_Regulon',

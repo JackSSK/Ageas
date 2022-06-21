@@ -6,28 +6,125 @@ author: jy, nkmtmsys
 """
 
 import time
+import ageas
 import ageas.lib.clf_trainer as trainer
 import ageas.lib.clf_interpreter as interpreter
 import ageas.lib.atlas_extractor as extractor
 
 
 
-class Unit:
+class Unit(object):
     """
     Get candidate key factors and pathways
     and write report files into given folder
+
+    Args:
+        database_info:
+            Integrated database information returned by
+            ageas.Get_Pseudo_Samples()
+
+        meta:
+            meta level processed grand GRN information returned by
+            ageas.Get_Pseudo_Samples()
+
+        model_config:
+
+
+        pseudo_grns:
+            pseudo-sample GRNs returned by
+            ageas.Get_Pseudo_Samples()
+
+        clf_keep_ratio: <float> Default = 0.5
+            Portion of classifier model to keep after each model selection
+            iteration.
+            .. note::
+                When performing SHA based model selection, this value is
+                set as lower bound to keep models
+
+        clf_accuracy_thread: <float> Default = 0.8
+            Filter thread of classifier's accuracy in local test performed at
+            each model selection iteration
+            .. note::
+                When performing SHA based model selection, this value is
+                only used at last iteration
+
+        correlation_thread: <float> Default = 0.2
+            Gene expression correlation thread value of GRPs
+            Potential GRPs failed to reach this value will be dropped.
+
+        cpu_mode: <bool> Default = False
+            Whether force to use CPU only or not
+
+        feature_dropout_ratio: <float> Default = 0.1
+            Portion of features(GRPs) to be dropped out after each iteration of
+            feature selection.
+
+        feature_select_iteration: <int> Default = 1
+            Number of iteration for feature(GRP) selection before
+            key GRP extraction
+
+        impact_depth: <int> Default = 3
+            When assessing a TF's regulatory impact on other genes, how far the
+            distance between TF and potential regulatory source can be.
+            .. note::
+                The correlation strength of stepped correlation strength of TF
+                and gene still need to be greater than correlation_thread.
+
+        top_grp_amount: <int> Default = 100
+            Amount of GRPs an AGEAS unit would extract.
+            .. note::
+                If outlier_thread is set, since outlier GRPs are extracted
+                during feature selection part and will also be considered as
+                key GRPs, actual amount of key GRPs would be greater.
+
+        grp_changing_thread: <float> Default = 0.05
+            If changing portion of key GRPs extracted by AGEAS unit from two
+            stabilize iterations lower than this thread, these two iterations
+            will be considered as having consistent result.
+
+        link_step_allowrance: <int> Default = 1
+            During key atlas extraction, when finding bridge GRPs to link 2
+            separate regulons, how many steps will be allowed.
+            link_step_allowrance == 1 means, no intermediate gene can be used
+            and portential regulatory source must be able to interact with gene
+            from another regulon.
+
+        model_select_iteration: <int> Default = 2
+            Number of iteration for classification model selection before
+            the mandatory filter.
+
+        outlier_thread: <float> Default = 3.0
+            The lower bound of Z-score scaled importance value to consider a GRP
+            as outlier need to be retain.
+
+        stabilize_patient: <int> Default = 3
+            If stabilize iterations continuously having consistent result for
+            this value, an early stop on result stabilization will be executed.
+
+        stabilize_iteration: <int> Default = 10
+            Number of iteration for a AGEAS unit to repeat key GRP extraction
+            after model and feature selections in order to find key GRPs
+            consistently being important.
+
+        max_train_size: <float> Default = 0.95
+            The largest portion of avaliable data can be used to train models.
+            At the mandatory model filter, this portion of data will be given to
+            each model to train.
+
+        z_score_extract_thread: <float> Default = 0.0
+            The lower bound of Z-score scaled importance value to extract a GRP.
     """
     def __init__(self,
-                 # Processed in Launch Initialization
+                 # Need to be processed before initializatuin Unit
                  database_info = None,
                  meta = None,
                  model_config = None,
                  pseudo_grns = None,
                  # Parameters
-                 cpu_mode:bool = False,
                  clf_keep_ratio:float = 0.5,
                  clf_accuracy_thread:float = 0.8,
-                 correlation_thread:float = 0.0,
+                 correlation_thread:float = 0.2,
+                 cpu_mode:bool = False,
                  feature_dropout_ratio:float = 0.1,
                  feature_select_iteration:int = 1,
                  grp_changing_thread:float = 0.05,
@@ -36,7 +133,7 @@ class Unit:
                  max_train_size:float = 0.95,
                  model_select_iteration:int = 2,
                  outlier_thread:float = 3.0,
-                 patient:int = 3,
+                 stabilize_patient:int = 3,
                  stabilize_iteration:int = 10,
                  top_grp_amount:int = 100,
                  z_score_extract_thread:float = 0.0,
@@ -66,7 +163,7 @@ class Unit:
         self.feature_dropout_ratio = feature_dropout_ratio
         self.feature_select_iteration = feature_select_iteration
 
-        self.patient = patient
+        self.stabilize_patient = stabilize_patient
         self.grp_changing_thread = grp_changing_thread
         self.stabilize_iteration = stabilize_iteration
 
@@ -228,8 +325,8 @@ class Unit:
 
     # Stop iteration if key genes are not really changing
     def __early_stop(self, prev_grps = None, cur_grps = None):
-        # just keep going if patient not set
-        if self.patient is None: return False
+        # just keep going if stabilize_patient not set
+        if self.stabilize_patient is None: return False
         common = len(list(set(prev_grps).intersection(set(cur_grps))))
         change1 = (len(prev_grps) - common) / len(prev_grps)
         change2 = (len(cur_grps) - common) / len(cur_grps)
@@ -237,8 +334,8 @@ class Unit:
         print('Average Key GRPs Changing Portion:', change)
         if change <= self.grp_changing_thread:
             self.no_change_iteration_num += 1
-            if self.no_change_iteration_num == self.patient:
-                print('Run out of patient! Early stopping!')
+            if self.no_change_iteration_num == self.stabilize_patient:
+                print('Run out of stabilize_patient! Early stopping!')
                 return True
             else: return False
         else:

@@ -20,4 +20,7 @@ def Test(cpu_mode = False):
 		group2_path = group2_path,
 		protocol = 'multi',
 	)
+	assert 'NANOG' in easy.atlas.regulons['regulon_0'].genes
+	assert 'KLF4' in easy.atlas.regulons['regulon_0'].genes
 	print('Finished Test. LGTM')
+	return easy

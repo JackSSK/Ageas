@@ -88,8 +88,8 @@ class Cast:
 				self.__with_biogrid(gem_data, correlation_thread)
 		else:
 			self.__no_interaction(gem_data, correlation_thread)
-		self.tfs_no_interaction_rec = [x for x in self.tfs_no_interaction_rec]
 
+		self.tfs_no_interaction_rec = list(self.tfs_no_interaction_rec.keys())
 		# print out amount of TFs not covered by selected interaction database
 		print('	Predicting interactions for',
 				len(self.tfs_no_interaction_rec),

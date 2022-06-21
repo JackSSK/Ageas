@@ -40,13 +40,13 @@ ageas.Test(cpu_mode = False)
 # Contents
 
 ## [API Reference](https://nkmtmsys.github.io/Ageas/tutorial)
-- ### [Test](https://github.com/nkmtmsys/Ageas/)
+- ### [Test](https://nkmtmsys.github.io/Ageas/tutorial)
 
-- ### [Launch](https://github.com/nkmtmsys/Ageas/)
+- ### [Launch](https://nkmtmsys.github.io/Ageas/apis/launch)
 
-- ### [Unit](https://github.com/nkmtmsys/Ageas/)
+- ### [Unit](https://nkmtmsys.github.io/Ageas/tutorial)
 
-- ### [Plot_Regulon](https://github.com/nkmtmsys/Ageas/)
+- ### [Plot_Regulon](https://nkmtmsys.github.io/Ageas/tutorial)
 
 ## [Examples](https://nkmtmsys.github.io/Ageas/tutorial)
 <!-- - ### [Launch](https://github.com/nkmtmsys/Ageas/)
