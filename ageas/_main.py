@@ -262,7 +262,7 @@ class Launch:
             if self.silent: sys.stdout = open(os.devnull, 'w')
             new_unit.select_models()
             new_unit.launch()
-            new_unit.generate_self.atlas.regulons,()
+            new_unit.generate_regulons()
             self.reports.append(new_unit.atlas)
             if self.silent: sys.stdout = sys.__stdout__
             print(id, 'RTB\n')

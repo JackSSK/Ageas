@@ -89,6 +89,19 @@ class Cast:
 		else:
 			self.__no_interaction(gem_data, correlation_thread)
 
+		# update Gene informations
+		for gene in self.grn.genes:
+			if gem_data.database_info.factor_name_type == 'gene_name':
+				self.grn.genes[gene].add_name(gene)
+			elif gem_data.database_info.factor_name_type == 'ens_id':
+				self.grn.genes[gene].add_ens_id(gene)
+			if gem_data.tf_list is not None and gene in gem_data.tf_list:
+				self.grn.genes[gene].type = 'TF'
+			if (hasattr(gem_data.interactions, 'idmap') and
+				gene in gem_data.interactions.idmap):
+				for id in gem_data.interactions.idmap[gene].split(';'):
+					self.grn.genes[gene].add_uniprot_id(id)
+
 		self.tfs_no_interaction_rec = list(self.tfs_no_interaction_rec.keys())
 		# print out amount of TFs not covered by selected interaction database
 		print('	Predicting interactions for',
@@ -154,18 +167,6 @@ class Cast:
 						gem2 = data.group2,
 						correlation_thread = correlation_thread
 					)
-
-		# update Gene informations
-		for gene in self.grn.genes:
-			if data.database_info.factor_name_type == 'gene_name':
-				self.grn.genes[gene].add_name(gene)
-			elif data.database_info.factor_name_type == 'ens_id':
-				self.grn.genes[gene].add_ens_id(gene)
-			if data.tf_list is not None and gene in data.tf_list:
-				self.grn.genes[gene].type = 'TF'
-			if gene in data.interactions.idmap:
-				for id in data.interactions.idmap[gene].split(';'):
-					self.grn.genes[gene].add_uniprot_id(id)
 		return
 
 	# Make GRN casting guide with bioGRID data
