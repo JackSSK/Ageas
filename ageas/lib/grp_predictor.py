@@ -5,7 +5,6 @@ Predict potential Gene Regulatory Pathways(GRPs) using GRNBoost-Like algo
 
 author: jy, nkmtmsys
 """
-
 import ageas.tool.grn as grn
 from xgboost import XGBRegressor
 from collections import OrderedDict
@@ -91,6 +90,7 @@ class Predict:
         regulatory_sources = OrderedDict(
             sorted(regulatory_sources.items(), key = lambda x: x[1])
         )
+
         # Choose a key presenting in both classes
         i = 0
         for src in regulatory_sources:
@@ -123,6 +123,7 @@ class Predict:
                     genes[gene] = group2FeatImpts[i]
                 else:
                     genes[gene] = (genes[gene] + group2FeatImpts[i]) / 2
+
         # take out genes with 0 importances and reorder the dict
         genes = {x:genes[x] for x in genes if genes[x] > 0}
         genes = OrderedDict(sorted(genes.items(), key = lambda x: x[1]))
@@ -135,7 +136,8 @@ class Predict:
                 self.group1_gem,
                 key
             )
-        else: c1_result = None
+        else:
+            c1_result = None
 
         if checked_in_gem or key in self.group2_gem.index:
             c2_result = self.__gbm_feature_importances_calculat(

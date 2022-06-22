@@ -122,7 +122,7 @@ class Folder(object):
 					right_index = True,
 					how = method
 				)
-				
+
 			# Just in case, repeated genes need to be solved
 			if handle_repeat_gene == 'first':
 				result = result[~result.index.duplicated(keep = 'first')]

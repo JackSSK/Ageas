@@ -19,18 +19,18 @@ class Unit(object):
     and write report files into given folder
 
     Args:
-        database_info:
+        database_info: Default = None
             Integrated database information returned by
             ageas.Get_Pseudo_Samples()
 
-        meta:
+        meta: Default = None
             meta level processed grand GRN information returned by
             ageas.Get_Pseudo_Samples()
 
-        model_config:
+        model_config: Default = None
 
 
-        pseudo_grns:
+        pseudo_grns: Default = None
             pseudo-sample GRNs returned by
             ageas.Get_Pseudo_Samples()
 
@@ -43,17 +43,17 @@ class Unit(object):
 
         clf_accuracy_thread: <float> Default = 0.8
             Filter thread of classifier's accuracy in local test performed at
-            each model selection iteration
+            each model selection iteration.
             .. note::
                 When performing SHA based model selection, this value is
                 only used at last iteration
 
         correlation_thread: <float> Default = 0.2
-            Gene expression correlation thread value of GRPs
+            Gene expression correlation thread value of GRPs.
             Potential GRPs failed to reach this value will be dropped.
 
         cpu_mode: <bool> Default = False
-            Whether force to use CPU only or not
+            Whether force to use CPU only or not.
 
         feature_dropout_ratio: <float> Default = 0.1
             Portion of features(GRPs) to be dropped out after each iteration of

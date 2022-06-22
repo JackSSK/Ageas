@@ -1,4 +1,4 @@
-### [API Refences](https://nkmtmsys.github.io/Ageas/tutorial)
+### [Tutorial](https://nkmtmsys.github.io/Ageas/tutorial)
 
 
 # Test()

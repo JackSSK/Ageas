@@ -53,8 +53,12 @@ ageas.Test(cpu_mode = False)
 
 
 ## [Examples](https://nkmtmsys.github.io/Ageas/tutorial)
-<!-- - ### [Launch](https://github.com/nkmtmsys/Ageas/)
 
-- ### [Unit](https://github.com/nkmtmsys/Ageas/)
+- ### [With ageas.Launch()](https://nkmtmsys.github.io/Ageas/examples/launch)
 
-- ### [Plot_Regulon](https://github.com/nkmtmsys/Ageas/) -->
+- ### [Cast meta GRN and pseudo-sample GRNs](https://nkmtmsys.github.io/Ageas/examples/psgrn)
+
+- ### [With ageas.Unit()](https://nkmtmsys.github.io/Ageas/examples/unit)
+Function to test whether AGEAS is performing normally or not.
+
+- ### [Visualization](https://nkmtmsys.github.io/Ageas/examples/visualize)
