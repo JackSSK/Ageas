@@ -7,10 +7,6 @@ There are also :ref:`examples <examples>` available that demonstrate how
 to use the API of each object/function.
 
 
-.. _public_api:
-
-AGEAS Public Objects
------------
 .. autosummary::
     :toctree: generated/
 

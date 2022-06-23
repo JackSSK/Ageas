@@ -201,41 +201,40 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="ageas.Get_Pseudo_Samples">
 <span class="sig-prename descclassname"><span class="pre">ageas.</span></span><span class="sig-name descname"><span class="pre">Get_Pseudo_Samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">correlation_thread</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gem_files'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor_name_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gene_name'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group1_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group2_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interaction_database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gtrd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log2fc_thread</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta_load_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mww_p_val_thread</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prediction_thread</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psgrn_load_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specie</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mouse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sliding_window_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sliding_window_stride</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_value_thread</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_ratio_thread</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ageas.Get_Pseudo_Samples" title="Permalink to this definition">#</a></dt>
-<dd><p>Integrate database information
-and get pseudo-sample GRNs from gene expression data</p>
+<dd><p>Integrate database information and get pseudo-sample GRNs
+from gene expression data</p>
 <dl>
-<dt>Args:</dt><dd><dl>
-<dt>correlation_thread: &lt;float&gt; Default = 0.2</dt><dd><p>Gene expression correlation thread value of GRPs
-Potential GRPs failed to reach this value will be dropped.</p>
+<dt>Parameters:</dt><dd><dl>
+<dt>correlation_thread: &lt;float&gt; Default = 0.2</dt><dd><p>Gene expression correlation thread value of GRPs.</p>
+<p>Potential GRPs failed to reach this value will be dropped.</p>
 </dd>
-<dt>database_path: &lt;str&gt; Default = None</dt><dd><p>Database header. If specified, group1_path and group2_path will be
-rooted here.</p>
+<dt>database_path: &lt;str&gt; Default = None</dt><dd><p>Database header.</p>
+<p>If specified, group1_path and group2_path will be rooted here.</p>
 </dd>
 <dt>database_type: &lt;str&gt; Default = ‘gem_files’</dt><dd><p>Type of data group1_path and group1_path are directing to
 Supporting:</p>
 <blockquote>
-<div><dl class="simple">
-<dt>‘gem_files’: Each path is directing to a GEM file.</dt><dd><p>Pseudo samples will be generated with sliding window algo</p>
-</dd>
-<dt>‘gem_folders’: Each path is directing to a GEM folder. Files in</dt><dd><p>each folder will be used to generate pseudo samples</p>
-</dd>
-<dt>‘mex_folders’: Each path is directing to a folder consisting MEX</dt><dd><p>files(<strong>*matrix.mtx*</strong>, <strong>*genes.tsv*</strong>, <strong>*barcodes.tsv*</strong>)
-Pseudo samples will be generated with sliding window tech</p>
-</dd>
-</dl>
+<div><p>‘gem_files’: Each path is directing to a GEM file.
+Pseudo samples will be generated with sliding window algo.</p>
+<p>‘gem_folders’: Each path is directing to a GEM folder. Files in
+each folder will be used to generate pseudo samples.</p>
+<p>‘mex_folders’: Each path is directing to a folder consisting MEX
+files(<strong>*matrix.mtx*</strong>, <strong>*genes.tsv or features.tsv*</strong>,
+<strong>*barcodes.tsv*</strong>)</p>
 </div></blockquote>
+<p>Pseudo-sample GRNs will be generated with sliding window method.</p>
 </dd>
 <dt>factor_name_type: &lt;str&gt; Default = ‘gene_name’</dt><dd><p>What type of ID name to use for each gene.
 Supporting:</p>
 <blockquote>
-<div><p>‘gene_name’: Gene Symbols/Names
-‘ens_id’: Ensembl ID
-.. note:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">If</span> <span class="n">using</span> <span class="n">BioGRID</span> <span class="k">as</span> <span class="n">interaction</span> <span class="n">database</span><span class="p">,</span>
-<span class="n">factor_name_type</span> <span class="n">must</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">to</span> <span class="s1">&#39;gene_name&#39;</span> <span class="k">for</span> <span class="n">now</span><span class="o">.</span>
-<span class="c1"># TODO: Find a way to map gene names with Ensembl IDs</span>
-</pre></div>
-</div>
+<div><p>‘gene_name’: Gene Symbols/Names</p>
+<p>‘ens_id’: Ensembl ID</p>
+</div></blockquote>
+<p>Note:</p>
+<blockquote>
+<div><p>If using BioGRID as interaction database,
+factor_name_type must be set to ‘gene_name’ for now.</p>
+<p># TODO: Find a way to map gene names with Ensembl IDs</p>
 </div></blockquote>
 </dd>
 <dt>group1_path: &lt;str&gt; Default = None</dt><dd><p>Path to file or folder being considered as sample group 1 data</p>
@@ -246,25 +245,20 @@ Supporting:</p>
 high possibility to exist.
 Supporting:</p>
 <blockquote>
-<div><dl class="simple">
-<dt>None: No database will be used. As long as a GRP can pass</dt><dd><p>all related filters, it’s good to go.</p>
-</dd>
-<dt>‘gtrd’: Using GTRD as regulatory pathway reference</dt><dd><p><a class="reference external" href="https://gtrd.biouml.org/">https://gtrd.biouml.org/</a></p>
-</dd>
-<dt>‘biogrid’: Using BioGRID as regulatory pathway reference</dt><dd><p><a class="reference external" href="https://thebiogrid.org/">https://thebiogrid.org/</a></p>
-</dd>
-</dl>
+<div><p>None: No database will be used. As long as a GRP can pass
+all related filters, it’s good to go.</p>
+<p>‘gtrd’: Using GTRD as regulatory pathway reference
+<a class="reference external" href="https://gtrd.biouml.org/">https://gtrd.biouml.org/</a></p>
+<p>‘biogrid’: Using BioGRID as regulatory pathway reference
+<a class="reference external" href="https://thebiogrid.org/">https://thebiogrid.org/</a></p>
 </div></blockquote>
 </dd>
-<dt>log2fc_thread: &lt;float&gt; Default = None</dt><dd><p>Log2 fold change thread to filer non-differntial expressing genes.
-.. note:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">It</span><span class="s1">&#39;s generally not encouraged to set up this filter since it can</span>
-<span class="n">result</span> <span class="ow">in</span> <span class="n">lossing</span> <span class="n">key</span> <span class="n">TFs</span> <span class="ow">not</span> <span class="n">having</span> <span class="n">great</span> <span class="n">changes</span> <span class="n">on</span> <span class="n">overall</span>
-<span class="n">expression</span> <span class="n">volume</span> <span class="n">but</span> <span class="n">having</span> <span class="n">changes</span> <span class="n">on</span> <span class="n">expression</span> <span class="n">pattern</span><span class="o">.</span>
-<span class="n">If</span> <span class="n">local</span> <span class="n">computational</span> <span class="n">power</span> <span class="ow">is</span> <span class="n">relatively</span> <span class="n">limited</span><span class="p">,</span> <span class="n">setting</span> <span class="n">up</span>
-<span class="n">this</span> <span class="n">thread</span> <span class="n">can</span> <span class="n">help</span> <span class="n">a</span> <span class="n">lot</span> <span class="n">to</span> <span class="n">keep</span> <span class="n">program</span> <span class="n">runable</span><span class="o">.</span>
-</pre></div>
-</div>
+<dt>log2fc_thread: &lt;float&gt; Default = None</dt><dd><p>Log2 fold change thread to filer non-differntial expressing genes.</p>
+<p>It’s generally not encouraged to set up this filter since it can
+result in lossing key TFs not having great changes on overall
+expression volume but having changes on expression pattern.</p>
+<p>If local computational power is relatively limited, setting up
+this thread can help a lot to keep program runable.</p>
 </dd>
 <dt>meta_load_path: &lt;str&gt; Default = None</dt><dd><p>Path to load meta_GRN</p>
 </dd>
@@ -276,12 +270,10 @@ differnt classes.</p>
 algo to be included.
 Supporting:</p>
 <blockquote>
-<div><dl class="simple">
-<dt>‘auto’: Automatically set up thread value by minimum imporatnace</dt><dd><p>value of a interaction database recorded GRP of TF having
+<div><p>‘auto’: Automatically set up thread value by minimum imporatnace
+value of a interaction database recorded GRP of TF having
 most amount of GRPs. If not using interaction database, it
 will be set by (1 / amount of genes)</p>
-</dd>
-</dl>
 <p>float type: Value will be set as thread directly</p>
 </div></blockquote>
 </dd>
@@ -290,8 +282,8 @@ will be set by (1 / amount of genes)</p>
 <dt>specie: &lt;str&gt; Default = ‘mouse’</dt><dd><p>Specify which sepcie’s interaction database shall be used.
 Supporting:</p>
 <blockquote>
-<div><p>‘mouse’
-‘human’</p>
+<div><p>‘mouse’: Mus Musculus.</p>
+<p>‘human’: Homo sapiens.</p>
 </div></blockquote>
 </dd>
 <dt>sliding_window_size: &lt;int&gt; Default = 10</dt><dd><p>Number of samples a pseudo-sample generated with
@@ -305,9 +297,6 @@ group.</p>
 </dd>
 <dt>std_ratio_thread: &lt;float&gt; Default = None</dt><dd><p>Set up gene expression standard deviation thread by portion.
 Only genes reaching top portion will be kept in each group.</p>
-</dd>
-<dt>meta AND psGRNs:</dt><dd><p>These args are for refering meta GRN or pseudo-sample GRNs
-already loaded</p>
 </dd>
 </dl>
 </dd>

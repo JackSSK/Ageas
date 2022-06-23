@@ -43,38 +43,50 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 					   std_ratio_thread:float = None,
 					  ):
 	"""
-	Integrate database information
-	and get pseudo-sample GRNs from gene expression data
+	Integrate database information and get pseudo-sample GRNs
+	from gene expression data
 
-	Args:
+	Parameters:
 		correlation_thread: <float> Default = 0.2
-			Gene expression correlation thread value of GRPs
+			Gene expression correlation thread value of GRPs.
+
 			Potential GRPs failed to reach this value will be dropped.
 
 		database_path: <str> Default = None
-			Database header. If specified, group1_path and group2_path will be
-			rooted here.
+			Database header.
+
+			If specified, group1_path and group2_path will be rooted here.
 
 		database_type: <str> Default = 'gem_files'
 			Type of data group1_path and group1_path are directing to
 			Supporting:
+
 				'gem_files': Each path is directing to a GEM file.
-					Pseudo samples will be generated with sliding window algo
+				Pseudo samples will be generated with sliding window algo.
+
 				'gem_folders': Each path is directing to a GEM folder. Files in
-					each folder will be used to generate pseudo samples
+				each folder will be used to generate pseudo samples.
+
 				'mex_folders': Each path is directing to a folder consisting MEX
-					files(***matrix.mtx***, ***genes.tsv***, ***barcodes.tsv***)
-					Pseudo samples will be generated with sliding window tech
+				files(***matrix.mtx***, ***genes.tsv or features.tsv***,
+				***barcodes.tsv***)
+
+			Pseudo-sample GRNs will be generated with sliding window method.
 
 		factor_name_type: <str> Default = 'gene_name'
 			What type of ID name to use for each gene.
 			Supporting:
+
 				'gene_name': Gene Symbols/Names
+
 				'ens_id': Ensembl ID
-				.. note::
-					If using BioGRID as interaction database,
-					factor_name_type must be set to 'gene_name' for now.
-					# TODO: Find a way to map gene names with Ensembl IDs
+
+			Note:
+
+				If using BioGRID as interaction database,
+				factor_name_type must be set to 'gene_name' for now.
+
+				# TODO: Find a way to map gene names with Ensembl IDs
 
 		group1_path: <str> Default = None
 			Path to file or folder being considered as sample group 1 data
@@ -86,21 +98,25 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 			Which interaction database to use for confirming a GRP has a
 			high possibility to exist.
 			Supporting:
+
 				None: No database will be used. As long as a GRP can pass
-					all related filters, it's good to go.
+				all related filters, it's good to go.
+
 				'gtrd': Using GTRD as regulatory pathway reference
-					https://gtrd.biouml.org/
+				https://gtrd.biouml.org/
+
 				'biogrid': Using BioGRID as regulatory pathway reference
-					https://thebiogrid.org/
+				https://thebiogrid.org/
 
 		log2fc_thread: <float> Default = None
 			Log2 fold change thread to filer non-differntial expressing genes.
-			.. note::
-				It's generally not encouraged to set up this filter since it can
-				result in lossing key TFs not having great changes on overall
-				expression volume but having changes on expression pattern.
-				If local computational power is relatively limited, setting up
-				this thread can help a lot to keep program runable.
+
+			It's generally not encouraged to set up this filter since it can
+			result in lossing key TFs not having great changes on overall
+			expression volume but having changes on expression pattern.
+
+			If local computational power is relatively limited, setting up
+			this thread can help a lot to keep program runable.
 
 		meta_load_path: <str> Default = None
 			Path to load meta_GRN
@@ -114,10 +130,12 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 			The importance thread for a GRP predicted with GRNBoost2-like
 			algo to be included.
 			Supporting:
+
 				'auto': Automatically set up thread value by minimum imporatnace
-					value of a interaction database recorded GRP of TF having
-					most amount of GRPs. If not using interaction database, it
-					will be set by (1 / amount of genes)
+				value of a interaction database recorded GRP of TF having
+				most amount of GRPs. If not using interaction database, it
+				will be set by (1 / amount of genes)
+
 				float type: Value will be set as thread directly
 
 		psgrn_load_path: <str> Default = None
@@ -126,8 +144,10 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 		specie: <str> Default = 'mouse'
 			Specify which sepcie's interaction database shall be used.
 			Supporting:
-				'mouse'
-				'human'
+
+				'mouse': Mus Musculus.
+
+				'human': Homo sapiens.
 
 		sliding_window_size: <int> Default = 10
 			Number of samples a pseudo-sample generated with
@@ -145,9 +165,6 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 			Set up gene expression standard deviation thread by portion.
 			Only genes reaching top portion will be kept in each group.
 
-		meta AND psGRNs:
-			These args are for refering meta GRN or pseudo-sample GRNs
-			already loaded
 	"""
 
 	# Get database information

@@ -15,104 +15,11 @@ import ageas.lib.atlas_extractor as extractor
 
 class Unit(object):
     """
-    Get candidate key factors and pathways
-    and write report files into given folder
+    Extractor Unit to get candidate key regulatory pathways
+    and corresponding genes.
 
-    Args:
-        database_info: Default = None
-            Integrated database information returned by
-            ageas.Get_Pseudo_Samples()
+    Results are stored in attributes and can be saved as files.
 
-        meta: Default = None
-            meta level processed grand GRN information returned by
-            ageas.Get_Pseudo_Samples()
-
-        model_config: Default = None
-
-
-        pseudo_grns: Default = None
-            pseudo-sample GRNs returned by
-            ageas.Get_Pseudo_Samples()
-
-        clf_keep_ratio: <float> Default = 0.5
-            Portion of classifier model to keep after each model selection
-            iteration.
-            .. note::
-                When performing SHA based model selection, this value is
-                set as lower bound to keep models
-
-        clf_accuracy_thread: <float> Default = 0.8
-            Filter thread of classifier's accuracy in local test performed at
-            each model selection iteration.
-            .. note::
-                When performing SHA based model selection, this value is
-                only used at last iteration
-
-        correlation_thread: <float> Default = 0.2
-            Gene expression correlation thread value of GRPs.
-            Potential GRPs failed to reach this value will be dropped.
-
-        cpu_mode: <bool> Default = False
-            Whether force to use CPU only or not.
-
-        feature_dropout_ratio: <float> Default = 0.1
-            Portion of features(GRPs) to be dropped out after each iteration of
-            feature selection.
-
-        feature_select_iteration: <int> Default = 1
-            Number of iteration for feature(GRP) selection before
-            key GRP extraction
-
-        impact_depth: <int> Default = 3
-            When assessing a TF's regulatory impact on other genes, how far the
-            distance between TF and potential regulatory source can be.
-            .. note::
-                The correlation strength of stepped correlation strength of TF
-                and gene still need to be greater than correlation_thread.
-
-        top_grp_amount: <int> Default = 100
-            Amount of GRPs an AGEAS unit would extract.
-            .. note::
-                If outlier_thread is set, since outlier GRPs are extracted
-                during feature selection part and will also be considered as
-                key GRPs, actual amount of key GRPs would be greater.
-
-        grp_changing_thread: <float> Default = 0.05
-            If changing portion of key GRPs extracted by AGEAS unit from two
-            stabilize iterations lower than this thread, these two iterations
-            will be considered as having consistent result.
-
-        link_step_allowrance: <int> Default = 1
-            During key atlas extraction, when finding bridge GRPs to link 2
-            separate regulons, how many steps will be allowed.
-            link_step_allowrance == 1 means, no intermediate gene can be used
-            and portential regulatory source must be able to interact with gene
-            from another regulon.
-
-        model_select_iteration: <int> Default = 2
-            Number of iteration for classification model selection before
-            the mandatory filter.
-
-        outlier_thread: <float> Default = 3.0
-            The lower bound of Z-score scaled importance value to consider a GRP
-            as outlier need to be retain.
-
-        stabilize_patient: <int> Default = 3
-            If stabilize iterations continuously having consistent result for
-            this value, an early stop on result stabilization will be executed.
-
-        stabilize_iteration: <int> Default = 10
-            Number of iteration for a AGEAS unit to repeat key GRP extraction
-            after model and feature selections in order to find key GRPs
-            consistently being important.
-
-        max_train_size: <float> Default = 0.95
-            The largest portion of avaliable data can be used to train models.
-            At the mandatory model filter, this portion of data will be given to
-            each model to train.
-
-        z_score_extract_thread: <float> Default = 0.0
-            The lower bound of Z-score scaled importance value to extract a GRP.
     """
     def __init__(self,
                  # Need to be processed before initialize Unit
@@ -138,6 +45,113 @@ class Unit(object):
                  top_grp_amount:int = 100,
                  z_score_extract_thread:float = 0.0,
                 ):
+        """
+        Start a new AGEAS Extractor Unit.
+
+        Parameters:
+            database_info: <object> Default = None
+                Integrated database information returned by
+                ageas.Get_Pseudo_Samples()
+
+            meta: <object> Default = None
+                Meta level processed GRN information returned by
+                ageas.Get_Pseudo_Samples()
+
+            model_config: <dict> Default = None
+                Dictionary containing configs of all candidate classification
+                models.
+
+            pseudo_grns: <object> Default = None
+                pseudo-sample GRNs returned by
+                ageas.Get_Pseudo_Samples()
+
+            clf_keep_ratio: <float> Default = 0.5
+                Portion of classifier model to keep after each model selection
+                iteration.
+
+                When performing SHA based model selection, this value is
+                set as lower bound to keep models
+
+            clf_accuracy_thread: <float> Default = 0.8
+                Filter thread of classifier's accuracy in local test performed
+                at each model selection iteration.
+
+                When performing SHA based model selection, this value is
+                only used at last iteration
+
+            correlation_thread: <float> Default = 0.2
+                Gene expression correlation thread value of GRPs.
+
+                Potential GRPs failed to reach this value will be dropped.
+
+            cpu_mode: <bool> Default = False
+                Whether force to use CPU only or not.
+
+            feature_dropout_ratio: <float> Default = 0.1
+                Portion of features(GRPs) to be dropped out after each
+                iteration of feature selection.
+
+            feature_select_iteration: <int> Default = 1
+                Number of iteration for feature(GRP) selection before
+                key GRP extraction
+
+            impact_depth: <int> Default = 3
+                When assessing a TF's regulatory impact on other genes,
+                how far the distance between TF and potential regulatory source
+                can be.
+
+                The correlation strength of stepped correlation strength of TF
+                and gene still need to be greater than correlation_thread.
+
+            top_grp_amount: <int> Default = 100
+                Amount of GRPs an AGEAS unit would extract.
+
+                If outlier_thread is set, since outlier GRPs are extracted
+                during feature selection part and will also be considered as
+                key GRPs, actual amount of key GRPs would be greater.
+
+            grp_changing_thread: <float> Default = 0.05
+                If changing portion of key GRPs extracted by AGEAS unit from two
+                stabilize iterations lower than this thread, these two
+                iterations will be considered as having consistent result.
+
+            link_step_allowrance: <int> Default = 1
+                During key atlas extraction, when finding bridge GRPs to link 2
+                separate regulons, how many steps will be allowed.
+
+                link_step_allowrance == 1 means, no intermediate gene can be
+                used and portential regulatory source must be able to
+                directly interact with gene from another regulon.
+
+            model_select_iteration: <int> Default = 2
+                Number of iteration for classification model selection before
+                the mandatory filter.
+
+            outlier_thread: <float> Default = 3.0
+                The lower bound of Z-score scaled importance value to consider
+                a GRP as outlier need to be retain.
+
+            stabilize_patient: <int> Default = 3
+                If stabilize iterations continuously having consistent
+                result for this value, an early stop on result stabilization
+                will be executed.
+
+            stabilize_iteration: <int> Default = 10
+                Number of iteration for a AGEAS unit to repeat key GRP
+                extraction after model and feature selections in order to find
+                key GRPs consistently being important.
+
+            max_train_size: <float> Default = 0.95
+                The largest portion of avaliable data can be used to
+                train models.
+
+                At the mandatory model filter,
+                this portion of data will be given to each model to train.
+
+            z_score_extract_thread: <float> Default = 0.0
+                The lower bound of Z-score scaled importance value to extract
+                a GRP.
+        """
         super(Unit, self).__init__()
 
         """ Initialization """

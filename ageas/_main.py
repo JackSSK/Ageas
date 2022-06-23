@@ -28,50 +28,8 @@ class Launch:
     Object containing basic pipeline to launch AGEAS.
 
     Results are stored in attributes and can be saved as files.
-
-    Args:
-        model_config_path: <str> Default = None
-            Path to load model config file which will be used to initialize
-            classifiers
-
-        mute_unit: <bool> Default = True
-            Whether AGEAS unit print out log while running.
-            .. note::
-                It is not mandatory but encouraged to remain True especially
-                when using multi protocol
-
-        protocol: <str> Default = 'solo'
-            AGEAS unit launching protocol.
-            Supporting:
-                'solo': All units will run separately
-
-                'multi': All units will run parallelly by multithreading
-
-        unit_num: <int> Default = 2
-            Number of AGEAS units to launch.
-
-        warning_filter: <str> Default = 'ignore'
-            How warnings should be filtered.
-            For other options, please check 'The Warnings Filter' section in:
-            https://docs.python.org/3/library/warnings.html#warning-filter
-
-        Additional:
-            All args in ageas.Get_Pseudo_Samples()
-
-            All args in ageas.Unit() excluding database_info, meta, model_config
-            ,and pseudo_grns,
-
-
-    Inputs: None
-    Outputs: None
-    Attributes:
-
-    Example::
-        easy = ageas.Launch(
-            	group1_path = 'test/ips.csv',
-            	group2_path = 'test/mef.csv',
-        )
     """
+
     def __init__(self,
                  model_config_path:str = None,
                  mute_unit:bool = True,
@@ -112,7 +70,40 @@ class Launch:
                  z_score_extract_thread:float = 0.0,
                 ):
         """
-        Object initialization.
+        Start a new pipeline to launch AGEAS.
+
+        Parameters:
+            model_config_path: <str> Default = None
+                Path to load model config file which will be used to initialize
+                classifiers
+
+            mute_unit: <bool> Default = True
+                Whether AGEAS unit print out log while running.
+                It is not mandatory but encouraged to remain True
+                especially when using 'multi' protocol
+
+            protocol: <str> Default = 'solo'
+                AGEAS unit launching protocol.
+
+                Supporting:
+
+                    'solo': All units will run separately.
+
+                    'multi': All units will run parallelly by multithreading.
+
+            unit_num: <int> Default = 2
+                Number of AGEAS units to launch.
+
+            warning_filter: <str> Default = 'ignore'
+                How warnings should be filtered. For other options,
+                please check 'The Warnings Filter' section in:
+                https://docs.python.org/3/library/warnings.html#warning-filter
+
+            Additional:
+                All args in ageas.Get_Pseudo_Samples()
+
+                All args in ageas.Unit() excluding database_info, meta,
+                model_config, and pseudo_grns,
         """
         super(Launch, self).__init__()
 
