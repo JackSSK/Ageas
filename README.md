@@ -28,7 +28,7 @@ pip install ageas
 
 # Tutorial
 
-Please visit [Documentation Page](https://nkmtmsys.github.io/Ageas/) for detailed API documentations and examples
+Please visit [Documentation Page](https://nkmtmsys.github.io/Ageas/html/index.html) for detailed API documentations and examples
 
 # Contributors
 
