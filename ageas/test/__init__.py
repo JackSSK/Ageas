@@ -10,9 +10,24 @@ group1_path = resource_filename(__name__, 'ips.csv')
 group2_path = resource_filename(__name__, 'mef.csv')
 
 
-# Automatically select device
-# If cpu_mode is on, AGEAS will be forced to only use CPU
+
 def Test(cpu_mode:bool = False):
+	"""
+	Automatically select device if cpu_mode is on,
+	AGEAS will be forced to only use CPU
+
+	Args:
+		cpu_mode: <bool> Default = False
+			If cpu_mode is on, AGEAS will be forced to only use CPU.
+			Otherwise, AGEAS will automatically select device, preferring GPUs.
+
+	Outputs:
+		ageas._main.Launch object
+
+	Example::
+		import ageas
+		result = ageas.Test(cpu_mode = False)
+	"""
 	print('Start Test')
 	easy = ageas.Launch(
 		cpu_mode = cpu_mode,

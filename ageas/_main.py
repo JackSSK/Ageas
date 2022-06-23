@@ -25,10 +25,11 @@ GRP_TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 class Launch:
     """
-    Main function to grand launch AGEAS
+    Object containing basic pipeline to launch AGEAS.
+
+    Results are stored in attributes and can be saved as files.
 
     Args:
-        ==================== To setup launch system =======================
         model_config_path: <str> Default = None
             Path to load model config file which will be used to initialize
             classifiers
@@ -36,13 +37,14 @@ class Launch:
         mute_unit: <bool> Default = True
             Whether AGEAS unit print out log while running.
             .. note::
-                It's not mandatory but encouraged to remain True especially
+                It is not mandatory but encouraged to remain True especially
                 when using multi protocol
 
         protocol: <str> Default = 'solo'
             AGEAS unit launching protocol.
             Supporting:
                 'solo': All units will run separately
+
                 'multi': All units will run parallelly by multithreading
 
         unit_num: <int> Default = 2
@@ -51,14 +53,13 @@ class Launch:
         warning_filter: <str> Default = 'ignore'
             How warnings should be filtered.
             For other options, please check 'The Warnings Filter' section in:
-                https://docs.python.org/3/library/warnings.html#warning-filter
+            https://docs.python.org/3/library/warnings.html#warning-filter
 
-        ==================== To get Pseudo-sample GRNs =======================
-        All args in ageas.Get_Pseudo_Samples()
+        Additional:
+            All args in ageas.Get_Pseudo_Samples()
 
-        ======================= To init AGEAS Unit ========================
-        All args in ageas.Unit() excluding database_info, meta, model_config,
-        and pseudo_grns,
+            All args in ageas.Unit() excluding database_info, meta, model_config
+            ,and pseudo_grns,
 
 
     Inputs: None
@@ -66,19 +67,17 @@ class Launch:
     Attributes:
 
     Example::
-        >>> easy = ageas.Launch(
+        easy = ageas.Launch(
             	group1_path = 'test/ips.csv',
             	group2_path = 'test/mef.csv',
-            )
+        )
     """
     def __init__(self,
-                 # ================= launch system setup ====================
                  model_config_path:str = None,
                  mute_unit:bool = True,
                  protocol:str = 'solo',
                  unit_num:int = 2,
                  warning_filter:str = 'ignore',
-                 # ===================== to get psGRNs =====================
                  correlation_thread:float = 0.2,
                  database_path:str = None,
                  database_type:str = 'gem_files',
@@ -96,7 +95,6 @@ class Launch:
                  sliding_window_stride:int = None,
                  std_value_thread:float = 1.0,
                  std_ratio_thread:float = None,
-                 # ===================== init AGEAS unit =====================
                  clf_keep_ratio:float = 0.5,
                  clf_accuracy_thread:float = 0.8,
                  cpu_mode:bool = False,
@@ -113,6 +111,9 @@ class Launch:
                  max_train_size:float = 0.95,
                  z_score_extract_thread:float = 0.0,
                 ):
+        """
+        Object initialization.
+        """
         super(Launch, self).__init__()
 
         """ Initialization """
@@ -212,7 +213,8 @@ class Launch:
                      save_unit_reports:bool = False,
                     ):
         """
-        Save meta GRN, pseudo samples, meta GRN based analysis report,
+        Save meta processed GRN, pseudo-sample GRNs,
+        meta-GRN based analysis report,
         AGEAS based analysis report, and key atlas extracted by AGEAS.
 
         Args:

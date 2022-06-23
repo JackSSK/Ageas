@@ -115,7 +115,7 @@ class Unit(object):
             The lower bound of Z-score scaled importance value to extract a GRP.
     """
     def __init__(self,
-                 # Need to be processed before initializatuin Unit
+                 # Need to be processed before initialize Unit
                  database_info = None,
                  meta = None,
                  model_config = None,
