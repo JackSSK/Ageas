@@ -17,37 +17,68 @@ import ageas.tool.gem as gem
 
 class Reader(gem.Reader):
 	"""
-	Read in MEX data for Gene expression information
+	Object to read in MEX data.
+
 	"""
 
 	def __init__(self,
 				 matrix_path:str = None,
 				 features_path:str = None,
 				 barcodes_path:str = None,
-				 handle_repeat:str = 'sum',
 				):
-		self.matrix_path = matrix_path
-		self.features_path = features_path
-		self.barcodes_path = barcodes_path
-		self.data = pd.DataFrame(scipy.io.mmread(self.matrix_path).toarray())
-		self.features = csv.reader(
-			gzip.open(self.features_path, 'rt'),
-			delimiter = '\t'
-		)
-		self.barcodes = csv.reader(
-			gzip.open(self.barcodes_path, 'rt'),
-			delimiter = '\t'
-		)
+		"""
+		Initialize a new MEX reader object.
 
-	def get_gem(self, gene_id_type:int = 1, save_path:str = None):
-		self.data.index = [
-			x.upper() for x in [y[gene_id_type] for y in self.features]
+		Parameters:
+			matrix_path:str = None
+
+			features_path:str = None
+
+			barcodes_path:str = None
+
+		"""
+		# Process features
+		self.features = [
+			{'id':x[0], 'name':x[1], 'type':x[2]} for x in csv.reader(
+				gzip.open(features_path, 'rt'),
+				delimiter = '\t'
+			)
 		]
-		self.data.columns = [row[-1] for row in self.barcodes]
+		# Process matrix
+		self.data = pd.DataFrame(scipy.io.mmread(matrix_path).toarray())
+		# Process barcodes
+		self.data.columns = [
+			rec[-1] for rec in csv.reader(
+				gzip.open(barcodes_path, 'rt'),
+				delimiter = '\t'
+			)
+		]
+
+
+	def get_gem(self,
+				factor_id_type:str = 'gene_symbol',
+				save_path:str = None,
+				handle_repeat:str = 'sum',
+				):
+		"""
+		Obtain GEM data frame from processed MEX file.
+
+		Parameters:
+			factor_id_type:str = 'gene_symbol'
+
+			save_path:str = None
+
+			handle_repeat:str = 'sum'
+		"""
+		if factor_id_type == 'gene_symbol':
+			feature_key = 'name'
+		elif factor_id_type == 'ens_id':
+			feature_key = 'id'
+		self.data.index = [x[feature_key] for x in self.features]
 
 		# sum up data sharing same gene name if any
 		if len(self.data.columns) != len(list(set(self.data.columns))):
-			warn('Found repeated barcodes in '+self.barcodes_path+' Merging.')
+			warn('Found repeated barcodes in MEX! Merging.')
 			if handle_repeat == 'first':
 				self.data=self.data[~self.data.columns.duplicated(keep='first')]
 			elif handle_repeat == 'sum':
@@ -55,7 +86,7 @@ class Reader(gem.Reader):
 
 		# summ up data sharing same barcode if any
 		if len(self.data.index) != len(list(set(self.data.index))):
-			warn('Found repeated genes in '+self.features_path+' Merging.')
+			warn('Found repeated genes in MEX! Merging.')
 			if handle_repeat == 'first':
 				self.data = self.data[~self.data.index.duplicated(keep='first')]
 			elif handle_repeat == 'sum':

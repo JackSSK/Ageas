@@ -6,8 +6,8 @@ author: jy, nkmtmsys
 """
 import ageas
 from pkg_resources import resource_filename
-group1_path = resource_filename(__name__, 'ips.csv')
-group2_path = resource_filename(__name__, 'mef.csv')
+group1_path = resource_filename(__name__, 'ips.csv.gz')
+group2_path = resource_filename(__name__, 'mef.csv.gz')
 
 
 
@@ -35,7 +35,7 @@ def Test(cpu_mode:bool = False):
 		group2_path = group2_path,
 		protocol = 'multi',
 	)
-	assert 'NANOG' in easy.atlas.regulons['regulon_0'].genes
-	assert 'KLF4' in easy.atlas.regulons['regulon_0'].genes
+	assert 'Nanog' in easy.atlas.regulons['regulon_0'].genes
+	assert 'Klf4' in easy.atlas.regulons['regulon_0'].genes
 	print('Finished Test. LGTM')
 	return easy

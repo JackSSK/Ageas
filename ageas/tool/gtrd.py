@@ -14,7 +14,6 @@ import os
 import pandas as pd
 import ageas.tool as tool
 import ageas.tool.json as json
-import ageas.tool.uniprot_id_map as uniprot_id_map
 
 
 
@@ -22,10 +21,12 @@ class Processor:
     """
     Process summarized GTRD file
     """
-    def __init__(self, specie_path, factor_name_type, path):
+    def __init__(self, specie_path, factor_id_type, path):
         self.path = specie_path + path
-        self.nameType = factor_name_type
-        self.idmap = uniprot_id_map.Process(specie_path, factor_name_type)
+        self.nameType = factor_id_type
+        self.idmap = json.decode(
+            specie_path + 'uniprot_idmapping.stratified.js.gz'
+        )[factor_id_type]
         self.data = json.decode(self.path)
 
 
@@ -35,9 +36,9 @@ class Packer:
         self.dict = {}
         filenames = os.listdir(database_path)
         for ele in filenames:
-            tf = ele.split('.txt')[0].upper()
-            if tf not in self.dict:
-                self.dict[tf] = self._processGene(
+            uniprot_id = ele.split('.txt')[0].upper()
+            if uniprot_id not in self.dict:
+                self.dict[uniprot_id] = self._process_gene(
                     database_path + '/' + ele,
                     sep = "\t",
                     header = 0
@@ -50,8 +51,8 @@ class Packer:
 
     def _processFull(self, filepath, sep, header):
         result = {}
-        tarTable = pd.read_csv(filepath, sep = sep, header = header)
-        for index, row in tarTable.iterrows():
+        data = pd.read_csv(filepath, sep = sep, header = header)
+        for index, row in data.iterrows():
             result[row['Gene symbol'].upper()] = {
                 'id':row['id'],
                 'ENS_TransID':row['Ensembl ID'],
@@ -59,7 +60,6 @@ class Packer:
             }
         return result
 
-    def _processGene(self, filepath, sep, header):
-        tarTable = pd.read_csv(filepath, sep = sep, header = header)
-        t = dict(zip(tarTable['Gene symbol'].str.upper(),tarTable['SiteCount']))
-        return t
+    def _process_gene(self, filepath, sep, header):
+        data = pd.read_csv(filepath, sep = sep, header = header)
+        return dict(zip(data['Gene symbol'], data['SiteCount']))

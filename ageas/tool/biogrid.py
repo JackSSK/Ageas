@@ -17,7 +17,7 @@ class Processor:
     """
     Process summarized bioGRID file
     """
-    def __init__(self, specie_path, path = 'bioGRiD_stratified.js.gz'):
+    def __init__(self, specie_path, path = 'bioGRiD.stratified.js.gz'):
         self.path = specie_path + path
         data = json.decode(self.path)
         self.alias = data['alias']
@@ -52,10 +52,10 @@ class Reader(tool.Reader_Template):
             content = line.split('\t')
             assert len(content) == 11
             if content[-2].strip() == org_a and content[-1].strip() == org_b:
-                geneA = content[2].upper()
-                geneB = content[3].upper()
-                geneA_alias = content[4].upper()
-                geneB_alias = content[5].upper()
+                geneA = content[2]
+                geneB = content[3]
+                geneA_alias = content[4]
+                geneB_alias = content[5]
                 self.__update_interactions(geneA, geneB, result['interactions'])
                 self.__update_interactions(geneB, geneA, result['interactions'])
                 self.__update_alias(geneA, geneA_alias, result['alias'])
@@ -84,4 +84,4 @@ class Reader(tool.Reader_Template):
 """ For example """
 # if __name__ == '__main__':
 #     a = Reader(filepath = 'BIOGRID-ALL-4.4.203.tab.txt')
-#     a.save('bioGRiD_stratified.js.gz')
+#     a.save('bioGRiD.stratified.js.gz')

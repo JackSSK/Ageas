@@ -435,17 +435,17 @@ class Plot_Regulon(object):
         plt.show()
 
 
-if __name__ == '__main__':
-    header = 'liverCCl4/hsc_pf_a6w/'
-    for i in range(1):
-        folder_path = header + 'run_' + str(i) + '/'
-        atlas_path = folder_path + 'key_atlas.js'
-        a = Plot_Regulon(
-            file_path = atlas_path,
-            regulon_id = 'regulon_0',
-            hide_bridge = False,
-            graph_type = 'group2',
-            root_gene = 'HAND2',
-            # impact_depth = 1,
-        )
-        a.draw(save_path = folder_path + 'ultimate_useless_mess.pdf',)
+# if __name__ == '__main__':
+#     header = 'liverCCl4/hsc_pf_a6w/'
+#     for i in range(1):
+#         folder_path = header + 'run_' + str(i) + '/'
+#         atlas_path = folder_path + 'key_atlas.js'
+#         a = Plot_Regulon(
+#             file_path = atlas_path,
+#             regulon_id = 'regulon_0',
+#             hide_bridge = False,
+#             graph_type = 'group2',
+#             root_gene = 'HAND2',
+#             # impact_depth = 1,
+#         )
+#         a.draw(save_path = folder_path + 'ultimate_useless_mess.pdf',)

@@ -20,18 +20,20 @@ def Get_Pearson(source, target, p_thread = 0.05):
 def STD_Filter(df, std_value_thread = None, std_ratio_thread = None):
     data = df.transpose()
     sd_list = data[data.columns].std().sort_values(ascending=False)
+
     # filter by stdev threshod value
     if std_value_thread is not None:
         for i in range(len(sd_list)):
             if sd_list[i] < std_value_thread: break
         sd_list = sd_list[:i]
     gene_list = list(sd_list.index)
+
     # filter by ratio thread
     if std_ratio_thread is not None:
         gene_list = gene_list[:int(len(gene_list) * std_ratio_thread)]
+
     # stratify data
     data = data[gene_list]
-    data.columns = data.columns.str.upper()
     return data.transpose()
 
 # standardize feature scores applying Z score

@@ -169,8 +169,8 @@ class Gene(object):
 		self.names.append(name)
 
 	def add_ens_id(self, ens_id):
-		if not hasattr(self, 'ens_ids'): self.ens_ids = list()
-		self.ens_ids.append(ens_id)
+		if not hasattr(self, 'ens_id'): self.ens_id = list()
+		self.ens_id.append(ens_id)
 
 	def add_uniprot_id(self, uniprot_id):
 		if not hasattr(self, 'uniprot_ids'): self.uniprot_ids = list()

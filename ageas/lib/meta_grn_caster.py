@@ -91,9 +91,9 @@ class Cast:
 
 		# update Gene informations
 		for gene in self.grn.genes:
-			if gem_data.database_info.factor_name_type == 'gene_name':
+			if gem_data.database_info.factor_id_type == 'gene_symbol':
 				self.grn.genes[gene].add_name(gene)
-			elif gem_data.database_info.factor_name_type == 'ens_id':
+			elif gem_data.database_info.factor_id_type == 'ens_id':
 				self.grn.genes[gene].add_ens_id(gene)
 			if gem_data.tf_list is not None and gene in gem_data.tf_list:
 				self.grn.genes[gene].type = 'TF'
@@ -136,7 +136,7 @@ class Cast:
 					if id in data.interactions.data:
 						 uniprot_ids.append(id)
 			except:
-				warnings.warn(source, 'not in Uniprot ID Map.')
+				warnings.warn(str(source) + 'not in Uniprot ID Map.')
 
 			# pass this TF if no recorded interactions in GTRD
 			if len(uniprot_ids) == 0:

@@ -27,7 +27,7 @@ import ageas.database_setup.binary_class as binary_db
 def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 					   database_path:str = None,
 					   database_type:str = 'gem_files',
-					   factor_name_type:str = 'gene_name',
+					   factor_id_type:str = 'gene_symbol',
 					   group1_path:str = None,
 					   group2_path:str = None,
 					   interaction_database:str = 'gtrd',
@@ -73,18 +73,18 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 
 			Pseudo-sample GRNs will be generated with sliding window method.
 
-		factor_name_type: <str> Default = 'gene_name'
+		factor_id_type: <str> Default = 'gene_symbol'
 			What type of ID name to use for each gene.
 			Supporting:
 
-				'gene_name': Gene Symbols/Names
+				'gene_symbol': Gene Symbols
 
 				'ens_id': Ensembl ID
 
 			Note:
 
 				If using BioGRID as interaction database,
-				factor_name_type must be set to 'gene_name' for now.
+				factor_id_type must be set to 'gene_symbol' for now.
 
 				# TODO: Find a way to map gene names with Ensembl IDs
 
@@ -174,7 +174,7 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 		group1_path,
 		group2_path,
 		specie,
-		factor_name_type,
+		factor_id_type,
 		interaction_database,
 		sliding_window_size,
 		sliding_window_stride

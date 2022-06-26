@@ -35,7 +35,7 @@ class Setup:
                  group1_path = 'CT1',
                  group2_path = 'CT2',
                  specie = 'mouse',
-                 factor_name_type = 'gene_name',
+                 factor_id_type = 'gene_symbol',
                  interaction_db = 'biogrid',
                  sliding_window_size = None,
                  sliding_window_stride = None
@@ -55,7 +55,7 @@ class Setup:
         self.db_path = database_path
         self.type = database_type
         self.specie = specie
-        self.factor_name_type = factor_name_type
+        self.factor_id_type = factor_id_type
         self.interaction_db = interaction_db
         self.sliding_window_size = sliding_window_size
         self.sliding_window_stride = sliding_window_stride
@@ -123,18 +123,18 @@ class Load_GEM:
         # Load TRANSFAC databases
         self.tf_list = transfac.Reader(
             specie + 'Tranfac201803_MotifTFsF.txt',
-            self.database_info.factor_name_type
+            self.database_info.factor_id_type
         ).tfs
 
         # Load interaction database
         if self.database_info.interaction_db == 'gtrd':
             self.interactions = gtrd.Processor(
                 specie,
-                self.database_info.factor_name_type,
-                path = 'wholeGene.js.gz'
+                self.database_info.factor_id_type,
+                path = 'gtrd_whole_genes.js.gz'
             )
         elif self.database_info.interaction_db == 'biogrid':
-            assert self.database_info.factor_name_type == 'gene_name'
+            assert self.database_info.factor_id_type == 'gene_symbol'
             self.interactions = biogrid.Processor(specie_path = specie)
 
         # process file or folder based on database type
@@ -221,11 +221,6 @@ class Load_GEM:
         matrix_path = None
         features_path = None
         barcodes_path = None
-        # get gene id type
-        if self.database_info.factor_name_type == 'gene_name':
-            gene_id_type = 1
-        else:
-            print('Under Construction')
 
         # check whether input path contains keyword
         if path[-1] != '/':
@@ -261,7 +256,7 @@ class Load_GEM:
         	features_path = features_path,
             barcodes_path = barcodes_path
         )
-        gem.get_gem(gene_id_type = gene_id_type)
+        gem.get_gem(factor_id_type = self.database_info.factor_id_type)
         return tool.STD_Filter(gem.data, std_value_thread, std_ratio_thread)
 
     # Process in Database scenario
