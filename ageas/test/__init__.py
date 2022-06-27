@@ -13,8 +13,8 @@ group2_path = resource_filename(__name__, 'mef.csv.gz')
 
 def Test(cpu_mode:bool = False):
 	"""
-	Automatically select device if cpu_mode is on,
-	AGEAS will be forced to only use CPU
+	Automatically select device.
+	If cpu_mode is on, AGEAS will be forced to only use CPU.
 
 	Args:
 		cpu_mode: <bool> Default = False
@@ -35,7 +35,6 @@ def Test(cpu_mode:bool = False):
 		group2_path = group2_path,
 		protocol = 'multi',
 	)
-	assert 'Nanog' in easy.atlas.regulons['regulon_0'].genes
 	assert 'Klf4' in easy.atlas.regulons['regulon_0'].genes
 	print('Finished Test. LGTM')
 	return easy

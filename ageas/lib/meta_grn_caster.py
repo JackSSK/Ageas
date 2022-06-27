@@ -40,9 +40,10 @@ class Analysis(object):
 				temp[target] += 1
 
 		if self.top is None: self.top = len(temp)
-		temp = [[k[0],
-				meta_grn.genes[k[0]].type,
-				k[1]] for k in Counter(temp).most_common(self.top)]
+		temp = [
+			[k[0], meta_grn.genes[k[0]].symbol, meta_grn.genes[k[0]].type, k[1]]
+			for k in Counter(temp).most_common(self.top)
+		]
 
 		# adding log2FC
 		for ele in temp:
@@ -50,7 +51,10 @@ class Analysis(object):
 			ele.append(abs(np.log2(exp['group1']+1) - np.log2(exp['group2']+1)))
 
 		# changing to dataframe type
-		self.result = pd.DataFrame(temp,columns=['ID','Type','Degree','Log2FC'])
+		self.result = pd.DataFrame(
+			temp,
+			columns = ['ID', 'Gene Symbol', 'Type', 'Degree', 'Log2FC']
+		)
 
 	def save(self, path):
 		self.result.to_csv(path, index = False )
@@ -89,12 +93,38 @@ class Cast:
 		else:
 			self.__no_interaction(gem_data, correlation_thread)
 
+		# Get features/genes information from processed GEM data
+		if (gem_data.group1.features is not None and
+			gem_data.group2.features is not None):
+			feature_dict = dict()
+			for ele in gem_data.group1.features:
+				if ele['id'] not in feature_dict:
+					feature_dict[ele['id']] = ele
+				elif feature_dict[ele['id']] == ele:
+					continue
+				else:
+					raise Exception('A gene id with different feature records.')
+			for ele in gem_data.group2.features:
+				if ele['id'] not in feature_dict:
+					feature_dict[ele['id']] = ele
+				elif feature_dict[ele['id']] == ele:
+					continue
+				else:
+					raise Exception('A gene id with different feature records.')
+		else:
+			feature_dict = None
+
 		# update Gene informations
 		for gene in self.grn.genes:
-			if gem_data.database_info.factor_id_type == 'gene_symbol':
-				self.grn.genes[gene].add_name(gene)
-			elif gem_data.database_info.factor_id_type == 'ens_id':
-				self.grn.genes[gene].add_ens_id(gene)
+			if feature_dict is None:
+				self.grn.genes[gene].symbol = gene
+			else:
+				try:
+					self.grn.genes[gene].symbol = feature_dict[gene]['name']
+					self.grn.genes[gene].add_ens_id(gene)
+				except Exception as error:
+					raise error('Gene not in feature set?!')
+
 			if gem_data.tf_list is not None and gene in gem_data.tf_list:
 				self.grn.genes[gene].type = 'TF'
 			if (hasattr(gem_data.interactions, 'idmap') and
@@ -129,6 +159,7 @@ class Cast:
 			# Go through tf_list filter if avaliable
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
+
 			# Get Uniprot ID to use GTRD
 			uniprot_ids = []
 			try:
@@ -173,9 +204,11 @@ class Cast:
 	def __with_biogrid(self, data, correlation_thread):
 		# Iterate source TF candidates for GRP
 		for source in data.genes:
+			
 			# Go through tf_list filter if avaliable
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
+
 			reg_target = {}
 			if source in data.interactions.data:
 				reg_target = {i:None for i in data.interactions.data[source]}

@@ -40,14 +40,14 @@ class Predict:
                 meta_grn,
                 correlation_thread,
                 gene,
-                self.group1_gem.index,
+                self.group1_gem.data.index,
                 group1FeatImpts,
             )
             self.__update_grps_to_meta_grn(
                 meta_grn,
                 correlation_thread,
                 gene,
-                self.group2_gem.index,
+                self.group2_gem.data.index,
                 group2FeatImpts,
             )
         return meta_grn
@@ -91,18 +91,22 @@ class Predict:
             sorted(regulatory_sources.items(), key = lambda x: x[1])
         )
 
+
         # Choose a key presenting in both classes
-        i = 0
-        for src in regulatory_sources:
-            if src in self.group1_gem.index and src in self.group2_gem.index:
+        grps = None
+        for i, src in enumerate(regulatory_sources):
+            if (src in self.group1_gem.data.index and
+                src in self.group2_gem.data.index):
+                grps = regulatory_sources[src]
+                group1FeatImpts, group2FeatImpts = self._getFeatureImportences(
+                    src, True
+                )
+                assert len(self.group1_gem.data.index) == len(group1FeatImpts)
+                assert len(self.group2_gem.data.index) == len(group2FeatImpts)
                 break
-            if i == len(regulatory_sources) - 1:
-                return self.thread
-            i += 1
-        grps = regulatory_sources[src]
-        group1FeatImpts, group2FeatImpts = self._getFeatureImportences(src,True)
-        assert len(self.group1_gem.index) == len(group1FeatImpts)
-        assert len(self.group2_gem.index) == len(group2FeatImpts)
+
+        if grps is None:
+            return self.thread
 
         # Extract all genes influenced among regulon/GRPs
         genes = {}
@@ -113,11 +117,11 @@ class Predict:
             if fators[1] not in genes: genes[fators[1]] = 0
 
         # assign feature importances to each gene in selected reg source's GRPs
-        for i in range(len(self.group1_gem.index)):
-            if self.group1_gem.index[i] in genes and group1FeatImpts[i] > 0:
-                genes[self.group1_gem.index[i]] = group1FeatImpts[i]
-        for i in range(len(self.group2_gem.index)):
-            gene = self.group2_gem.index[i]
+        for i in range(len(self.group1_gem.data.index)):
+            if self.group1_gem.data.index[i] in genes and group1FeatImpts[i]>0:
+                genes[self.group1_gem.data.index[i]] = group1FeatImpts[i]
+        for i in range(len(self.group2_gem.data.index)):
+            gene = self.group2_gem.data.index[i]
             if gene in genes and group2FeatImpts[i] > 0:
                 if genes[gene] == 0:
                     genes[gene] = group2FeatImpts[i]
@@ -131,17 +135,17 @@ class Predict:
 
     # Basically, this part mimicing what GRNBoost2 does
     def _getFeatureImportences(self, key, checked_in_gem = False):
-        if checked_in_gem or key in self.group1_gem.index:
-            c1_result = self.__gbm_feature_importances_calculat(
-                self.group1_gem,
+        if checked_in_gem or key in self.group1_gem.data.index:
+            c1_result = self.__gbm_feature_importances_calculate(
+                self.group1_gem.data,
                 key
             )
         else:
             c1_result = None
 
-        if checked_in_gem or key in self.group2_gem.index:
-            c2_result = self.__gbm_feature_importances_calculat(
-                self.group2_gem,
+        if checked_in_gem or key in self.group2_gem.data.index:
+            c2_result = self.__gbm_feature_importances_calculate(
+                self.group2_gem.data,
                 key
             )
         else:
@@ -150,7 +154,7 @@ class Predict:
         return c1_result, c2_result
 
     # as named
-    def __gbm_feature_importances_calculat(self, gem, key, random_state = 0):
+    def __gbm_feature_importances_calculate(self, gem, key, random_state = 0):
         gbm = XGBRegressor(random_state = random_state)
         gbm.fit(gem.transpose(), list(gem.loc[[key]].values[0]))
         return gbm.feature_importances_

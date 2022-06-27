@@ -38,43 +38,32 @@ class Reader(gem.Reader):
 
 		"""
 		# Process features
-		self.features = [
-			{'id':x[0], 'name':x[1], 'type':x[2]} for x in csv.reader(
-				gzip.open(features_path, 'rt'),
-				delimiter = '\t'
-			)
-		]
+		with gzip.open(features_path, 'rt') as features:
+			self.features = [
+				{'id':x[0], 'name':x[1]} for x in csv.reader(
+					features, delimiter = '\t'
+				)
+			]
+
 		# Process matrix
 		self.data = pd.DataFrame(scipy.io.mmread(matrix_path).toarray())
+
 		# Process barcodes
-		self.data.columns = [
-			rec[-1] for rec in csv.reader(
-				gzip.open(barcodes_path, 'rt'),
-				delimiter = '\t'
-			)
-		]
+		with gzip.open(barcodes_path, 'rt') as barcodes:
+			self.data.columns = [
+				rec[-1] for rec in csv.reader(barcodes, delimiter = '\t')
+			]
 
-
-	def get_gem(self,
-				factor_id_type:str = 'gene_symbol',
-				save_path:str = None,
-				handle_repeat:str = 'sum',
-				):
+	def get_gem(self, save_path:str = None, handle_repeat:str = 'sum',):
 		"""
 		Obtain GEM data frame from processed MEX file.
 
 		Parameters:
-			factor_id_type:str = 'gene_symbol'
-
 			save_path:str = None
 
 			handle_repeat:str = 'sum'
 		"""
-		if factor_id_type == 'gene_symbol':
-			feature_key = 'name'
-		elif factor_id_type == 'ens_id':
-			feature_key = 'id'
-		self.data.index = [x[feature_key] for x in self.features]
+		self.data.index = [x['id'] for x in self.features]
 
 		# sum up data sharing same gene name if any
 		if len(self.data.columns) != len(list(set(self.data.columns))):

@@ -26,15 +26,19 @@ class Processor:
 
 
 class Reader(tool.Reader_Template):
+    """
+    Reader object to process bioGRID interaction data.
+    """
     def __init__(self,
-                 filepath: str,
-                 organism_a_id: str = '10090', # human is 9606, mouse is 10090
-                 organism_b_id = None
+                 filepath:str = None,
+                 organism_a_id:str = '10090', # human is 9606, mouse is 10090
+                 organism_b_id:str = None
                 ):
         if organism_b_id is None:
             organism_b_id = organism_a_id
         self.load(filepath)
         self.dict = self._process(org_a = organism_a_id, org_b = organism_b_id)
+        self.close()
 
     def _process(self, org_a = None, org_b = None):
         result = {

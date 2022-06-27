@@ -8,8 +8,19 @@ import re
 import gzip
 import json
 
-# to ouput data in json format
-def encode(data, out = 'out.js', indent = 4):
+
+def encode(data = None, out:str = 'out.js', indent:int = 4):
+    """
+    Encode data in json format file.
+
+    Args:
+        data = None
+
+        out:str = 'out.js'
+
+        indent:int = 4
+
+    """
     if re.search(r'\.gz$', out):
         with gzip.open(out, 'w+') as output:
             output.write(json.dumps(data).encode('utf-8'))
@@ -17,13 +28,19 @@ def encode(data, out = 'out.js', indent = 4):
         with open(out, 'w+') as output:
             json.dump(data, output, indent = indent)
 
-# to load in json file
-def decode(file):
-    if re.search(r'\.gz$', file):
-        with gzip.open(file, 'r') as json_file:
+
+def decode(path:str = None):
+    """
+    Decode data from JSON format file.
+
+    Args:
+        path:str = None
+    """
+    if re.search(r'\.gz$', path):
+        with gzip.open(path, 'r') as json_file:
             data = json.load(json_file)
         return data
     else:
-        with open(file, 'r') as json_file:
+        with open(path, 'r') as json_file:
             data = json.load(json_file)
         return data

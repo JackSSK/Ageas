@@ -40,17 +40,17 @@ class GRN(object):
 		passed = False
 
 		# check cor_group1
-		if source in gem1.index and target in gem1.index:
+		if source in gem1.data.index and target in gem1.data.index:
 			cor_group1 = tool.Get_Pearson(
-				gem1.loc[[source]].values[0],
-				gem1.loc[[target]].values[0]
+				gem1.data.loc[[source]].values[0],
+				gem1.data.loc[[target]].values[0]
 			)
 
 		# check cor_group2
-		if source in gem2.index and target in gem2.index:
+		if source in gem2.data.index and target in gem2.data.index:
 			cor_group2 = tool.Get_Pearson(
-				gem2.loc[[source]].values[0],
-				gem2.loc[[target]].values[0]
+				gem2.data.loc[[source]].values[0],
+				gem2.data.loc[[target]].values[0]
 			)
 
 		# Go through abs(correlation) threshod check
@@ -92,10 +92,12 @@ class GRN(object):
 	def add_gene(self, id, gem1, gem2):
 		assert id not in self.genes
 		# get expression sum values
-		if id in gem1.index:    group1_exp = sum(gem1.loc[[id]].values[0])
-		else:                   group1_exp = 0
-		if id in gem2.index:    group2_exp = sum(gem2.loc[[id]].values[0])
-		else:                   group2_exp = 0
+		group1_exp = 0
+		group2_exp = 0
+		if id in gem1.data.index:
+			group1_exp = sum(gem1.data.loc[[id]].values[0])
+		if id in gem2.data.index:
+			group2_exp = sum(gem2.data.loc[[id]].values[0])
 		# may change it to a class later
 		self.genes[id] = Gene(
 			id = id,
@@ -145,18 +147,30 @@ class GRN(object):
 
 class Gene(object):
 	"""
-	docstring for Gene.
+	Object to store information of a Gene in Gene Regulatory Network(GRN).
 	"""
 
 	def __init__(self,
-				 id = None,
-				 type = 'Gene',
-				 expression_sum = None,
+				 id:str = None,
+				 type:str = 'Gene',
+				 expression_sum:float = None,
 				 **kwargs
 				):
-		super(Gene, self).__init__()
+		"""
+		Initialize a object.
+
+		Args:
+			id:str = None
+
+			type:str = 'Gene'
+
+			expression_sum:float = None
+
+			**kwargs
+		"""
 		self.id = id
 		self.type = type
+		self.symbol = None
 		self.source = list()
 		self.target = list()
 		self.expression_sum = expression_sum
@@ -164,13 +178,9 @@ class Gene(object):
 
 	def as_dict(self): return self.__dict__
 
-	def add_name(self, name):
-		if not hasattr(self, 'names'): self.names = list()
-		self.names.append(name)
-
 	def add_ens_id(self, ens_id):
-		if not hasattr(self, 'ens_id'): self.ens_id = list()
-		self.ens_id.append(ens_id)
+		if not hasattr(self, 'ens_id'):
+			self.ens_id = ens_id
 
 	def add_uniprot_id(self, uniprot_id):
 		if not hasattr(self, 'uniprot_ids'): self.uniprot_ids = list()
@@ -180,20 +190,40 @@ class Gene(object):
 
 class GRP(object):
 	"""
-	docstring for GRP.
+	Object to store information of a Gene Regulatory Pathway(GRP).
 	"""
 
 	def __init__(self,
-				 regulatory_source = None,
-				 regulatory_target = None,
-				 id = None,
-				 type = None,
-				 score = None,
-				 reversable = False,
-				 correlations = None,
+				 regulatory_source:str = None,
+				 regulatory_target:str = None,
+				 id:str = None,
+				 type:str = None,
+				 score:str = None,
+				 reversable:bool = False,
+				 correlations:float = None,
 				 **kwargs
 				):
-		super(GRP, self).__init__()
+		"""
+		Initialize a object.
+
+		Args:
+			regulatory_source:str = None
+
+			regulatory_target:str = None
+
+			id:str = None
+
+			type:str = None
+
+			score:str = None
+
+			reversable:bool = False
+
+			correlations:float = None
+
+			**kwargs
+
+		"""
 		self.id = id
 		self.type = type
 		self.score = score
@@ -203,122 +233,138 @@ class GRP(object):
 		self.regulatory_target = regulatory_target
 		if self.id is None:
 			self.id = self.cast_id(regulatory_source, regulatory_target)
-		for key in kwargs: setattr(self, key, kwargs[key])
+		for key in kwargs:
+			setattr(self, key, kwargs[key])
 
-	def as_dict(self): return self.__dict__
+	def as_dict(self):
+		"""
+		Switch object to a dict.
+		"""
+		return self.__dict__
 
-	def cast_id(self, source, target):
-		if source > target: return source + '_' + target
-		else:               return target + '_' + source
+	def cast_id(self, source:str = None, target:str = None):
+		"""
+		Cast the id for GRP according to name of regulatory source and target.
 
+		Args:
+			source:str = None
 
-class Reader(tool.Reader_Template):
-	"""
-	NOTE:! Very outdated !
-	NOTE:! Very outdated !
-	NOTE:! Very outdated !
-	NOTE:! Don't Use !
-	NOTE:! Don't Use !
-	NOTE:! Don't Use !
+			target:str = None
 
-
-	Class to read in scRNA-seq or bulk RNA-seq based Gene Expression Matrices
-	Only suppordt .cvs and .txt for now
-	"""
-	def __init__(self, filename, skipFirst = False, stdevThread = None):
-		super(Reader, self).__init__()
-
-		# Initialization
-		self.load(filename)
-		self.entryCoords = {}
-		self.iteration = 0
-
-		# Determine file type
-		if re.search(r'\.txt', self.filePath): self.split = '\t'
-		elif re.search(r'\.csv', self.filePath): self.split = ','
-		else: raise tool.Error(self.filePath, ' is not supported format')
-
-		# Skip first line
-		if skipFirst: line = self.file.readline()
-
-		# Iterate through all lines
-		while(True):
-			line = self.file.readline().strip()
-
-			# terminate at the end
-			if line == '': break
-
-			# skip comments
-			elif line[:1] == '#': continue
-
-			else:
-				coordinate = self.file.tell()
-				content = line.split(self.split)
-				self._processLine(coordinate, content, stdevThread)
-
-	# Process information in reading line
-	def _processLine(self, coordinate, content, stdevThread):
-		# Check file format
-		if len(content) < 7:
-			if content == ['\n']:
-				raise tool.Error('Bad GRN format: empty line')
-			else:
-				raise tool.Error('Fatal GRN format: not enough info')
-
-		# Process current record
+		"""
+		if source > target:
+			return source + '_' + target
 		else:
-			id = content[0]
-			if id not in self.entryCoords:
-				self.entryCoords[id] = coordinate
-			else:
-				raise tool.Error('Dulpicate GRP id in GRN: ' + self.filePath)
+			return target + '_' + source
 
-	# Pattern info in each line
-	def _prepareInfo(self, content):
-		return {
-			'id':content[0],
-			'regulatory_source':content[1],
-			'sourceGroup':content[2],
-			'regulatory_target':content[3],
-			'targetGroup':content[4],
-			'correlation':float(content[5]),
-			'attribute':content[6],
-		}
 
-	# Output all Gene Expression data in dict format
-	def makeGeneExpDict(self, stdevKpRatio):
-		records = []
-		for id in self.entryCoords:
-			_, data = self.get(id)
-			if stdevKpRatio is not None:
-				stdev = sta.stdev(data)
-				records.append([id, stdev, data])
-			else:
-				records.append([id, data])
-
-		# Filter records based on keep ratio
-		if stdevKpRatio is not None:
-			records.sort(key = lambda x:x[1], reverse = True)
-			records = records[:int(len(records) * stdevKpRatio)]
-		return {record[0]: record[-1] for record in records}
-
-	# Get info of selected id
-	def get(self, id):
-		self.file.seek(self.entryCoords[id])
-		line = self.file.readline().strip()
-		content = line.split(self.split)
-		return self._prepareInfo(content)
-
-	# For iteration
-	def __next__(self):
-		entryKeys = [*self.entryCoords]
-		if self.iteration == len(entryKeys):
-			self.iteration = 0
-			raise StopIteration
-		else:
-			id = entryKeys[self.iteration]
-			self.iteration += 1
-			return self.get(self, id)
+# class Reader(tool.Reader_Template):
+# 	"""
+# 	NOTE:! Very outdated !
+# 	NOTE:! Very outdated !
+# 	NOTE:! Very outdated !
+# 	NOTE:! Don't Use !
+# 	NOTE:! Don't Use !
+# 	NOTE:! Don't Use !
+#
+#
+# 	Class to read in scRNA-seq or bulk RNA-seq based Gene Expression Matrices
+# 	Only suppordt .cvs and .txt for now
+# 	"""
+# 	def __init__(self, filename, skipFirst = False, stdevThread = None):
+# 		super(Reader, self).__init__()
+#
+# 		# Initialization
+# 		self.load(filename)
+# 		self.entryCoords = {}
+# 		self.iteration = 0
+#
+# 		# Determine file type
+# 		if re.search(r'\.txt', self.filePath): self.split = '\t'
+# 		elif re.search(r'\.csv', self.filePath): self.split = ','
+# 		else: raise tool.Error(self.filePath, ' is not supported format')
+#
+# 		# Skip first line
+# 		if skipFirst: line = self.file.readline()
+#
+# 		# Iterate through all lines
+# 		while(True):
+# 			line = self.file.readline().strip()
+#
+# 			# terminate at the end
+# 			if line == '': break
+#
+# 			# skip comments
+# 			elif line[:1] == '#': continue
+#
+# 			else:
+# 				coordinate = self.file.tell()
+# 				content = line.split(self.split)
+# 				self._processLine(coordinate, content, stdevThread)
+#
+# 	# Process information in reading line
+# 	def _processLine(self, coordinate, content, stdevThread):
+# 		# Check file format
+# 		if len(content) < 7:
+# 			if content == ['\n']:
+# 				raise tool.Error('Bad GRN format: empty line')
+# 			else:
+# 				raise tool.Error('Fatal GRN format: not enough info')
+#
+# 		# Process current record
+# 		else:
+# 			id = content[0]
+# 			if id not in self.entryCoords:
+# 				self.entryCoords[id] = coordinate
+# 			else:
+# 				raise tool.Error('Dulpicate GRP id in GRN: ' + self.filePath)
+#
+# 	# Pattern info in each line
+# 	def _prepareInfo(self, content):
+# 		return {
+# 			'id':content[0],
+# 			'regulatory_source':content[1],
+# 			'sourceGroup':content[2],
+# 			'regulatory_target':content[3],
+# 			'targetGroup':content[4],
+# 			'correlation':float(content[5]),
+# 			'attribute':content[6],
+# 		}
+#
+# 	# Output all Gene Expression data in dict format
+# 	def makeGeneExpDict(self, stdevKpRatio):
+# 		records = []
+# 		for id in self.entryCoords:
+# 			_, data = self.get(id)
+# 			if stdevKpRatio is not None:
+# 				stdev = sta.stdev(data)
+# 				records.append([id, stdev, data])
+# 			else:
+# 				records.append([id, data])
+#
+# 		# Filter records based on keep ratio
+# 		if stdevKpRatio is not None:
+# 			records.sort(key = lambda x:x[1], reverse = True)
+# 			records = records[:int(len(records) * stdevKpRatio)]
+# 		return {record[0]: record[-1] for record in records}
+#
+# 	# Get info of selected id
+# 	def get(self, id):
+# 		self.file.seek(self.entryCoords[id])
+# 		line = self.file.readline().strip()
+# 		content = line.split(self.split)
+# 		return self._prepareInfo(content)
+#
+# 	# For iteration
+# 	def __next__(self):
+# 		entryKeys = [*self.entryCoords]
+# 		if self.iteration == len(entryKeys):
+# 			self.iteration = 0
+# 			raise StopIteration
+# 		else:
+# 			id = entryKeys[self.iteration]
+# 			self.iteration += 1
+# 			return self.get(self, id)
 
 
 	""" Old GEM Reader """

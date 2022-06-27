@@ -9,15 +9,38 @@ import re
 import gzip
 from scipy.stats import pearsonr
 
-# Get pearson correlation value while p-value not lower than thread
-# Originally pearson p-value thread was 1, which should be inappropriate
-def Get_Pearson(source, target, p_thread = 0.05):
-    pearson = pearsonr(source, target)
-    if pearson[1] >= p_thread: return 0
-    else: return pearson[0]
 
-# Standard Deviation (STD) Filter for data frame(df)
-def STD_Filter(df, std_value_thread = None, std_ratio_thread = None):
+def Get_Pearson(source = None, target = None, p_thread = 0.05):
+    """
+    Get pearson correlation value while p-value not lower than thread.
+
+    Args:
+        source = None
+
+        target = None
+
+        p_thread = 0.05
+
+    """
+    pearson = pearsonr(source, target)
+    if pearson[1] >= p_thread:
+        return 0
+    else:
+        return pearson[0]
+
+
+def STD_Filter(df = None, std_value_thread = None, std_ratio_thread = None):
+    """
+    Standard Deviation (STD) Filter for data frame(df).
+
+    Args:
+        df = None
+
+        std_value_thread = None
+
+        std_ratio_thread = None
+
+    """
     data = df.transpose()
     sd_list = data[data.columns].std().sort_values(ascending=False)
 
@@ -36,11 +59,23 @@ def STD_Filter(df, std_value_thread = None, std_ratio_thread = None):
     data = data[gene_list]
     return data.transpose()
 
-# standardize feature scores applying Z score
+
 def Z_Score_Standardize(df, col):
+    """
+    Standardize feature scores applying Z score
+    """
     df[col] = (df[col] - df[col].mean()) / df[col].std(ddof=0)
     return df
 
+
+def Check_Feature_Type(features):
+    """
+    Function to check whether features in GEM are Gene Symbols or Ensembl IDs.
+    """
+    for ele in features:
+        if ele[:3] != 'ENS':
+            return 'gene_symbol'
+    return 'ens_id'
 
 
 class Error(Exception):
@@ -53,15 +88,23 @@ class Error(Exception):
 
 class Reader_Template:
     """
-    Template for file reading class
+    Template for Reader object.
     """
-    def __init__(self, filename):
-        super(Reader_Template, self).__init__()
+    def __init__(self, filename:str = None):
+        """
+        Initialize a Reader Object
+
+        Args:
+            filename:str = None
+
+        """
         self.filePath = filename
         self.file = None
 
     # Load in file
     def load(self, filename):
+        """
+        """
         self.filePath = filename
         # Open as .gz file
         if re.search(r'\.gz$', self.filePath):

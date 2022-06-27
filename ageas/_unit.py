@@ -188,6 +188,7 @@ class Unit(object):
     def select_models(self,):
         print('\nEntering Model Selection')
         start = time.time()
+        
         # initialize trainer
         self.clf = trainer.Train(
             psGRNs = self.pseudo_grns,
@@ -195,6 +196,7 @@ class Unit(object):
             database_info = self.database_info,
             model_config = self.model_config,
         )
+
         # start model selection
         self.clf.successive_pruning(
             iteration = self.model_select_iteration,
@@ -228,6 +230,7 @@ class Unit(object):
                             self.feature_dropout_ratio,
                             self.outlier_thread
                 )
+
                 self.pseudo_grns.update_with_remove_list(rm)
                 self.clf.clear_data()
                 self.clf.grns = self.pseudo_grns
@@ -236,6 +239,7 @@ class Unit(object):
                     clf_keep_ratio = self.clf_keep_ratio,
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
+
                 self.grp_importances = interpreter.Interpret(self.clf)
                 self.atlas = extractor.Extract(
                     self.correlation_thread,
@@ -244,6 +248,7 @@ class Unit(object):
                     self.far_out_grps,
                     self.top_grp_amount
                 )
+
                 print('Time to do a feature selection : ', time.time() - start)
                 if self.__early_stop(prev_grps, self.atlas.top_grps.index):
                     self.stabilize_iteration = None
@@ -264,6 +269,7 @@ class Unit(object):
                     clf_keep_ratio = self.clf_keep_ratio,
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
+
                 self.grp_importances.add(interpreter.Interpret(self.clf).result)
                 self.atlas = extractor.Extract(
                     self.correlation_thread,
@@ -272,8 +278,10 @@ class Unit(object):
                     self.far_out_grps,
                     self.top_grp_amount
                 )
+
                 if self.__early_stop(prev_grps, self.atlas.top_grps.index):
                     break
+
             self.grp_importances.divide(denominator)
             self.atlas = extractor.Extract(
                 self.correlation_thread,
@@ -282,6 +290,7 @@ class Unit(object):
                 self.far_out_grps,
                 self.top_grp_amount
             )
+
             print('Time to stabilize key GRPs : ', time.time() - start)
         del self.grp_importances
 
@@ -293,6 +302,7 @@ class Unit(object):
             meta_grn = self.meta.grn,
             impact_depth = self.impact_depth
         )
+
         # Attempting to Connect Regulons if necessary
         if (self.link_step_allowrance is not None and
             self.link_step_allowrance > 0 and
@@ -325,8 +335,10 @@ class Unit(object):
         result = []
         q3_value = df.iloc[int(len(df.index) * 0.25)]['importance']
         q1_value = df.iloc[int(len(df.index) * 0.75)]['importance']
+
         # set far out thread according to interquartile_range (IQR)
         far_out_thread = 3 * (q3_value - q1_value)
+
         # remove outliers as well
         prev_score = outlier_thread * 3
         for i in range(len(df.index)):
@@ -345,6 +357,7 @@ class Unit(object):
         change1 = (len(prev_grps) - common) / len(prev_grps)
         change2 = (len(cur_grps) - common) / len(cur_grps)
         change = (change1 + change2) / 2
+
         print('Average Key GRPs Changing Portion:', change)
         if change <= self.grp_changing_thread:
             self.no_change_iteration_num += 1

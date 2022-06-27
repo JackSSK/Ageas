@@ -179,10 +179,11 @@ class Extract(object):
 				v['regulon_id'] = 'regulon_' + str(v['regulon_id'])
 				exps = meta_grn.genes[k].expression_sum
 				fc = abs(np.log2(exps['group1']+1) - np.log2(exps['group2']+1))
-				df.append([k] + list(v.values()) + [fc])
+				df.append([k, meta_grn.genes[k].symbol]+list(v.values())+[fc])
 		df = pd.DataFrame(sorted(df, key=lambda x:x[-1], reverse = True))
 		df.columns = [
-			'Gene',
+			'ID',
+			'Gene Symbol',
 			'Regulon',
 			'Type',
 			'Source_Num',

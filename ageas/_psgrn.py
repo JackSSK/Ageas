@@ -27,7 +27,6 @@ import ageas.database_setup.binary_class as binary_db
 def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 					   database_path:str = None,
 					   database_type:str = 'gem_files',
-					   factor_id_type:str = 'gene_symbol',
 					   group1_path:str = None,
 					   group2_path:str = None,
 					   interaction_database:str = 'gtrd',
@@ -72,21 +71,6 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 				***barcodes.tsv***)
 
 			Pseudo-sample GRNs will be generated with sliding window method.
-
-		factor_id_type: <str> Default = 'gene_symbol'
-			What type of ID name to use for each gene.
-			Supporting:
-
-				'gene_symbol': Gene Symbols
-
-				'ens_id': Ensembl ID
-
-			Note:
-
-				If using BioGRID as interaction database,
-				factor_id_type must be set to 'gene_symbol' for now.
-
-				# TODO: Find a way to map gene names with Ensembl IDs
 
 		group1_path: <str> Default = None
 			Path to file or folder being considered as sample group 1 data
@@ -174,7 +158,6 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 		group1_path,
 		group2_path,
 		specie,
-		factor_id_type,
 		interaction_database,
 		sliding_window_size,
 		sliding_window_stride
@@ -234,7 +217,7 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 
 class Make:
 	"""
-	Make grns for gene expression datas
+	Make GRNs for gene expression datas
 	"""
 	def __init__(self,
 				 database_info = None,
@@ -269,12 +252,12 @@ class Make:
 		if gem_data is not None:
 			group1_psGRNs = self.__loaded_gem_method(
 				class_type = 'group1',
-				gem = gem_data.group1,
+				gem = gem_data.group1.data,
 				meta_grn = meta_grn
 			)
 			group2_psGRNs = self.__loaded_gem_method(
 				class_type = 'group2',
-				gem = gem_data.group2,
+				gem = gem_data.group2.data,
 				meta_grn = meta_grn
 			)
 		elif self.database_info.type == 'gem_folders':

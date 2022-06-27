@@ -18,11 +18,11 @@ from warnings import warn
 
 class Reader(object):
 	"""
-	Class to read in scRNA-seq or bulk RNA-seq based Gene Expression Matrices
-	Only suppordt .cvs and .txt for now
+	Class to read in RNA-seq based Gene Expression Matrices.
+	Only suppordt .cvs and .txt for now.
 	"""
 	def __init__(self, path:str = None, handle_repeat:str = 'sum', **kwargs):
-		super(Reader, self).__init__()
+		self.features = None
 
 		# Decide which seperation mark to use
 		if re.search(r'csv', path): 	self.sep = ','
@@ -48,8 +48,17 @@ class Reader(object):
 		elif handle_repeat == 'sum':
 			self.data = self.data.groupby(self.data.index).sum()
 
-	# filter data frame based on standered deviations
+
 	def STD_Filter(self, std_value_thread = None, std_ratio_thread = None):
+		"""
+		Filter DataFrame based on standered deviation of gene expression values.
+
+		Args:
+			std_value_thread = None
+
+			std_ratio_thread = None
+
+		"""
 		self.data = tool.STD_Filter(
 			df = self.data,
 			std_value_thread = std_value_thread,
@@ -70,6 +79,8 @@ class Folder(object):
 				 index_col = 0, 				# index column for all GEM
 				):
 		self.path = path
+		self.data = None
+		self.features = None
 		self.header_row = header_row
 		self.index_col = index_col
 
@@ -135,7 +146,8 @@ class Folder(object):
 			result = tool.STD_Filter(result, std_value_thread, std_ratio_thread)
 
 		# return or save matrix
-		if outpath is None: return result
+		if outpath is None:
+			return result
 		else:
 			result.to_csv(
 				outpath,

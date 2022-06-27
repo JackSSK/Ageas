@@ -9,7 +9,9 @@ import ageas.tool as tool
 
 class Reader(tool.Reader_Template):
     """
-    Load in ATAC peaks from files
+    Load in ATAC peaks from files.
+
+    Under development~
     """
 
     def __init__(self, arg):

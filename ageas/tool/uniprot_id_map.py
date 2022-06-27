@@ -17,11 +17,19 @@ class Reader(tool.Reader_Template):
     """
     Read in ID Map file obtained from Uniprot
     """
-    def __init__(self, filename):
-        self.load(filename)
+    def __init__(self, filepath:str = None):
+        """
+        Initialize a Reader object.
 
-    # Stratify the map file with selected genra -> Genra: Uniprot ID
+        Args:
+            filepath:str = None
+        """
+        self.load(filepath)
+
     def stratify(self, genra = ['Gene_Name', 'Gene_Synonym']):
+        """
+        Stratify idmapping file from Uniprot as {Selected Genra: Uniprot ID}.
+        """
         result = {}
         while(True):
             line = self.file.readline()
@@ -31,21 +39,21 @@ class Reader(tool.Reader_Template):
                 continue
             content = line.split('\t')
             if content[1] in genra:
-                gene_symbol = content[2].strip()
+                feature_id = content[2].strip()
                 uniprot_id = content[0].strip().upper()
-                if gene_symbol in result:
-                    result[gene_symbol] += ';' + uniprot_id
+                if feature_id in result:
+                    result[feature_id] += ';' + uniprot_id
                 else:
-                    result[gene_symbol] = uniprot_id
+                    result[feature_id] = uniprot_id
         return result
 
+
 # if __name__ == '__main__':
-    # data = Reader(filename = 'HUMAN_9606_idmapping.dat.gz')
-    # gene_symbols = data.stratify(
-    #     genra = ['Gene_Name', 'Gene_Synonym']
-    # )
-    # ensembl_ids = data.stratify(
+    # ensembl_ids = Reader(filepath = 'HUMAN_9606_idmapping.dat.gz').stratify(
     #     genra = ['Ensembl']
+    # )
+    # gene_symbols = Reader(filepath = 'HUMAN_9606_idmapping.dat.gz').stratify(
+    #     genra = ['Gene_Name', 'Gene_Synonym']
     # )
     # data = {
     #     'gene_symbol': gene_symbols,

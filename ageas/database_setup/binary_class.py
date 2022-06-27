@@ -35,7 +35,6 @@ class Setup:
                  group1_path = 'CT1',
                  group2_path = 'CT2',
                  specie = 'mouse',
-                 factor_id_type = 'gene_symbol',
                  interaction_db = 'biogrid',
                  sliding_window_size = None,
                  sliding_window_stride = None
@@ -55,7 +54,6 @@ class Setup:
         self.db_path = database_path
         self.type = database_type
         self.specie = specie
-        self.factor_id_type = factor_id_type
         self.interaction_db = interaction_db
         self.sliding_window_size = sliding_window_size
         self.sliding_window_stride = sliding_window_stride
@@ -117,89 +115,84 @@ class Load_GEM:
         # Initialization
         self.database_info = database_info
 
+        # process file or folder based on database type
+        if self.database_info.type == 'gem_folders':
+            self.group1, self.group2 = self.__process_gem_folder(
+                std_value_thread,
+                std_ratio_thread
+            )
+        elif self.database_info.type == 'gem_files':
+            self.group1, self.group2 = self.__process_gem_file(
+                std_value_thread,
+                std_ratio_thread
+            )
+        elif self.database_info.type == 'mex_folders':
+            self.group1, self.group2 = self.__process_mex_folders(
+                std_value_thread,
+                std_ratio_thread
+            )
+
+        # detect feature_type
+        feature_type_1 = tool.Check_Feature_Type(self.group1.data.index)
+        feature_type_2 = tool.Check_Feature_Type(self.group2.data.index)
+        assert feature_type_1 == feature_type_2
+        self.feature_type = feature_type_1
+
         # Load TF databases based on specie
         specie = db_setup.get_specie_path(__name__, self.database_info.specie)
 
         # Load TRANSFAC databases
         self.tf_list = transfac.Reader(
-            specie + 'Tranfac201803_MotifTFsF.txt',
-            self.database_info.factor_id_type
+            filepath = specie + 'Tranfac201803_MotifTFsF.txt',
+            feature_type = self.feature_type
         ).tfs
 
         # Load interaction database
         if self.database_info.interaction_db == 'gtrd':
-            self.interactions = gtrd.Processor(
-                specie,
-                self.database_info.factor_id_type,
-                path = 'gtrd_whole_genes.js.gz'
-            )
+            self.interactions = gtrd.Processor(specie, self.feature_type,)
         elif self.database_info.interaction_db == 'biogrid':
-            assert self.database_info.factor_id_type == 'gene_symbol'
+            assert self.feature_type == 'gene_symbol'
             self.interactions = biogrid.Processor(specie_path = specie)
-
-        # process file or folder based on database type
-        if self.database_info.type == 'gem_folders':
-            group1, group2 = self.__process_gem_folder(
-                std_value_thread,
-                std_ratio_thread
-            )
-        elif self.database_info.type == 'gem_files':
-            group1, group2 = self.__process_gem_file(
-                std_value_thread,
-                std_ratio_thread
-            )
-        elif self.database_info.type == 'mex_folders':
-            group1, group2 = self.__process_mex_folders(
-                std_value_thread,
-                std_ratio_thread
-            )
 
         # Distribuition Filter if threshod is specified
         if mww_thread is not None or log2fc_thread is not None:
             self.genes = Find(
-                group1,
-                group2,
+                self.group1.data,
+                self.group2.data,
                 mww_thread = mww_thread,
                 log2fc_thread = log2fc_thread
             ).degs
-            self.group1 = group1.loc[group1.index.intersection(self.genes)]
-            self.group2 = group2.loc[group2.index.intersection(self.genes)]
+            self.group1.data = self.group1.data.loc[
+                self.group1.data.index.intersection(self.genes)
+            ]
+            self.group2.data = self.group2.data.loc[
+                self.group2.data.index.intersection(self.genes)
+            ]
         else:
-            self.genes = group1.index.union(group2.index)
-            self.group1 = group1
-            self.group2 = group2
+            self.genes = group1.data.index.union(group2.data.index)
 
     # Process in expression matrix file (dataframe) scenario
     def __process_gem_file(self, std_value_thread, std_ratio_thread):
-        group1 = self.__read_df(
-            self.database_info.group1_path,
-            std_value_thread,
-            std_ratio_thread
-        )
-        group2 = self.__read_df(
-            self.database_info.group2_path,
-            std_value_thread,
-            std_ratio_thread
-        )
-        return group1, group2
-
-    # Read in gem file
-    def __read_df(self, path, std_value_thread, std_ratio_thread):
-        # Decide which seperation mark to use
-        if re.search(r'csv', path): sep = ','
-        elif re.search(r'txt', path): sep = '\t'
-        else: raise lib.Error('Unsupported File Type: ', path)
-        # Decide which compression method to use
-        if re.search(r'.gz', path): compression = 'gzip'
-        else: compression = 'infer'
-        df = pd.read_csv(
-            path,
-            sep = sep,
-            compression = compression,
+        group1 = gem.Reader(
+            path = self.database_info.group1_path,
             header = 0,
             index_col = 0
         )
-        return tool.STD_Filter(df, std_value_thread, std_ratio_thread)
+        group1.STD_Filter(
+            std_value_thread = std_value_thread,
+            std_ratio_thread = std_ratio_thread
+        )
+        group2 = gem.Reader(
+            path = self.database_info.group2_path,
+            header = 0,
+            index_col = 0
+        )
+        group2.STD_Filter(
+            std_value_thread = std_value_thread,
+            std_ratio_thread = std_ratio_thread
+        )
+        return group1, group2
+
 
     # Process in expression matrix file (dataframe) scenario
     def __process_mex_folders(self, std_value_thread, std_ratio_thread):
@@ -256,16 +249,19 @@ class Load_GEM:
         	features_path = features_path,
             barcodes_path = barcodes_path
         )
-        gem.get_gem(factor_id_type = self.database_info.factor_id_type)
-        return tool.STD_Filter(gem.data, std_value_thread, std_ratio_thread)
+        gem.get_gem()
+        gem.data = tool.STD_Filter(gem.data, std_value_thread, std_ratio_thread)
+        return gem
 
     # Process in Database scenario
     def __process_gem_folder(self, std_value_thread, std_ratio_thread):
-        group1 = gem.Folder(self.database_info.group1_path).combine(
+        group1 = gem.Folder(self.database_info.group1_path)
+        group1.data = group1.combine(
             std_value_thread = std_value_thread,
             std_ratio_thread = std_ratio_thread
         )
-        group2 = gem.Folder(self.database_info.group2_path).combine(
+        group2 = gem.Folder(self.database_info.group2_path)
+        group2.data = group2.combine(
             std_value_thread = std_value_thread,
             std_ratio_thread = std_ratio_thread
         )
