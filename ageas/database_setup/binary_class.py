@@ -151,7 +151,6 @@ class Load_GEM:
         if self.database_info.interaction_db == 'gtrd':
             self.interactions = gtrd.Processor(specie, self.feature_type,)
         elif self.database_info.interaction_db == 'biogrid':
-            assert self.feature_type == 'gene_symbol'
             self.interactions = biogrid.Processor(specie_path = specie)
 
         # Distribuition Filter if threshod is specified
@@ -170,6 +169,29 @@ class Load_GEM:
             ]
         else:
             self.genes = group1.data.index.union(group2.data.index)
+
+        self.feature_map = self.get_feature_map()
+
+    def get_feature_map(self):
+        # Get features/genes information from processed GEM data
+        feature_map = dict()
+        if (self.group1.features is not None and
+            self.group2.features is not None):
+            for ele in self.group1.features:
+                if ele['id'] not in feature_map:
+                    feature_map[ele['id']] = ele
+                elif feature_map[ele['id']] == ele:
+                    continue
+                else:
+                    raise db_setup.Error('Gene with different feature records.')
+            for ele in self.group2.features:
+                if ele['id'] not in feature_map:
+                    feature_map[ele['id']] = ele
+                elif feature_map[ele['id']] == ele:
+                    continue
+                else:
+                    raise db_setup.Error('Gene with different feature records.')
+        return feature_map
 
     # Process in expression matrix file (dataframe) scenario
     def __process_gem_file(self, std_value_thread, std_ratio_thread):

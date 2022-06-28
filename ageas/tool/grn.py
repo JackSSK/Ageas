@@ -170,7 +170,7 @@ class Gene(object):
 		"""
 		self.id = id
 		self.type = type
-		self.symbol = None
+		self.symbol = id
 		self.source = list()
 		self.target = list()
 		self.expression_sum = expression_sum

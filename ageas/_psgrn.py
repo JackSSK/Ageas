@@ -86,10 +86,12 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 				None: No database will be used. As long as a GRP can pass
 				all related filters, it's good to go.
 
-				'gtrd': Using GTRD as regulatory pathway reference
+				'gtrd': Using GTRD as regulatory pathway reference.
 				https://gtrd.biouml.org/
 
-				'biogrid': Using BioGRID as regulatory pathway reference
+				'biogrid': Using BioGRID as regulatory pathway reference.
+				Gene symbols must be given as index in GEM matrix or MEX feature
+				file.
 				https://thebiogrid.org/
 
 		log2fc_thread: <float> Default = None

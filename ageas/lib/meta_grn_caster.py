@@ -93,45 +93,6 @@ class Cast:
 		else:
 			self.__no_interaction(gem_data, correlation_thread)
 
-		# Get features/genes information from processed GEM data
-		if (gem_data.group1.features is not None and
-			gem_data.group2.features is not None):
-			feature_dict = dict()
-			for ele in gem_data.group1.features:
-				if ele['id'] not in feature_dict:
-					feature_dict[ele['id']] = ele
-				elif feature_dict[ele['id']] == ele:
-					continue
-				else:
-					raise Exception('A gene id with different feature records.')
-			for ele in gem_data.group2.features:
-				if ele['id'] not in feature_dict:
-					feature_dict[ele['id']] = ele
-				elif feature_dict[ele['id']] == ele:
-					continue
-				else:
-					raise Exception('A gene id with different feature records.')
-		else:
-			feature_dict = None
-
-		# update Gene informations
-		for gene in self.grn.genes:
-			if feature_dict is None:
-				self.grn.genes[gene].symbol = gene
-			else:
-				try:
-					self.grn.genes[gene].symbol = feature_dict[gene]['name']
-					self.grn.genes[gene].add_ens_id(gene)
-				except Exception as error:
-					raise error('Gene not in feature set?!')
-
-			if gem_data.tf_list is not None and gene in gem_data.tf_list:
-				self.grn.genes[gene].type = 'TF'
-			if (hasattr(gem_data.interactions, 'idmap') and
-				gene in gem_data.interactions.idmap):
-				for id in gem_data.interactions.idmap[gene].split(';'):
-					self.grn.genes[gene].add_uniprot_id(id)
-
 		self.tfs_no_interaction_rec = list(self.tfs_no_interaction_rec.keys())
 		# print out amount of TFs not covered by selected interaction database
 		print('	Predicting interactions for',
@@ -146,6 +107,19 @@ class Cast:
 				self.tfs_no_interaction_rec,
 				correlation_thread
 			)
+
+		# update Gene informations
+		for gene in self.grn.genes:
+			if len(gem_data.feature_map) > 0:
+				self.grn.genes[gene].symbol = gem_data.feature_map[gene]['name']
+				self.grn.genes[gene].add_ens_id(gene)
+			if gem_data.tf_list is not None and gene in gem_data.tf_list:
+				self.grn.genes[gene].type = 'TF'
+			if (hasattr(gem_data.interactions, 'idmap') and
+				gene in gem_data.interactions.idmap):
+				for id in gem_data.interactions.idmap[gene].split(';'):
+					self.grn.genes[gene].add_uniprot_id(id)
+
 		print('	Total amount of GRPs in Meta GRN:', len(self.grn.grps))
 		print('	Total amount of Genes in Meta GRN:', len(self.grn.genes))
 		# else: raise lib.Error('Sorry, such mode is not supported yet!')
@@ -204,10 +178,14 @@ class Cast:
 	def __with_biogrid(self, data, correlation_thread):
 		# Iterate source TF candidates for GRP
 		for source in data.genes:
-			
+
 			# Go through tf_list filter if avaliable
 			if data.tf_list is not None and source not in data.tf_list:
 				continue
+
+			name = None
+			if len(data.feature_map) > 0:
+				name = data.feature_map[source]['name']
 
 			reg_target = {}
 			if source in data.interactions.data:
@@ -217,6 +195,15 @@ class Cast:
 				for ele in alias_list:
 					temp = {tar:None for tar in data.interactions.data[ele]}
 					reg_target.update(temp)
+
+			elif name is not None and name in data.interactions.data:
+				reg_target = {i:None for i in data.interactions.data[name]}
+			elif name is not None and name in data.interactions.alias:
+				alias_list = data.interactions.alias[name]
+				for ele in alias_list:
+					temp = {tar:None for tar in data.interactions.data[ele]}
+					reg_target.update(temp)
+
 			else:
 				self.tfs_no_interaction_rec[source] = None
 				continue
@@ -231,12 +218,23 @@ class Cast:
 
 			for target in data.genes:
 				passing = False
+
+				name = None
+				if len(data.feature_map) > 0:
+					name = data.feature_map[target]['name']
+
 				# Handle source TFs with record in target database
-				if target in reg_target:
+				if (target in reg_target or
+					(name is not None and name in reg_target)):
 					passing = True
 
 				elif target in data.interactions.alias:
 					for ele in data.interactions.alias[target]:
+						if ele in reg_target:
+							passing = True
+
+				elif name is not None and name in data.interactions.alias:
+					for ele in data.interactions.alias[name]:
 						if ele in reg_target:
 							passing = True
 
