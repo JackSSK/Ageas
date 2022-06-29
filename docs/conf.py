@@ -41,8 +41,11 @@ release = ''
 extensions = [
     'sphinx.ext.autodoc',  # Core library for html generation from docstrings
     'sphinx.ext.autosummary',  # Create neat summary tables
+    'nbsphinx',
 ]
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
+nbsphinx_allow_errors = True
+nbsphinx_execute = 'never'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

@@ -8,10 +8,10 @@ import math
 import numpy as np
 import networkx as nx
 from warnings import warn
-import matplotlib as mpl
-import matplotlib.cm as cmx
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.image as img
+import matplotlib.cm as cmx
 import matplotlib.colors as colors
 from scipy.special import softmax
 from netgraph import Graph

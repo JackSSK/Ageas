@@ -21,5 +21,17 @@ setuptools.setup(
                     'Operating System :: OS Independent',
                     ],
     python_requires = ">=3.6",
-    include_package_data = True
+    include_package_data = True,
+    install_requires = [
+        'shap >= 0.40.0',
+        'numpy >= 1.19.5',
+        'scipy >= 1.8.0',
+        'torch >= 1.11.0',
+        'pandas >= 1.4.2',
+        'netgraph >= 4.4.1',
+        'xgboost >= 1.6.0',
+        'networkx >= 2.8.1',
+        'matplotlib >= 3.5.2',
+        'scikit-learn >= 1.0.2',
+    ],
 )

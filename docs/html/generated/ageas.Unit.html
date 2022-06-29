@@ -162,7 +162,10 @@
 <li class="toctree-l2"><a class="reference internal" href="ageas.Plot_Regulon.html">ageas.Plot_Regulon</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/launch.html">Launch AGEAS</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -235,7 +238,9 @@ only used at last iteration</p>
 <dt>correlation_thread: &lt;float&gt; Default = 0.2</dt><dd><p>Gene expression correlation thread value of GRPs.</p>
 <p>Potential GRPs failed to reach this value will be dropped.</p>
 </dd>
-<dt>cpu_mode: &lt;bool&gt; Default = False</dt><dd><p>Whether force to use CPU only or not.</p>
+<dt>cpu_mode: &lt;bool&gt; Default = False</dt><dd><p>Whether force to use CPU only or not.
+By default, AGEAS will automatically select device favoring
+CUDA based GPUs.</p>
 </dd>
 <dt>feature_dropout_ratio: &lt;float&gt; Default = 0.1</dt><dd><p>Portion of features(GRPs) to be dropped out after each
 iteration of feature selection.</p>
@@ -375,5 +380,6 @@ a GRP.</p>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/scripts/furo.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     </body>
 </html>

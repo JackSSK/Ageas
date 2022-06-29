@@ -86,6 +86,8 @@ class Unit(object):
 
             cpu_mode: <bool> Default = False
                 Whether force to use CPU only or not.
+                By default, AGEAS will automatically select device favoring
+                CUDA based GPUs.
 
             feature_dropout_ratio: <float> Default = 0.1
                 Portion of features(GRPs) to be dropped out after each
@@ -188,7 +190,7 @@ class Unit(object):
     def select_models(self,):
         print('\nEntering Model Selection')
         start = time.time()
-        
+
         # initialize trainer
         self.clf = trainer.Train(
             psGRNs = self.pseudo_grns,

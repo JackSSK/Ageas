@@ -162,7 +162,10 @@
 <li class="toctree-l2"><a class="reference internal" href="ageas.Plot_Regulon.html">ageas.Plot_Regulon</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/launch.html">Launch AGEAS</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -234,9 +237,11 @@ Supporting:</p>
 <blockquote>
 <div><p>None: No database will be used. As long as a GRP can pass
 all related filters, it’s good to go.</p>
-<p>‘gtrd’: Using GTRD as regulatory pathway reference
+<p>‘gtrd’: Using GTRD as regulatory pathway reference.
 <a class="reference external" href="https://gtrd.biouml.org/">https://gtrd.biouml.org/</a></p>
-<p>‘biogrid’: Using BioGRID as regulatory pathway reference
+<p>‘biogrid’: Using BioGRID as regulatory pathway reference.
+Gene symbols must be given as index in GEM matrix or MEX feature
+file.
 <a class="reference external" href="https://thebiogrid.org/">https://thebiogrid.org/</a></p>
 </div></blockquote>
 </dd>
@@ -349,5 +354,6 @@ Only genes reaching top portion will be kept in each group.</p>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
     <script src="../_static/scripts/furo.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     </body>
 </html>
