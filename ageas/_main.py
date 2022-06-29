@@ -57,7 +57,6 @@ class Launch:
 				 cpu_mode:bool = False,
 				 feature_dropout_ratio:float = 0.1,
 				 feature_select_iteration:int = 1,
-				 impact_depth:int = 3,
 				 top_grp_amount:int = 100,
 				 grp_changing_thread:float = 0.05,
 				 link_step_allowrance:int = 1,
@@ -133,7 +132,6 @@ class Launch:
 		self.protocol = protocol
 		self.unit_num = unit_num
 		self.silent = mute_unit
-		self.impact_depth = impact_depth
 
 		# Get model configs
 		if model_config_path is None:
@@ -195,7 +193,6 @@ class Launch:
 			grp_changing_thread = grp_changing_thread,
 			stabilize_iteration = stabilize_iteration,
 
-			impact_depth = impact_depth,
 			link_step_allowrance = link_step_allowrance,
 		)
 
@@ -250,15 +247,15 @@ class Launch:
 				atlas.grps.save(report_path + 'grps_importances.txt')
 				json.encode(atlas.outlier_grps, report_path + 'outlier_grps.js')
 
+		self.atlas.report(self.meta.grn).to_csv(
+			folder_path + 'report.csv',
+			index = False
+		)
+
 		# change class objects to dicts and save regulons in JSON format
 		json.encode(
 			{k:v.as_dict() for k,v in self.atlas.regulons.items()},
 			folder_path + 'key_atlas.js'
-		)
-
-		self.atlas.report(self.meta.grn).to_csv(
-			folder_path + 'report.csv',
-			index = False
 		)
 
 
@@ -312,8 +309,8 @@ class Launch:
 	# Combine information from reports returned by each unit
 	def _combine_unit_reports(self):
 		all_grps = dict()
-		for index, atlas in enumerate(self.reports):
-			for regulon in atlas.regulons.values():
+		for atlas in self.reports:
+			for regulon in atlas.regulons:
 				for id, record in regulon.grps.items():
 					if id not in all_grps:
 						all_grps[id] = record
@@ -331,8 +328,6 @@ class Launch:
 				meta_grn = self.meta.grn
 			)
 		regulon.find_bridges(meta_grn = self.meta.grn)
-		regulon.update_genes(impact_depth = self.impact_depth)
-		regulon.change_regulon_list_to_dict()
 		return regulon
 
 	# combine information of same GRP form different reports

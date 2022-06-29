@@ -13,7 +13,7 @@ import ageas.lib as lib
 import ageas.tool as tool
 import ageas.tool.grn as grn
 import ageas.tool.json as json
-import ageas.lib.grp_predictor as grp
+import ageas.lib.grp_predictor as grp_predictor
 
 
 
@@ -101,29 +101,49 @@ class Cast:
 
 		# Start GRNBoost2-like process if thread is set
 		if prediction_thread is not None and len(self.tfs_no_interaction_rec)>0:
-			gBoost = grp.Predict(gem_data, self.grn.grps, prediction_thread)
+			gBoost = grp_predictor.Predict(
+				gem_data, self.grn.grps, prediction_thread
+			)
 			self.grn = gBoost.expand_meta_grn(
 				self.grn,
 				self.tfs_no_interaction_rec,
 				correlation_thread
 			)
 
-		# update Gene informations
+		# gete gene regulatory information
+		for grp in self.grn.grps:
+			source = self.grn.grps[grp].regulatory_source
+			target = self.grn.grps[grp].regulatory_target
+			self.grn.genes[source].target.append(target)
+			self.grn.genes[target].source.append(source)
+			if self.grn.grps[grp].reversable:
+				self.grn.genes[source].source.append(target)
+				self.grn.genes[target].target.append(source)
+
 		for gene in self.grn.genes:
+			# make source and target unique list
+			self.grn.genes[gene].source = list(set(self.grn.genes[gene].source))
+			self.grn.genes[gene].target = list(set(self.grn.genes[gene].target))
+
+			# get gene symbol if possible
 			if len(gem_data.feature_map) > 0:
 				self.grn.genes[gene].symbol = gem_data.feature_map[gene]['name']
 				self.grn.genes[gene].add_ens_id(gene)
+
+			# get gene type
 			if gem_data.tf_list is not None and gene in gem_data.tf_list:
 				self.grn.genes[gene].type = 'TF'
+
+			# get gene uniprot ids
 			if (hasattr(gem_data.interactions, 'idmap') and
 				gene in gem_data.interactions.idmap):
 				for id in gem_data.interactions.idmap[gene].split(';'):
 					self.grn.genes[gene].add_uniprot_id(id)
 
+
+
 		print('	Total amount of GRPs in Meta GRN:', len(self.grn.grps))
 		print('	Total amount of Genes in Meta GRN:', len(self.grn.genes))
-		# else: raise lib.Error('Sorry, such mode is not supported yet!')
-		""" ToDo: if more than 1 guide can be casted, make agreement """
 		return
 
 	# Make GRN casting guide with GTRD data

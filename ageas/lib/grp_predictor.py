@@ -91,7 +91,6 @@ class Predict:
             sorted(regulatory_sources.items(), key = lambda x: x[1])
         )
 
-
         # Choose a key presenting in both classes
         grps = None
         for i, src in enumerate(regulatory_sources):

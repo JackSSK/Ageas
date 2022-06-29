@@ -40,11 +40,7 @@ class Extract(object):
 			self.top_grps=grp_importances.stratify(score_thread, top_grp_amount)
 
 	# as named
-	def change_regulon_list_to_dict(self, header = 'regulon_'):
-		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
-
-	# as named
-	def build_regulon(self, meta_grn, impact_depth = 3):
+	def build_regulon(self, meta_grn):
 		# set outlier bonus score to max score of standard GRPs
 		outlier_bonus_score = self.top_grps.iloc[0]['importance']
 		# process standard grps
@@ -65,13 +61,13 @@ class Extract(object):
 			grp.type = GRP_TYPES[1]
 			grp.score = self.outlier_grps[id] + outlier_bonus_score
 			self.update_regulon_with_grp(grp, meta_grn)
-		# del self.outlier_grps
-		# link regulons if bridge can be build with factors already in regulons
-		self.find_bridges(meta_grn = meta_grn)
-		self.update_genes(impact_depth = impact_depth)
 
-	# combine regulons if sharing common genes
-	def find_bridges(self, meta_grn):
+		# del self.outlier_grps
+		self.find_bridges(meta_grn = meta_grn)
+		self.regulatory_sources = self.get_reg_sources()
+
+	def find_bridges(self, meta_grn = None):
+		# link regulons if bridge can be build with factors already in regulons
 		i = 0
 		j = 1
 		checked_grps = {}
@@ -80,14 +76,13 @@ class Extract(object):
 			combining = False
 			reg1_genes = self.regulons[i].genes.keys()
 			reg2_genes = self.regulons[j].genes.keys()
-			assert len([x for x in reg1_genes if x in reg2_genes]) == 0
 			for comb in list(itertools.product(reg1_genes, reg2_genes)):
 				id = grn.GRP(comb[0], comb[1]).id
 				if id not in checked_grps:
 					checked_grps[id] = None
 					if id in meta_grn.grps:
-						if not combining: combining = True
-						assert id not in self.regulons[i].grps
+						if not combining:
+							combining = True
 						meta_grn.grps[id].type = GRP_TYPES[2]
 						meta_grn.grps[id].score = 0
 						self.regulons[i].grps[id] = meta_grn.grps[id]
@@ -100,21 +95,6 @@ class Extract(object):
 				if j == len(self.regulons):
 					i += 1
 					j = i + 1
-
-	# update and change regulon to dict type and get information for each gene
-	def update_genes(self, impact_depth):
-		for regulon in self.regulons:
-			for grp in regulon.grps.values():
-				source = grp.regulatory_source
-				target = grp.regulatory_target
-				self.__update_regulon_gene_list(
-					source = source,
-					target = target,
-					gene_list = regulon.genes,
-					reversable = grp.reversable
-				)
-		self.regulatory_sources = self.__get_reg_sources(impact_depth)
-
 
 	# Use extra GRPs from meta GRN to link different Regulons
 	def link_regulon(self,
@@ -162,21 +142,15 @@ class Extract(object):
 					extend_regulon.genes[target] = copy.deepcopy(
 						meta_grn.genes[target]
 					)
-				self.__update_regulon_gene_list(
-					source = source,
-					target = target,
-					gene_list = extend_regulon.genes,
-					reversable = meta_grn.grps[grp_id].reversable
-				)
 		self.regulons = [e for e in self.regulons if e is not None]
-		self.regulatory_sources = self.__get_reg_sources()
+		self.regulatory_sources = self.get_reg_sources()
 
 	# find factors by checking and regulaotry target number and impact score
-	def report(self, meta_grn, impact_score_thread = 0):
-		df = []
-		for k, v in self.regulatory_sources.items():
+	def report(self, meta_grn, header = 'regulon_', impact_score_thread = 0):
+		df = list() 
+		for k, v in self.get_reg_sources().items():
 			if v['impact_score'] >= impact_score_thread:
-				v['regulon_id'] = 'regulon_' + str(v['regulon_id'])
+				v['regulon_id'] = header + str(v['regulon_id'])
 				exps = meta_grn.genes[k].expression_sum
 				fc = abs(np.log2(exps['group1']+1) - np.log2(exps['group2']+1))
 				df.append([k, meta_grn.genes[k].symbol]+list(v.values())+[fc])
@@ -191,16 +165,35 @@ class Extract(object):
 			'Impact_Score',
 			'LogFC'
 		]
+
+		# change regulons to dict type
+		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
 		return df
 
 	# recursively add up impact score with GRP linking gene to its target
-	def  __get_impact_genes(self,
-							regulon = None,
-							gene:str = None,
-							depth:int = 3,
-							dict = None,
-							prev_cor:float = 1.0,
-						   ):
+	def get_impact(self,
+				   regulon = None,
+				   gene:str = None,
+				   depth:int = 3,
+				   dict = None,
+				   prev_cor:float = 1.0,
+				  ):
+		"""
+		depth: <int> Default = 3
+			When assessing a TF's regulatory impact on other genes,
+			how far the distance between TF and potential regulatory source
+			can be.
+
+			The correlation strength of stepped correlation strength of TF
+			and gene still need to be greater than correlation_thread.
+		"""
+		# impact = self.get_impact(
+		# 	self.regulons[regulon_id],
+		# 	gene = gene,
+		# 	depth = depth,
+		# 	dict = {},
+		# 	prev_cor = 1.0
+		# )
 		if depth > 0:
 			depth -= 1
 			for target in regulon.genes[gene].target:
@@ -219,12 +212,8 @@ class Extract(object):
 						regulon.genes[target].type != GRP_TYPES[2] and
 						cor * prev_cor > self.correlation_thread):
 						dict[target] = cor * prev_cor
-					dict = self.__get_impact_genes(
-						regulon,
-						target,
-						depth,
-						dict,
-						cor * prev_cor
+					dict = self.get_impact(
+						regulon, target, depth, dict, cor * prev_cor
 					)
 		return dict
 
@@ -234,36 +223,41 @@ class Extract(object):
 		self.regulons[ind_1].genes.update(self.regulons[ind_2].genes)
 
 	# summarize key regulatory sources appearing in regulons
-	def __get_reg_sources(self, impact_depth = 3):
+	def get_reg_sources(self):
 		dict = {}
 		for regulon_id, regulon in enumerate(self.regulons):
-			for gene in regulon.genes:
-				source_num = len(regulon.genes[gene].source)
-				target_num = len(regulon.genes[gene].target)
-				if (gene not in dict and
-					# regulon['genes'][gene]['type'] != GRP_TYPES[2] and
-					target_num >= 1):
-					impact = self.__get_impact_genes(
-						self.regulons[regulon_id],
-						gene = gene,
-						depth = impact_depth,
-						dict = {},
-						prev_cor = 1.0
-					)
-					dict[gene]= {
+			for grp in regulon.grps.values():
+				source = grp.regulatory_source
+				target = grp.regulatory_target
+
+				if source not in dict:
+					dict[source] = {
 						'regulon_id': regulon_id,
-						'type':	regulon.genes[gene].type,
-						'source_num': source_num,
-						'target_num': target_num,
-						'impact_score': len(impact)
+						'type':	regulon.genes[source].type,
+						'source_num': 0,
+						'target_num': 1,
+						'impact_score': len(regulon.genes[source].target)
 					}
-				elif gene in dict:
-					raise lib.Error('Repeated Gene in regulons', gene)
+				else:
+					dict[source]['target_num'] += 1
+
+				if grp.reversable:
+					dict[source]['source_num'] += 1
+					if target not in dict:
+						dict[target] = {
+							'regulon_id': regulon_id,
+							'type':	regulon.genes[target].type,
+							'source_num': 1,
+							'target_num': 1,
+							'impact_score': len(regulon.genes[target].target)
+						}
+					else:
+						dict[target]['target_num'] += 1
+						dict[target]['source_num'] += 1
+
 		# filter by top_grp_amount
 		return OrderedDict(sorted(
-			dict.items(),
-			key = lambda x:x[-1]['target_num'],
-			reverse = True
+			dict.items(), key = lambda x:x[-1]['target_num'], reverse = True
 		))
 
 	# Find potential bridge GRPs with specific gene to link 2 regulons
@@ -325,11 +319,10 @@ class Extract(object):
 						combine_list,
 						prev_grps
 					)
-
 		else:
 			raise lib.Error('Reached a negative allowrance value')
 
-	# update combine_list if a GRP found can be the bridge between regulons
+	# update combine_list if a GRP found as bridge between regulons
 	def __update_combine_list(self, reg_id1, reg_id2, grp_ids, combine_list):
 		# check action to perform
 		ind_1 = None
@@ -340,6 +333,7 @@ class Extract(object):
 			if reg_id2 in ele[0]: ind_2 = index
 		if ind_1 is None and ind_2 is None:
 			combine_list.append([[reg_id1, reg_id2], [id for id in grp_ids]])
+
 		# one of regulons already need to combine
 		elif ind_1 is None and ind_2 is not None:
 			combine_list[ind_2][0].append(reg_id1)
@@ -347,6 +341,7 @@ class Extract(object):
 		elif ind_1 is not None and ind_2 is None:
 			combine_list[ind_1][0].append(reg_id2)
 			combine_list[ind_1][1] += grp_ids
+
 		# both regulons already in combine list
 		elif ind_1 == ind_2:
 			combine_list[ind_1][1] += grp_ids
@@ -355,17 +350,6 @@ class Extract(object):
 			combine_list[ind_1][0] += combine_list[ind_2][0]
 			combine_list[ind_1][1] += combine_list[ind_2][1]
 			del combine_list[ind_2]
-
-	def __update_regulon_gene_list(self, source, target, gene_list, reversable):
-		assert source not in gene_list[target].source
-		assert source not in gene_list[target].target
-		assert target not in gene_list[source].source
-		assert target not in gene_list[source].target
-		gene_list[target].source.append(source)
-		gene_list[source].target.append(target)
-		if reversable:
-			gene_list[source].source.append(target)
-			gene_list[target].target.append(source)
 
 	def update_regulon_with_grp(self, grp, meta_grn):
 		update_ind = None
@@ -384,8 +368,8 @@ class Extract(object):
 				assert target_regulon_ind is None
 				target_regulon_ind = i
 
+		# make new regulon data
 		if source_regulon_ind is None and target_regulon_ind is None:
-			# make new regulon data
 			regulon = grn.GRN()
 			regulon.grps[grp.id] = grp
 			regulon.genes[source] = copy.deepcopy(meta_grn.genes[source])
@@ -395,6 +379,7 @@ class Extract(object):
 		elif source_regulon_ind is not None and target_regulon_ind is not None:
 			if source_regulon_ind == target_regulon_ind:
 				update_ind = source_regulon_ind
+
 			# combine regulons if two are involved
 			elif source_regulon_ind != target_regulon_ind:
 				update_ind = source_regulon_ind
@@ -408,9 +393,11 @@ class Extract(object):
 
 		# update regulon if found destination
 		if update_ind is not None:
+
 			# append GRP into self.regulons[update_ind]
 			assert grp.id not in self.regulons[update_ind].grps
 			self.regulons[update_ind].grps[grp.id] = grp
+
 			# update gene list
 			if source not in self.regulons[update_ind].genes:
 				self.regulons[update_ind].genes[source] = copy.deepcopy(

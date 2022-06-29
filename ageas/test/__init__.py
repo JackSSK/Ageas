@@ -35,6 +35,6 @@ def Test(cpu_mode:bool = False):
 		group2_path = group2_path,
 		protocol = 'multi',
 	)
-	assert 'Klf4' in easy.atlas.regulons['regulon_0'].genes
+	assert 'Klf4' in easy.atlas.regulons[0].genes
 	print('Finished Test. LGTM')
 	return easy

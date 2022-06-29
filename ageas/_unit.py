@@ -35,7 +35,6 @@ class Unit(object):
                  feature_dropout_ratio:float = 0.1,
                  feature_select_iteration:int = 1,
                  grp_changing_thread:float = 0.05,
-                 impact_depth:int = 3,
                  link_step_allowrance:int = 0,
                  max_train_size:float = 0.95,
                  model_select_iteration:int = 2,
@@ -96,14 +95,6 @@ class Unit(object):
             feature_select_iteration: <int> Default = 1
                 Number of iteration for feature(GRP) selection before
                 key GRP extraction
-
-            impact_depth: <int> Default = 3
-                When assessing a TF's regulatory impact on other genes,
-                how far the distance between TF and potential regulatory source
-                can be.
-
-                The correlation strength of stepped correlation strength of TF
-                and gene still need to be greater than correlation_thread.
 
             top_grp_amount: <int> Default = 100
                 Amount of GRPs an AGEAS unit would extract.
@@ -183,7 +174,6 @@ class Unit(object):
         self.grp_changing_thread = grp_changing_thread
         self.stabilize_iteration = stabilize_iteration
 
-        self.impact_depth = impact_depth
         self.link_step_allowrance = link_step_allowrance
 
     # Select Classification models for later interpretations
@@ -300,10 +290,7 @@ class Unit(object):
     def generate_regulons(self,):
         print('\nBuilding Regulons with key GRPs')
         start = time.time()
-        self.atlas.build_regulon(
-            meta_grn = self.meta.grn,
-            impact_depth = self.impact_depth
-        )
+        self.atlas.build_regulon(meta_grn = self.meta.grn,)
 
         # Attempting to Connect Regulons if necessary
         if (self.link_step_allowrance is not None and
@@ -313,7 +300,6 @@ class Unit(object):
                 meta_grn = self.meta.grn,
                 allowrance = self.link_step_allowrance
             )
-        self.atlas.change_regulon_list_to_dict()
         print('Time to build key regulons : ', time.time() - start)
 
     # take out some GRPs based on feature dropout ratio
