@@ -23,7 +23,8 @@ class GRN(object):
 		self.id = id
 		self.genes = dict()
 		self.grps = dict()
-		for key in kwargs: setattr(self, key, kwargs[key])
+		for key in kwargs:
+			setattr(self, key, kwargs[key])
 
 	def update_grn(self, source, target, gem1, gem2, correlation_thread):
 		# Skip if processing self-regulating pathway
@@ -213,7 +214,8 @@ class Gene(object):
 		self.source = list()
 		self.target = list()
 		self.expression_sum = expression_sum
-		for key in kwargs: setattr(self, key, kwargs[key])
+		for key in kwargs:
+			setattr(self, key, kwargs[key])
 
 	def as_dict(self): return self.__dict__
 

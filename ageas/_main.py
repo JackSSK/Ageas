@@ -235,8 +235,8 @@ class Launch:
 		if not os.path.exists(folder_path): os.makedirs(folder_path)
 
 		self.meta_report.save(folder_path + 'meta_report.csv')
-		self.pseudo_grns.save(folder_path + 'psGRNs.js')
-		self.meta.grn.save_json(folder_path + 'metaGRN.js')
+		self.pseudo_grns.save(folder_path + 'pseudo_sample_GRNs.js')
+		self.meta.grn.save_json(folder_path + 'meta_GRN.js')
 
 		if save_unit_reports:
 			for index, atlas in enumerate(self.reports):
@@ -250,11 +250,12 @@ class Launch:
 			index = False
 		)
 
-		# change class objects to dicts and save regulons in JSON format
 		json.encode(
 			{k:v.as_dict() for k,v in self.atlas.regulons.items()},
-			folder_path + 'key_atlas.js'
+			folder_path + 'full_atlas.js'
 		)
+
+		json.encode(self.atlas.key_atlas.as_dict(), folder_path+'key_atlas.js')
 
 
 	# Protocol SOLO
@@ -318,15 +319,12 @@ class Launch:
 							record_2 = record
 						)
 
-		# now we build regulons
-		regulon = extractor.Extract()
+		# now we build the atlas
+		answer = extractor.Atlas()
 		for id, grp in all_grps.items():
-			regulon.update_regulon_with_grp(
-				grp = grp,
-				meta_grn = self.meta.grn
-			)
-		regulon.find_bridges(meta_grn = self.meta.grn)
-		return regulon
+			answer.update_regulon_with_grp(grp = grp, meta_grn = self.meta.grn)
+		answer.find_bridges(meta_grn = self.meta.grn)
+		return answer
 
 	# combine information of same GRP form different reports
 	def _combine_grp_records(self, record_1, record_2):

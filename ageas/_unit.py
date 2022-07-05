@@ -196,7 +196,7 @@ class Unit(object):
     def launch(self,):
         start = time.time()
         self.grp_importances = interpreter.Interpret(self.clf)
-        self.atlas = extractor.Extract(
+        self.atlas = extractor.Atlas(
             self.correlation_thread,
             self.grp_importances,
             self.z_score_extract_thread,
@@ -228,7 +228,7 @@ class Unit(object):
                 )
 
                 self.grp_importances = interpreter.Interpret(self.clf)
-                self.atlas = extractor.Extract(
+                self.atlas = extractor.Atlas(
                     self.correlation_thread,
                     self.grp_importances,
                     self.z_score_extract_thread,
@@ -258,7 +258,7 @@ class Unit(object):
                 )
 
                 self.grp_importances.add(interpreter.Interpret(self.clf).result)
-                self.atlas = extractor.Extract(
+                self.atlas = extractor.Atlas(
                     self.correlation_thread,
                     self.grp_importances,
                     self.z_score_extract_thread,
@@ -270,7 +270,7 @@ class Unit(object):
                     break
 
             self.grp_importances.divide(denominator)
-            self.atlas = extractor.Extract(
+            self.atlas = extractor.Atlas(
                 self.correlation_thread,
                 self.grp_importances,
                 self.z_score_extract_thread,

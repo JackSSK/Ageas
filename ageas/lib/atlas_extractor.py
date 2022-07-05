@@ -9,6 +9,7 @@ import copy
 import itertools
 import numpy as np
 import pandas as pd
+import networkx as nx
 import ageas.lib as lib
 import ageas.tool.grn as grn
 
@@ -16,9 +17,9 @@ import ageas.tool.grn as grn
 GRP_TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 
-class Extract(object):
+class Atlas(object):
 	"""
-	Extract Atalas of key Regulons from the most important GRPs
+	Object to extract Atalas of key Regulons from the most important GRPs
 	"""
 
 	def __init__(self,
@@ -28,9 +29,8 @@ class Extract(object):
 				 outlier_grps = {},
 				 top_grp_amount = None
 				):
-		super(Extract, self).__init__()
 		self.regulons = list()
-		self.regulatory_sources = None
+		self.key_atlas = None
 		self.grps = grp_importances
 		self.outlier_grps = outlier_grps
 		self.correlation_thread = correlation_thread
@@ -60,8 +60,7 @@ class Extract(object):
 			grp.type = GRP_TYPES[1]
 			grp.score = self.outlier_grps[id] + outlier_bonus_score
 			self.update_regulon_with_grp(grp, meta_grn)
-		self.regulatory_sources = self.get_reg_sources()
-
+		self.key_atlas = self.get_key_atlas()
 
 	def find_bridges(self, meta_grn = None):
 		# link regulons if bridge can be build with factors already in regulons
@@ -92,13 +91,12 @@ class Extract(object):
 				if j == len(self.regulons):
 					i += 1
 					j = i + 1
-		self.regulatory_sources = self.get_reg_sources()
+		self.key_atlas = self.get_key_atlas()
 
 	# Use extra GRPs from meta GRN to link different Regulons
 	def add_reg_sources(self, meta_grn = None,):
-		for gene in self.regulatory_sources:
+		for gene in self.key_atlas.genes:
 			for source in meta_grn.genes[gene].source:
-
 				passing = True
 				for regulon in self.regulons:
 					if source in regulon.genes:
@@ -114,11 +112,19 @@ class Extract(object):
 	# find factors by checking and regulaotry target number and impact score
 	def report(self, meta_grn, header = 'regulon_'):
 		df = list()
-		for k, v in self.regulatory_sources.items():
-			v['regulon_id'] = header + str(v['regulon_id'])
-			exps = meta_grn.genes[k].expression_sum
-			fc = abs(np.log2(exps['group1'] + 1) - np.log2(exps['group2'] + 1))
-			df.append([k, meta_grn.genes[k].symbol] + list(v.values()) + [fc])
+		for rec in self.key_atlas.genes.values():
+			exps = rec.expression_sum
+			df.append([
+				rec.id,
+				rec.symbol,
+				header + str(rec.regulon_id),
+				rec.type,
+				rec.source_num,
+				rec.target_num,
+				len(rec.target),
+				abs(np.log2(exps['group1'] + 1) - np.log2(exps['group2'] + 1))
+			])
+
 		df = pd.DataFrame(sorted(df, key = lambda x:x[-1], reverse = True))
 		df.columns = [
 			'ID',
@@ -136,39 +142,29 @@ class Extract(object):
 		return df
 
 	# summarize key regulatory sources appearing in regulons
-	def get_reg_sources(self):
-		dict = {}
+	def get_key_atlas(self):
+		answer = grn.GRN(id = 'key_regulatory_sources')
 		for regulon_id, regulon in enumerate(self.regulons):
-			for grp in regulon.grps.values():
-				source = grp.regulatory_source
-				target = grp.regulatory_target
+			graph = regulon.as_digraph()
 
-				if source not in dict:
-					dict[source] = {
-						'regulon_id': regulon_id,
-						'type':	regulon.genes[source].type,
-						'source_num': 0,
-						'target_num': 1,
-						'impact_score': len(regulon.genes[source].target)
-					}
-				else:
-					dict[source]['target_num'] += 1
+			# add nodes
+			for node in graph.nodes:
+				assert node not in answer.genes
+				reg_target_num = len([x for x in graph.successors(node)])
+				if reg_target_num > 0:
+					reg_source_num = len([x for x in graph.predecessors(node)])
+					answer.genes[node] = copy.deepcopy(regulon.genes[node])
+					setattr(answer.genes[node], 'regulon_id', regulon_id)
+					setattr(answer.genes[node], 'source_num', reg_source_num)
+					setattr(answer.genes[node], 'target_num', reg_target_num)
 
-				if grp.reversable:
-					dict[source]['source_num'] += 1
-					if target not in dict:
-						dict[target] = {
-							'regulon_id': regulon_id,
-							'type':	regulon.genes[target].type,
-							'source_num': 1,
-							'target_num': 1,
-							'impact_score': len(regulon.genes[target].target)
-						}
-					else:
-						dict[target]['target_num'] += 1
-						dict[target]['source_num'] += 1
-
-		return dict
+			# add edge for nodes already in answer
+			for grp in regulon.grps:
+				if (regulon.grps[grp].regulatory_source in answer.genes and
+					regulon.grps[grp].regulatory_target in answer.genes):
+					answer.grps[grp] = copy.deepcopy(regulon.grps[grp])
+					setattr(answer.grps[grp], 'regulon_id', regulon_id)
+		return answer
 
 	def update_regulon_with_grp(self, grp, meta_grn):
 		update_ind = None
