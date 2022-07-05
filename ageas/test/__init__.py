@@ -11,15 +11,13 @@ group2_path = resource_filename(__name__, 'mef.csv.gz')
 
 
 
-def Test(cpu_mode:bool = False):
+def Test(**kwargs):
 	"""
-	Automatically select device.
-	If cpu_mode is on, AGEAS will be forced to only use CPU.
+	Function to test whether AGEAS is performing properly or not.
 
 	Args:
-		cpu_mode: <bool> Default = False
-			If cpu_mode is on, AGEAS will be forced to only use CPU.
-			Otherwise, AGEAS will automatically select device, preferring GPUs.
+		**kwargs: All args in ageas.Launch except:
+		group1_path, group2_path, sliding_window_size
 
 	Outputs:
 		ageas._main.Launch object
@@ -30,11 +28,14 @@ def Test(cpu_mode:bool = False):
 	"""
 	print('Start Test')
 	easy = ageas.Launch(
-		cpu_mode = cpu_mode,
 		group1_path = group1_path,
 		group2_path = group2_path,
-		protocol = 'multi',
+		sliding_window_size = 10,
+		**kwargs
+		# meta_load_path = resource_filename(__name__, 'metaGRN.js'),
+		# psgrn_load_path = resource_filename(__name__, 'psGRNs.js'),
 	)
+	assert 'Nanog' in easy.atlas.regulons[0].genes
 	assert 'Klf4' in easy.atlas.regulons[0].genes
 	print('Finished Test. LGTM')
 	return easy

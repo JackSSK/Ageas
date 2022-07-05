@@ -141,13 +141,8 @@ class Interpret:
     # Update feature importance matrix with newer matrix
     def add(self, df):
         self.result = self.result.add(
-                                        df,
-                                        axis = 0,
-                                        fill_value = 0
-                                    ).sort_values(
-                                        'importance',
-                                        ascending = False
-                                        )
+                                        df, axis = 0, fill_value = 0
+                                     ).sort_values('importance',ascending=False)
 
     # divide importance value with stabilizing iteration times
     def divide(self, denominator):
@@ -167,7 +162,8 @@ class Interpret:
         return self.result[:thread]
 
     # Save feature importances to given path
-    def save(self, path): self.result.to_csv(path, sep = '\t')
+    def save(self, path, sep = ','):
+        self.result.to_csv(path, sep = sep)
 
 
 

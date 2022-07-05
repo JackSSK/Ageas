@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 import ageas.lib as lib
 import ageas.tool.grn as grn
-from collections import OrderedDict
 
 
 GRP_TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
@@ -61,10 +60,8 @@ class Extract(object):
 			grp.type = GRP_TYPES[1]
 			grp.score = self.outlier_grps[id] + outlier_bonus_score
 			self.update_regulon_with_grp(grp, meta_grn)
-
-		# del self.outlier_grps
-		self.find_bridges(meta_grn = meta_grn)
 		self.regulatory_sources = self.get_reg_sources()
+
 
 	def find_bridges(self, meta_grn = None):
 		# link regulons if bridge can be build with factors already in regulons
@@ -87,7 +84,7 @@ class Extract(object):
 						meta_grn.grps[id].score = 0
 						self.regulons[i].grps[id] = meta_grn.grps[id]
 			if combining:
-				self.__combine_regulons(ind_1 = i, ind_2 = j)
+				self.update_regulon_with_regulon(i, j)
 				del self.regulons[j]
 				j = i + 1
 			else:
@@ -95,66 +92,34 @@ class Extract(object):
 				if j == len(self.regulons):
 					i += 1
 					j = i + 1
-
-	# Use extra GRPs from meta GRN to link different Regulons
-	def link_regulon(self,
-					 meta_grn = None,
-					 allowrance:int = 1,
-					 correlation_thread:float = 0.2
-					):
-		# initialize
-		grp_skip_list = {}
-		for regulon in self.regulons:
-			for grp_id in regulon.grps:
-				grp_skip_list[grp_id] = None
-		combine_list = []
-		for gene in self.regulatory_sources:
-			self.__find_bridges_by_gene(
-				gene,
-				self.regulatory_sources[gene]['regulon_id'],
-				meta_grn,
-				allowrance,
-				grp_skip_list,
-				combine_list,
-				[]
-			)
-		for comb in combine_list:
-			assert len(comb[0]) >= 2
-			extend_regulon = self.regulons[comb[0][0]]
-			for i in range(1, len(comb[0])):
-				self.__combine_regulons(ind_1 = comb[0][0], ind_2 = comb[0][i])
-				self.regulons[comb[0][i]] = None
-			for grp_id in comb[1]:
-				# skip if already added
-				if grp_id in extend_regulon.grps: continue
-				# update GRP information and add it to regulon
-				meta_grn.grps[grp_id].type = GRP_TYPES[2]
-				meta_grn.grps[grp_id].score = 0
-				extend_regulon.grps[grp_id] = meta_grn.grps[grp_id]
-				# update gene list in regulon
-				source = meta_grn.grps[grp_id].regulatory_source
-				target = meta_grn.grps[grp_id].regulatory_target
-				if source not in extend_regulon.genes:
-					extend_regulon.genes[source] = copy.deepcopy(
-						meta_grn.genes[source]
-					)
-				if target not in extend_regulon.genes:
-					extend_regulon.genes[target] = copy.deepcopy(
-						meta_grn.genes[target]
-					)
-		self.regulons = [e for e in self.regulons if e is not None]
 		self.regulatory_sources = self.get_reg_sources()
 
+	# Use extra GRPs from meta GRN to link different Regulons
+	def add_reg_sources(self, meta_grn = None,):
+		for gene in self.regulatory_sources:
+			for source in meta_grn.genes[gene].source:
+
+				passing = True
+				for regulon in self.regulons:
+					if source in regulon.genes:
+						passing = False
+						break
+
+				if passing:
+					grp = meta_grn.grps[grn.GRP(source, gene).id]
+					grp.type = GRP_TYPES[2]
+					grp.score = 0
+					self.update_regulon_with_grp(grp, meta_grn)
+
 	# find factors by checking and regulaotry target number and impact score
-	def report(self, meta_grn, header = 'regulon_', impact_score_thread = 0):
-		df = list() 
-		for k, v in self.get_reg_sources().items():
-			if v['impact_score'] >= impact_score_thread:
-				v['regulon_id'] = header + str(v['regulon_id'])
-				exps = meta_grn.genes[k].expression_sum
-				fc = abs(np.log2(exps['group1']+1) - np.log2(exps['group2']+1))
-				df.append([k, meta_grn.genes[k].symbol]+list(v.values())+[fc])
-		df = pd.DataFrame(sorted(df, key=lambda x:x[-1], reverse = True))
+	def report(self, meta_grn, header = 'regulon_'):
+		df = list()
+		for k, v in self.regulatory_sources.items():
+			v['regulon_id'] = header + str(v['regulon_id'])
+			exps = meta_grn.genes[k].expression_sum
+			fc = abs(np.log2(exps['group1'] + 1) - np.log2(exps['group2'] + 1))
+			df.append([k, meta_grn.genes[k].symbol] + list(v.values()) + [fc])
+		df = pd.DataFrame(sorted(df, key = lambda x:x[-1], reverse = True))
 		df.columns = [
 			'ID',
 			'Gene Symbol',
@@ -162,65 +127,13 @@ class Extract(object):
 			'Type',
 			'Source_Num',
 			'Target_Num',
-			'Impact_Score',
-			'LogFC'
+			'Meta_Degree',
+			'Log2FC'
 		]
 
 		# change regulons to dict type
 		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
 		return df
-
-	# recursively add up impact score with GRP linking gene to its target
-	def get_impact(self,
-				   regulon = None,
-				   gene:str = None,
-				   depth:int = 3,
-				   dict = None,
-				   prev_cor:float = 1.0,
-				  ):
-		"""
-		depth: <int> Default = 3
-			When assessing a TF's regulatory impact on other genes,
-			how far the distance between TF and potential regulatory source
-			can be.
-
-			The correlation strength of stepped correlation strength of TF
-			and gene still need to be greater than correlation_thread.
-		"""
-		# impact = self.get_impact(
-		# 	self.regulons[regulon_id],
-		# 	gene = gene,
-		# 	depth = depth,
-		# 	dict = {},
-		# 	prev_cor = 1.0
-		# )
-		if depth > 0:
-			depth -= 1
-			for target in regulon.genes[gene].target:
-				if len(regulon.genes[target].target) > 0:
-					# get regulatory correlation strength
-					link_grp = grn.GRP(gene, target).id
-					cors = regulon.grps[link_grp].correlations
-					if cors['group1'] == 0.0 or cors['group2'] == 0.0:
-						cor = abs(max(cors['group1'], cors['group2']))
-					elif cors['group1'] != 0.0 and cors['group2'] != 0.0:
-						cor = (abs(cors['group1']) + abs(cors['group2'])) / 2
-					else:
-						raise lib.Error(link_grp, 'Cor in meta GRN is creepy')
-					# count it if passing conditions
-					if (target not in dict and
-						regulon.genes[target].type != GRP_TYPES[2] and
-						cor * prev_cor > self.correlation_thread):
-						dict[target] = cor * prev_cor
-					dict = self.get_impact(
-						regulon, target, depth, dict, cor * prev_cor
-					)
-		return dict
-
-	# combine regulons in self.regulons by index
-	def __combine_regulons(self, ind_1, ind_2):
-		self.regulons[ind_1].grps.update(self.regulons[ind_2].grps)
-		self.regulons[ind_1].genes.update(self.regulons[ind_2].genes)
 
 	# summarize key regulatory sources appearing in regulons
 	def get_reg_sources(self):
@@ -255,101 +168,7 @@ class Extract(object):
 						dict[target]['target_num'] += 1
 						dict[target]['source_num'] += 1
 
-		# filter by top_grp_amount
-		return OrderedDict(sorted(
-			dict.items(), key = lambda x:x[-1]['target_num'], reverse = True
-		))
-
-	# Find potential bridge GRPs with specific gene to link 2 regulons
-	def __find_bridges_by_gene(self,
-							   gene,
-							   from_regulon,
-							   meta_grn,
-							   allowrance,
-							   grp_skip_list,
-							   combine_list,
-							   prev_grps
-							  ):
-		# last round to attempt find a bridge
-		if allowrance == 0:
-			for anchor, record in self.regulatory_sources.items():
-				if record['regulon_id'] == from_regulon: continue
-				# presume GRP which could link regulons
-				grp_id = grn.GRP(gene, anchor).id
-				if grp_id not in grp_skip_list and grp_id in meta_grn.grps:
-					anchor_reg_id = record['regulon_id']
-					prev_grps.append(grp_id)
-					# add grp to grp_skip_list
-					for id in prev_grps: grp_skip_list[id] = None
-					self.__update_combine_list(
-						reg_id1 = from_regulon,
-						reg_id2 = anchor_reg_id,
-						grp_ids = prev_grps,
-						combine_list = combine_list
-					)
-
-		elif allowrance > 0:
-			for grp_id, grp in meta_grn.grps.items():
-				if grp_id in grp_skip_list: continue
-				if grp.regulatory_source == gene:
-					new = grp.regulatory_target
-				elif grp.regulatory_target == gene:
-					new = grp.regulatory_source
-				else: continue
-				if (new in self.regulatory_sources and
-					self.regulatory_sources[new]['regulon_id'] != from_regulon):
-					anchor_reg_id = self.regulatory_sources[new]['regulon_id']
-					prev_grps.append(grp_id)
-					# add grp to grp_skip_list
-					for id in prev_grps: grp_skip_list[id] = None
-					self.__update_combine_list(
-						reg_id1 = from_regulon,
-						reg_id2 = anchor_reg_id,
-						grp_ids = prev_grps,
-						combine_list = combine_list
-					)
-				else:
-					prev_grps.append(grp_id)
-					self.__find_bridges_by_gene(
-						new,
-						from_regulon,
-						meta_grn,
-						allowrance - 1,
-						grp_skip_list,
-						combine_list,
-						prev_grps
-					)
-		else:
-			raise lib.Error('Reached a negative allowrance value')
-
-	# update combine_list if a GRP found as bridge between regulons
-	def __update_combine_list(self, reg_id1, reg_id2, grp_ids, combine_list):
-		# check action to perform
-		ind_1 = None
-		ind_2 = None
-		for index, ele in enumerate(combine_list):
-			# check which regulon set to add
-			if reg_id1 in ele[0]: ind_1 = index
-			if reg_id2 in ele[0]: ind_2 = index
-		if ind_1 is None and ind_2 is None:
-			combine_list.append([[reg_id1, reg_id2], [id for id in grp_ids]])
-
-		# one of regulons already need to combine
-		elif ind_1 is None and ind_2 is not None:
-			combine_list[ind_2][0].append(reg_id1)
-			combine_list[ind_2][1] += grp_ids
-		elif ind_1 is not None and ind_2 is None:
-			combine_list[ind_1][0].append(reg_id2)
-			combine_list[ind_1][1] += grp_ids
-
-		# both regulons already in combine list
-		elif ind_1 == ind_2:
-			combine_list[ind_1][1] += grp_ids
-		else:
-			combine_list[ind_1][1] += grp_ids
-			combine_list[ind_1][0] += combine_list[ind_2][0]
-			combine_list[ind_1][1] += combine_list[ind_2][1]
-			del combine_list[ind_2]
+		return dict
 
 	def update_regulon_with_grp(self, grp, meta_grn):
 		update_ind = None
@@ -410,5 +229,13 @@ class Extract(object):
 
 		# combine 2 regulons if new GRP can connect two
 		if combine_ind is not None:
-			self.__combine_regulons(ind_1 = update_ind, ind_2 = combine_ind)
+			self.update_regulon_with_regulon(update_ind, combine_ind)
 			del self.regulons[combine_ind]
+
+	# combine regulons in self.regulons by index
+	def update_regulon_with_regulon(self,
+									regulon_id:int = None,
+									source_id:int = None
+									):
+		self.regulons[regulon_id].grps.update(self.regulons[source_id].grps)
+		self.regulons[regulon_id].genes.update(self.regulons[source_id].genes)

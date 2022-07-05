@@ -36,14 +36,14 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 					   prediction_thread = 'auto',
 					   psgrn_load_path:str = None,
 					   specie:str = 'mouse',
-					   sliding_window_size:int = 10,
+					   sliding_window_size:int = 100,
 					   sliding_window_stride:int = None,
 					   std_value_thread:float = 1.0,
 					   std_ratio_thread:float = None,
 					  ):
 	"""
 	Integrate database information and get pseudo-sample GRNs
-	from gene expression data
+	from gene expression data.
 
 	Parameters:
 		correlation_thread: <float> Default = 0.2
@@ -135,7 +135,7 @@ def Get_Pseudo_Samples(correlation_thread:float = 0.2,
 
 				'human': Homo sapiens.
 
-		sliding_window_size: <int> Default = 10
+		sliding_window_size: <int> Default = 100
 			Number of samples a pseudo-sample generated with
 			sliding window technique contains.
 

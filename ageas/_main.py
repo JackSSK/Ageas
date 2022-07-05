@@ -48,7 +48,7 @@ class Launch:
 				 prediction_thread = 'auto',
 				 psgrn_load_path:str = None,
 				 specie:str = 'mouse',
-				 sliding_window_size:int = 10,
+				 sliding_window_size:int = 100,
 				 sliding_window_stride:int = None,
 				 std_value_thread:float = 1.0,
 				 std_ratio_thread:float = None,
@@ -59,9 +59,9 @@ class Launch:
 				 feature_select_iteration:int = 1,
 				 top_grp_amount:int = 100,
 				 grp_changing_thread:float = 0.05,
-				 link_step_allowrance:int = 1,
 				 model_select_iteration:int = 2,
 				 outlier_thread:float = 3.0,
+				 regulatory_trace_depth:int = 1,
 				 stabilize_patient:int = 3,
 				 stabilize_iteration:int = 10,
 				 max_train_size:float = 0.95,
@@ -144,22 +144,22 @@ class Launch:
 		# integrate database info
 		# and make meta GRN, pseudo samples if not loaded
 		self.database_info,self.meta,self.pseudo_grns=ageas.Get_Pseudo_Samples(
-			meta_load_path = meta_load_path,
-			psgrn_load_path = psgrn_load_path,
+			correlation_thread = correlation_thread,
 			database_path = database_path,
 			database_type = database_type,
 			group1_path = group1_path,
 			group2_path = group2_path,
-			specie = specie,
 			interaction_database = interaction_database,
+			log2fc_thread = log2fc_thread,
+			meta_load_path = meta_load_path,
+			mww_p_val_thread = mww_p_val_thread,
+			prediction_thread = prediction_thread,
+			psgrn_load_path = psgrn_load_path,
+			specie = specie,
 			sliding_window_size = sliding_window_size,
 			sliding_window_stride = sliding_window_stride,
 			std_value_thread = std_value_thread,
 			std_ratio_thread = std_ratio_thread,
-			mww_p_val_thread = mww_p_val_thread,
-			log2fc_thread = log2fc_thread,
-			prediction_thread = prediction_thread,
-			correlation_thread = correlation_thread,
 		)
 
 		# Meta GRN Analysis
@@ -170,30 +170,28 @@ class Launch:
 		start = time.time()
 		# Initialize a basic unit
 		self.basic_unit = ageas.Unit(
-			meta = self.meta,
-			pseudo_grns = self.pseudo_grns,
-			model_config = self.model_config,
+			# Args already processed
 			database_info = self.database_info,
+			meta = self.meta,
+			model_config = self.model_config,
+			pseudo_grns = self.pseudo_grns,
 
-			cpu_mode = cpu_mode,
-			correlation_thread = correlation_thread,
-			top_grp_amount = top_grp_amount,
-			z_score_extract_thread = z_score_extract_thread,
-
-			max_train_size = max_train_size,
+			# raw parameters
 			clf_keep_ratio = clf_keep_ratio,
 			clf_accuracy_thread = clf_accuracy_thread,
-			model_select_iteration = model_select_iteration,
-
-			outlier_thread = outlier_thread,
+			correlation_thread = correlation_thread,
+			cpu_mode = cpu_mode,
 			feature_dropout_ratio = feature_dropout_ratio,
 			feature_select_iteration = feature_select_iteration,
-
-			stabilize_patient = stabilize_patient,
 			grp_changing_thread = grp_changing_thread,
+			max_train_size = max_train_size,
+			model_select_iteration = model_select_iteration,
+			outlier_thread = outlier_thread,
+			regulatory_trace_depth = regulatory_trace_depth,
+			stabilize_patient = stabilize_patient,
 			stabilize_iteration = stabilize_iteration,
-
-			link_step_allowrance = link_step_allowrance,
+			top_grp_amount = top_grp_amount,
+			z_score_extract_thread = z_score_extract_thread,
 		)
 
 		self.lockon = threading.Lock()
@@ -244,7 +242,7 @@ class Launch:
 			for index, atlas in enumerate(self.reports):
 				report_path = folder_path + 'no_' + str(index) + '/'
 				if not os.path.exists(report_path): os.makedirs(report_path)
-				atlas.grps.save(report_path + 'grps_importances.txt')
+				atlas.grps.save(report_path + 'grps_importances.csv')
 				json.encode(atlas.outlier_grps, report_path + 'outlier_grps.js')
 
 		self.atlas.report(self.meta.grn).to_csv(

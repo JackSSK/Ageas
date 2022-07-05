@@ -25,7 +25,7 @@ class Positional_Encoding(nn.Module):
     .. math:
         \text{PosEncoder}(pos, 2i) = sin(pos/10000^(2i/d_model))
         \text{PosEncoder}(pos, 2i+1) = cos(pos/10000^(2i/d_model))
-        \text{where pos is the word position and i is the embed idx)
+        \text{where pos is the position and i is the embed idx)
     Args:
         d_model: the embed dim (required).
         dropout: the dropout value (default=0.1).
@@ -35,9 +35,9 @@ class Positional_Encoding(nn.Module):
 
     def __init__(self, d_model, dropout = 0.1):
         super(Positional_Encoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
+        self.dropout = nn.Dropout(p = dropout)
         pe = torch.zeros(d_model, d_model)
-        position = torch.arange(0, d_model, dtype=torch.float).unsqueeze(1)
+        position = torch.arange(0, d_model, dtype = torch.float).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, d_model, 2).float() *
                                     (-math.log(10000.0) / d_model))
         pe[:, 0::2] = torch.sin(position * div_term)
@@ -65,8 +65,8 @@ class Transformer(nn.Module):
     Container module with an encoder, a transformer module, and a decoder.
     """
     def __init__(self,
-                 id, # model id
-                 num_features, # the number of expected features
+                 id = 'transformer', # model id
+                 num_features = 1024, # the number of expected features
                  has_mask = True, # whether using mask or not
                  emsize = 512, # size after encoder
                  nhead = 8, # number of heads in the multiheadattention models
@@ -80,7 +80,6 @@ class Transformer(nn.Module):
         self.id = id
         self.has_mask = has_mask
         self.model_type = 'Transformer'
-        self.num_features = num_features
         self.emsize = emsize
         self.mask = None
         self.encoder = nn.Linear(num_features, emsize)
@@ -126,8 +125,8 @@ class Make(classifier.Make_Template):
     """
     # Perform classifier training process for given times
     def train(self, dataSets, test_split_set):
-        testData = classifier.reshape_tensor(dataSets.dataTest)
-        testLabel = dataSets.labelTest
+        test_data = classifier.reshape_tensor(dataSets.dataTest)
+        test_label = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
         for id in self.configs:
             model = Transformer(id, num_features, **self.configs[id]['config'])
@@ -137,8 +136,8 @@ class Make(classifier.Make_Template):
             # local test
             accuracy = self._evaluate_torch(
                 model,
-                testData,
-                testLabel,
+                test_data,
+                test_label,
                 test_split_set
             )
             self.models.append([model, accuracy])

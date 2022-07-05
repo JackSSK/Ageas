@@ -134,6 +134,45 @@ class GRN(object):
 				graph.add_edge(target, source, **self.grps[grp_id].as_dict())
 		return graph
 
+	# recursively add up impact score with GRP linking gene to its target
+	def get_impact(self,
+				   gene = None,
+				   depth = 3,
+				   prev_cor = 1.0,
+				   correlation_thread = None,
+				   dict = None,
+				  ):
+		"""
+		depth: <int> Default = 3
+			When assessing a TF's regulatory impact on other genes,
+			how far the distance between TF and potential regulatory source
+			can be.
+
+			The correlation strength of stepped correlation strength of TF
+			and gene still need to be greater than correlation_thread.
+		"""
+		if depth > 0:
+			depth -= 1
+			for target in self.genes[gene].target:
+				if len(self.genes[target].target) > 0:
+					# get regulatory correlation strength
+					link_grp = grn.GRP(gene, target).id
+					cors = self.grps[link_grp].correlations
+					if cors['group1'] == 0.0 or cors['group2'] == 0.0:
+						cor = abs(max(cors['group1'], cors['group2']))
+					elif cors['group1'] != 0.0 and cors['group2'] != 0.0:
+						cor = (abs(cors['group1']) + abs(cors['group2'])) / 2
+					else:
+						raise lib.Error(link_grp, 'Cor in meta GRN is creepy')
+					# count it if passing conditions
+					cor = cor * prev_cor
+					if target not in dict and cor > correlation_thread:
+						dict[target] = cor
+					dict = self.get_impact(
+						target, depth, cor, dict
+					)
+		return dict
+
 	def save_json(self, path):
 		json.encode(self.as_dict(), path)
 		return

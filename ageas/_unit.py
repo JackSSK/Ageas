@@ -35,10 +35,10 @@ class Unit(object):
                  feature_dropout_ratio:float = 0.1,
                  feature_select_iteration:int = 1,
                  grp_changing_thread:float = 0.05,
-                 link_step_allowrance:int = 0,
                  max_train_size:float = 0.95,
                  model_select_iteration:int = 2,
                  outlier_thread:float = 3.0,
+                 regulatory_trace_depth:int = 1,
                  stabilize_patient:int = 3,
                  stabilize_iteration:int = 10,
                  top_grp_amount:int = 100,
@@ -97,7 +97,7 @@ class Unit(object):
                 key GRP extraction
 
             top_grp_amount: <int> Default = 100
-                Amount of GRPs an AGEAS unit would extract.
+                Amount of GRPs an AGEAS extractor unit would extract.
 
                 If outlier_thread is set, since outlier GRPs are extracted
                 during feature selection part and will also be considered as
@@ -108,14 +108,6 @@ class Unit(object):
                 stabilize iterations lower than this thread, these two
                 iterations will be considered as having consistent result.
 
-            link_step_allowrance: <int> Default = 1
-                During key atlas extraction, when finding bridge GRPs to link 2
-                separate regulons, how many steps will be allowed.
-
-                link_step_allowrance == 1 means, no intermediate gene can be
-                used and portential regulatory source must be able to
-                directly interact with gene from another regulon.
-
             model_select_iteration: <int> Default = 2
                 Number of iteration for classification model selection before
                 the mandatory filter.
@@ -123,6 +115,10 @@ class Unit(object):
             outlier_thread: <float> Default = 3.0
                 The lower bound of Z-score scaled importance value to consider
                 a GRP as outlier need to be retain.
+
+            regulatory_trace_depth: <int> Default = 1
+                Trace regulatory upstream of regulatory sources included in key
+                regulons extracted.
 
             stabilize_patient: <int> Default = 3
                 If stabilize iterations continuously having consistent
@@ -173,8 +169,7 @@ class Unit(object):
         self.stabilize_patient = stabilize_patient
         self.grp_changing_thread = grp_changing_thread
         self.stabilize_iteration = stabilize_iteration
-
-        self.link_step_allowrance = link_step_allowrance
+        self.regulatory_trace_depth = regulatory_trace_depth
 
     # Select Classification models for later interpretations
     def select_models(self,):
@@ -292,14 +287,11 @@ class Unit(object):
         start = time.time()
         self.atlas.build_regulon(meta_grn = self.meta.grn,)
 
-        # Attempting to Connect Regulons if necessary
-        if (self.link_step_allowrance is not None and
-            self.link_step_allowrance > 0 and
-            len(self.atlas.regulons) > 1):
-            self.atlas.link_regulon(
-                meta_grn = self.meta.grn,
-                allowrance = self.link_step_allowrance
-            )
+        # Trace regulatory sources of regulons in atlas extracted
+        for i in range(self.regulatory_trace_depth):
+            self.atlas.add_reg_sources(meta_grn = self.meta.grn,)
+
+        self.atlas.find_bridges(meta_grn = self.meta.grn)
         print('Time to build key regulons : ', time.time() - start)
 
     # take out some GRPs based on feature dropout ratio

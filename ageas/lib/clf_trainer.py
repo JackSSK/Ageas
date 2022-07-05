@@ -154,12 +154,15 @@ class Train(clf.Make_Template):
                 train_size = last_train_size,
                 clf_accuracy_thread = clf_accuracy_thread
             )
-        else: self._filter_models(clf_accuracy_thread = clf_accuracy_thread)
+        else:
+            self._filter_models(clf_accuracy_thread = clf_accuracy_thread)
 
         self.__prune_model_config(id_keep = {x[0].id:'' for x in self.models})
+
         total_model = 0
         for genra in self.model_config:
             total_model += len(self.model_config[genra])
+
         print('Selecting ', total_model, ' Models after Model Selection')
 
     # Re-assign accuracy based on all data performance
@@ -167,7 +170,7 @@ class Train(clf.Make_Template):
         i = 0
         for record in clf_list:
             model = record[0]
-            i+=1
+            i += 1
             # Handel SVM and XGB cases
             # Or maybe any sklearn-style case
             if (model.model_type == 'SVM' or
