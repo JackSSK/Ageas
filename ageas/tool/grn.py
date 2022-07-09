@@ -6,6 +6,7 @@ author: jy, nkmtmsys
 """
 
 import re
+import pandas as pd
 import networkx as nx
 import statistics as sta
 import ageas.tool as tool
@@ -136,14 +137,14 @@ class GRN(object):
 		return graph
 
 	# recursively add up impact score with GRP linking gene to its target
-	def get_impact(self,
-				   gene = None,
-				   depth = 3,
-				   prev_cor = 1.0,
-				   correlation_thread = None,
-				   dict = None,
-				  ):
+	def get_grps_from_gene(self,
+				   		   gene = None,
+				   		   depth = 3,
+				   		   dict = dict(),
+				  		  ):
 		"""
+		Recursively find GRPs able to link with root_gene in given depth.
+
 		depth: <int> Default = 3
 			When assessing a TF's regulatory impact on other genes,
 			how far the distance between TF and potential regulatory source
@@ -154,25 +155,40 @@ class GRN(object):
 		"""
 		if depth > 0:
 			depth -= 1
-			for target in self.genes[gene].target:
-				if len(self.genes[target].target) > 0:
-					# get regulatory correlation strength
-					link_grp = grn.GRP(gene, target).id
-					cors = self.grps[link_grp].correlations
-					if cors['group1'] == 0.0 or cors['group2'] == 0.0:
-						cor = abs(max(cors['group1'], cors['group2']))
-					elif cors['group1'] != 0.0 and cors['group2'] != 0.0:
-						cor = (abs(cors['group1']) + abs(cors['group2'])) / 2
-					else:
-						raise lib.Error(link_grp, 'Cor in meta GRN is creepy')
-					# count it if passing conditions
-					cor = cor * prev_cor
-					if target not in dict and cor > correlation_thread:
-						dict[target] = cor
-					dict = self.get_impact(
-						target, depth, cor, dict
-					)
+			for target in self.genes[gene].target + self.genes[gene].source:
+				link_grp = GRP(gene, target).id
+				if link_grp not in dict and link_grp in self.grps:
+					dict[link_grp] = self.grps[link_grp]
+				dict = self.get_grps_from_gene(target, depth, dict)
 		return dict
+
+	def list_grp_as_df(self):
+		answer = list()
+		for id,rec in self.grps.items():
+			answer.append([
+				rec.regulatory_source,
+				self.genes[rec.regulatory_source].symbol,
+				rec.regulatory_target,
+				self.genes[rec.regulatory_target].symbol,
+				rec.reversable,
+				rec.type,
+				rec.correlations['group1'],
+				rec.correlations['group2'],
+				rec.score,
+			])
+		answer = pd.DataFrame(sorted(answer, key = lambda x:x[-1], reverse = True))
+		answer.columns = [
+			'Regulatory source ID',
+			'Regulatory source Gene Symbol',
+			'Regulatory target ID',
+			'Regulatory target Gene Symbol',
+			'Reversable',
+			'Type',
+			'Correlation in Group 1',
+			'Correlation in Group 2',
+			'Score'
+		]
+		return answer
 
 	def save_json(self, path):
 		json.encode(self.as_dict(), path)

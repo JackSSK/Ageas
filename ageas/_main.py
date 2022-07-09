@@ -213,6 +213,7 @@ class Launch:
 
 	def save_reports(self,
 					 folder_path:str = None,
+					 regulon_header:str = 'regulon_',
 					 save_unit_reports:bool = False,
 					):
 		"""
@@ -223,6 +224,9 @@ class Launch:
 		Args:
 			folder_path: <str> Default = None
 				Path to create folder for saving AGEAS report files.
+
+			regulon_header: <str> Default = 'regulon_'
+				The name header for each regulon in atlas.
 
 			save_unit_reports: <bool> Default = False
 				Whether saving key GRPs extracted by each AGEAS Unit or not.
@@ -245,13 +249,19 @@ class Launch:
 				atlas.grps.save(report_path + 'grps_importances.csv')
 				json.encode(atlas.outlier_grps, report_path + 'outlier_grps.js')
 
-		self.atlas.report(self.meta.grn).to_csv(
+		self.atlas.report(self.meta.grn, header = regulon_header).to_csv(
 			folder_path + 'report.csv',
 			index = False
 		)
 
+		self.atlas.list_grp_as_df().to_csv(
+			folder_path + 'grp_scores.csv',
+			index = False
+		)
+
 		json.encode(
-			{k:v.as_dict() for k,v in self.atlas.regulons.items()},
+			{regulon_header + str(k):v.as_dict() for k,v in enumerate(
+				self.atlas.regulons)},
 			folder_path + 'full_atlas.js'
 		)
 

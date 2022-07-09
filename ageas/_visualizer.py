@@ -15,7 +15,6 @@ import matplotlib.cm as cmx
 import matplotlib.colors as colors
 from scipy.special import softmax
 from netgraph import Graph
-from netgraph import InteractiveGraph
 import ageas.tool.grn as grn
 import ageas.tool.json as json
 
@@ -31,68 +30,40 @@ class Plot_Regulon(object):
     """
 
     def __init__(self,
+                 regulon = None,
                  root_gene:str = None,
                  weight_thread:float = 0.0,
-                 graph_type:str = 'all',
-                 impact_depth:int = 1,
+                 plot_group:str = 'all',
+                 depth:int = 1,
                  hide_bridge:bool = True,
-                 file_path:str = None,
-                 regulon_id:str = 'regulon_0',
                 ):
         super(Plot_Regulon, self).__init__()
-        self.root_gene = root_gene
-        self.graph_type = str(graph_type)
-        self.hide_bridge = hide_bridge
-        self.impact_depth = impact_depth
-        self.weight_thread = weight_thread
+        self.plot_group = str(plot_group)
 
-        # Load in regulon to plot
-        regulon = grn.GRN(id = regulon_id)
-        regulon.load_dict(json.decode(file_path)[regulon_id])
-
-        # Plot the whole regulon or set a node as root?
-        if self.root_gene is None:
-            # add every qualified GRP in given regulon
-            grps_to_plot = {
-                k:None for k,v in regulon.grps.items() if self.__check(v.type)
-            }
+        if root_gene is not None:
+            grps_to_plot = regulon.get_grps_from_gene(root_gene, depth)
         else:
-            # only testify GRPs reachable to root_gene in given depth
-            grps_to_plot = dict()
-            self.__find_grps(regulon, root_gene, grps_to_plot, impact_depth)
+            grps_to_plot = regulon.grps
 
-        # get weight for GRPs and filter GRPs based on correlation thread
-        grps_to_plot = self.__weight_filter(grps_to_plot, regulon)
+        grps_to_plot = {
+            k:None for k,v in grps_to_plot.items() if self.__check(
+                v, weight_thread, hide_bridge
+            )
+        }
+        assert len(grps_to_plot) > 0
 
         # now we make the graph
         self.graph = regulon.as_digraph(grp_ids = grps_to_plot.keys())
-        # make sure we have something to play with
-        if len(self.graph) <= 0: raise Exception('No GRPs in Graph!')
 
-    # check type
-    def __check(self, type): return type != TYPES[2] or not self.hide_bridge
 
-    # filter GRPs based on correlation thread
-    def __weight_filter(self, grp_ids, regulon):
-        answer = {}
-        for id in grp_ids:
-            weight = self.get_weight(regulon.grps[id].correlations)
-            if abs(weight) >= self.weight_thread:
-                answer[id] = None
-                regulon.grps[id].weight = weight
-        return answer
-
-    # recursively find GRPs able to link with root_gene in given depth
-    def __find_grps(self, regulon, gene, dict, depth):
-        if depth >= 1:
-            depth -= 1
-            for tar in regulon.genes[gene].target + regulon.genes[gene].source:
-                id = grn.GRP(gene, tar).id
-                # add id to dict accordingly
-                if id not in dict and self.__check(regulon.grps[id].type):
-                    dict[id] = None
-                # call self recurssionly
-                self.__find_grps(regulon, tar, dict, depth)
+    # check whether keep a GRP to plot or not
+    def __check(self, grp, weight_thread, hide_bridge):
+        weight = self.get_weight(grp.correlations)
+        grp.weight = weight
+        if abs(weight) >= weight_thread:
+            return grp.type != TYPES[2] or not hide_bridge
+        else:
+            return False
 
     # make sure which GRPs are qualified and plot them
     def draw(self,
@@ -101,7 +72,7 @@ class Plot_Regulon(object):
              node_base_size:int = 2,
              figure_size:int = 20,
              method:str = 'netgraph',
-             legend_size:int = 10,
+             legend_pos:set = (1.3, -0.05),
              layout:str = 'spring',
              colorbar_shrink:float = 0.25,
              font_size:int = 10,
@@ -150,15 +121,16 @@ class Plot_Regulon(object):
                 edge_width_scale = edge_width_scale,
             )
 
-        # add color bar and legend
-        self.set_legend(
-            legend_size = legend_size,
-            method = method
-        )
         self.set_color_bar(
             ax = ax,
             shrink = colorbar_shrink,
             font_size = font_size
+        )
+        self.set_legend(
+            ax = ax,
+            font_size = font_size,
+            legend_pos = legend_pos,
+            method = method
         )
         fig.tight_layout()
 
@@ -236,10 +208,7 @@ class Plot_Regulon(object):
             pos = nx.circular_layout(self.graph, scale = scale,)
         elif layout == 'spring':
             pos = nx.spring_layout(
-                self.graph,
-                scale = scale,
-                seed = seed,
-                k = max(node_size),
+                self.graph, scale = scale, seed = seed, k = max(node_size),
             )
         elif layout == 'randon':
             pos = nx.random_layout(self.graph, seed = seed)
@@ -327,11 +296,11 @@ class Plot_Regulon(object):
         node_size = dict()
         node_color = dict()
         node_alhpa = 0.8
-        node_labels = {n:n for n in self.graph}
+        node_labels = {k:v['symbol'] for k,v in self.graph.nodes.data()}
         for node, data in self.graph.nodes(data = True):
             factor = 1
-            # target_num = len([i for i in self.graph.successors(node)])
-            target_num = len(data['target'])
+            target_num = len([i for i in self.graph.successors(node)])
+            # target_num = len(data['target'])
             if target_num > 0:
                 node_color[node] = 1
                 # increase node size according to gene's reg power
@@ -351,25 +320,22 @@ class Plot_Regulon(object):
 
     # just as named
     def get_weight(self, correlations):
-        if self.graph_type == 'group1' or self.graph_type == '1':
+        if self.plot_group == 'group1' or self.plot_group == '1':
             weight = correlations['group1']
-        elif self.graph_type == 'group2' or self.graph_type == '2':
+        elif self.plot_group == 'group2' or self.plot_group == '2':
             weight = correlations['group2']
-        elif self.graph_type == 'all':
+        elif self.plot_group == 'all':
             weight = abs(correlations['group1']) - abs(correlations['group2'])
         return weight
 
     # Set up a color bar with fixed scale from -1.0 to 1.0
     def set_color_bar(self, ax, shrink = 1, font_size = 10):
         cbar = plt.colorbar(self.edge_scalar_map, ax = ax, shrink = shrink)
-        if self.graph_type == 'all':
-            labels = cbar.ax.get_yticklabels()
-            labels[0] = 'Stronger in group2'
-            # only set mid tick label when it's odd length
-            if (len(labels) % 2) == 1:
-                labels[int(len(labels) / 2)] = 'No Difference'
-            labels[-1] = 'Stronger in group1'
-            cbar.set_ticklabels(labels)
+        if self.plot_group == 'all':
+            cbar.set_ticks([-1,0,1])
+            cbar.set_ticklabels(
+                ['Stronger in group2', 'No Difference', 'Stronger in group1']
+            )
             cbar.ax.tick_params(labelsize = font_size)
         cbar.ax.set_ylabel(
             'Gene Expression Correlation',
@@ -380,72 +346,92 @@ class Plot_Regulon(object):
         )
 
     # Set Up Legend
-    def set_legend(self, legend_size, method):
-        plt.scatter(
+    def set_legend(self, ax, font_size, legend_pos, method):
+        ax.scatter(
             [],[],
-            s = legend_size * 10,
+            s = font_size * 10,
             marker = 'o',
             c = [self.node_cmap(0)],
             label = 'Regulatory Target'
         )
-        plt.scatter(
+        ax.scatter(
             [],[],
-            s = legend_size * 10,
+            s = font_size * 10,
             marker = 'o',
             c = [self.node_cmap(1)],
             label = 'Regulatory Source'
         )
         if method == 'netgraph':
-            plt.scatter(
+            ax.scatter(
                 [],[],
-                s = legend_size * 10,
+                s = font_size * 10,
                 marker = 'd',
                 c = ['black'],
                 label = 'TF'
             )
-            plt.scatter(
+            ax.scatter(
                 [],[],
-                s = legend_size * 10,
+                s = font_size * 10,
                 marker = 'o',
                 c = ['black'],
                 label = 'Gene'
             )
         elif method == 'networkx':
-            plt.plot(
+            ax.plot(
                 [], [],
                 linestyle = 'dashed',
                 c = 'black',
                 label = 'Bridge GRP'
             )
-            plt.plot(
+            ax.plot(
                 [], [],
                 linestyle = 'solid',
                 c = 'black',
                 label = 'Key GRP'
             )
-        plt.legend(loc = 1, prop = {'size': legend_size})
+        ax.legend(bbox_to_anchor=(legend_pos[0], legend_pos[1]),  prop = {'size': font_size})
 
     # save the plot. PDF by default
     def save(self, path:str = None, format:str = 'pdf'):
         plt.savefig(path, format = format)
         plt.close()
 
-    # show the interactive graph
-    def show(self):
-        plt.show()
+    # # show the interactive graph
+    # def show(self):
+    #     plt.show()
 
 
 # if __name__ == '__main__':
+#     i = 0
+#     regulon = grn.GRN()
+#
 #     header = 'liverCCl4/hsc_pf_a6w/'
-#     for i in range(1):
-#         folder_path = header + 'run_' + str(i) + '/'
-#         atlas_path = folder_path + 'key_atlas.js'
-#         a = Plot_Regulon(
-#             file_path = atlas_path,
-#             regulon_id = 'regulon_0',
-#             hide_bridge = False,
-#             graph_type = 'group2',
-#             root_gene = 'HAND2',
-#             # impact_depth = 1,
-#         )
-#         a.draw(save_path = folder_path + 'ultimate_useless_mess.pdf',)
+#     # header = 'mef_esc/'
+#     # header = 'neural/'
+#
+#     folder_path = header + 'run_' + str(i) + '/'
+#
+#     # atlas_path = folder_path + 'key_atlas.js'
+#     # regulon.load_dict(json.decode(atlas_path))
+#
+#     atlas_path = folder_path + 'full_atlas.js'
+#     regulon.load_dict(json.decode(atlas_path)['regulon_0'])
+#
+#     a = Plot_Regulon(
+#         regulon = regulon,
+#         hide_bridge = False,
+#         # plot_group = 'group2',
+#         root_gene = 'ENSMUSG00000000247',
+#         depth = 1,
+#     )
+#
+#     a.draw(
+#         # layout = 'circular',
+#         figure_size = 20,
+#         font_size = 15,
+#         node_base_size = 2,
+#         legend_pos = (1.23, 0.3),
+#         edge_width_scale = 2.0,
+#         # method = 'networkx',
+#         save_path = folder_path + 'lhx2_plot.pdf',
+#     )

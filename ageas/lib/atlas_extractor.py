@@ -136,10 +136,13 @@ class Atlas(object):
 			'Meta_Degree',
 			'Log2FC'
 		]
-
-		# change regulons to dict type
-		self.regulons = {header + str(i):e for i, e in enumerate(self.regulons)}
 		return df
+
+	def list_grp_as_df(self):
+		answer = pd.concat([reg.list_grp_as_df() for reg in self.regulons])
+		answer.sort_values('Score')
+		return answer
+
 
 	# summarize key regulatory sources appearing in regulons
 	def get_key_atlas(self):
