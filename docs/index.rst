@@ -27,7 +27,7 @@ AGEAS can be installed from either `PyPI <https://pypi.org/project/Ageas/>`_ ::
 or cloned from `GitHub <https://github.com/nkmtmsys/Ageas/>`_ ::
 
   git clone https://github.com/nkmtmsys/Ageas.git
-  cd ageas
+  cd Ageas
   pip install .
 
 
@@ -38,7 +38,7 @@ Test
 After installation, a performance test can be carried out with::
 
   import ageas
-  ageas.Test(cpu_mode = False)
+  ageas.Test(protocol = 'multi')
 
 
 

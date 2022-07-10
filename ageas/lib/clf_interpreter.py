@@ -217,5 +217,5 @@ class SHAP_Explainer(object):
             check_additivity = False,
             data = self.basement_data,
         )
-        shap_vals = explainer.shap_values(data)
+        shap_vals = explainer.shap_values(data, check_additivity = False)
         return softmax(sum(np.abs(shap_vals).mean(0)))
