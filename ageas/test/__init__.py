@@ -4,6 +4,7 @@ Test script to make sure AGEAS working
 
 author: jy, nkmtmsys
 """
+
 import ageas
 from pkg_resources import resource_filename
 group1_path = resource_filename(__name__, 'ips.csv.gz')
@@ -15,9 +16,9 @@ def Test(**kwargs):
 	"""
 	Function to test whether AGEAS is performing properly or not.
 
-	Args:
-		**kwargs: All args in ageas.Launch except:
-		group1_path, group2_path, sliding_window_size
+	Parameters:
+		kwargs: All args in ageas.Launch except group1_path, group2_path,
+		sliding_window_size
 
 	Outputs:
 		ageas._main.Launch object

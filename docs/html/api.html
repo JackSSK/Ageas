@@ -163,7 +163,7 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="notebooks/launch.html">Launch AGEAS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="notebooks/launch.html">Launch AGEAS with ageas.Launch()</a></li>
 </ul>
 </li>
 </ul>
@@ -214,16 +214,16 @@ to use the API of each object/function.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/ageas.Launch.html#ageas.Launch" title="ageas.Launch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Launch</span></code></a>([model_config_path, mute_unit, ...])</p></td>
 <td><p>Object containing basic pipeline to launch AGEAS.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/ageas.Test.html#ageas.Test" title="ageas.Test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Test</span></code></a>([cpu_mode])</p></td>
-<td><p>Automatically select device.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/ageas.Test.html#ageas.Test" title="ageas.Test"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Test</span></code></a>(**kwargs)</p></td>
+<td><p>Function to test whether AGEAS is performing properly or not.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/ageas.Get_Pseudo_Samples.html#ageas.Get_Pseudo_Samples" title="ageas.Get_Pseudo_Samples"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Get_Pseudo_Samples</span></code></a>([correlation_thread, ...])</p></td>
-<td><p>Integrate database information and get pseudo-sample GRNs from gene expression data</p></td>
+<td><p>Integrate database information and get pseudo-sample GRNs from gene expression data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/ageas.Unit.html#ageas.Unit" title="ageas.Unit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Unit</span></code></a>([database_info, meta, model_config, ...])</p></td>
 <td><p>Extractor Unit to get candidate key regulatory pathways and corresponding genes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/ageas.Plot_Regulon.html#ageas.Plot_Regulon" title="ageas.Plot_Regulon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Plot_Regulon</span></code></a>([root_gene, weight_thread, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/ageas.Plot_Regulon.html#ageas.Plot_Regulon" title="ageas.Plot_Regulon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Plot_Regulon</span></code></a>([regulon, root_gene, ...])</p></td>
 <td><p>Visualize full or partial Regulon and save in PDF format by default</p></td>
 </tr>
 </tbody>

@@ -23,7 +23,6 @@
       ~Plot_Regulon.save
       ~Plot_Regulon.set_color_bar
       ~Plot_Regulon.set_legend
-      ~Plot_Regulon.show
    
    
 

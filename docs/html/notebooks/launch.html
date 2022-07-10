@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="API Examples" href="../examples.html" />
 
     <meta name="generator" content="sphinx-5.0.2, furo 2022.06.21"/>
-        <title>Launch AGEAS - AGEAS documentation</title>
+        <title>Launch AGEAS with ageas.Launch() - AGEAS documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -163,7 +163,7 @@
 </ul>
 </li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../examples.html">Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Launch AGEAS</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Launch AGEAS with ageas.Launch()</a></li>
 </ul>
 </li>
 </ul>
@@ -455,9 +455,17 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Launch-AGEAS">
-<h1>Launch AGEAS<a class="headerlink" href="#Launch-AGEAS" title="Permalink to this heading">#</a></h1>
+<div class="section" id="Launch-AGEAS-with-ageas.Launch()">
+<h1>Launch AGEAS with ageas.Launch()<a class="headerlink" href="#Launch-AGEAS-with-ageas.Launch()" title="Permalink to this heading">#</a></h1>
 <p>This notebook demonstrate how to use ageas.Launch() in extracting key genomic features from Gene Expression Matrices(GEMs) containing RNA-seq based gene counts data of different sample groups.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ageas</span>
+</pre></div>
+</div>
+</div>
 <p>Currently, AGEAS support data under two different formats:</p>
 <ol class="arabic">
 <li><p>Dataframe under CSV or TXT format with rows representing genes and columns representing samples, which should looks like:</p>
@@ -531,59 +539,58 @@ div.rendered_html tbody tr:hover {
 </li>
 <li><p>Market Exchange Format (MEX) output by <a class="reference external" href="https://github.com/10XGenomics/cellranger">cellranger</a> pipeline. For more information: <a class="reference external" href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices">https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices</a></p></li>
 </ol>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ageas</span>
-</pre></div>
-</div>
-</div>
 <div class="section" id="CSV-example:">
 <h2>CSV example:<a class="headerlink" href="#CSV-example:" title="Permalink to this heading">#</a></h2>
 <p>Extract key genomic factors to perform cell reprogramming from Mouse Embryonic Fibroblast(MEF) into Induced Pluripotent Stem Cell(iPSC), one of the most well known cell reprogramming case, with AGEAS.</p>
 <p>Here, we can use scRNA-seq data published as <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103221">GSE103221</a>.</p>
 <p>Either raw data in GSE103221_RAW.tar or normalized counts in GSE103221_normalized_counts.csv.gz can be processed with AGEAS.</p>
-<p>For using raw data:</p>
+<p>For using raw data with AGEAS default settings:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_raw</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
-    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;../GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;../GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">sliding_window_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This part will be very computational expensive!</span>
+<span class="c1"># Feel free to skip to adjusted version below!</span>
+
+<span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
+    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>Considering the sample scale of raw data for each group is few thousands, pseudo-samples, which abstracts gene expressions from several distinct samples as continuous expression data in order to calculate gene expression correlations, can be generated with every 100 samples.</p>
-<p>To decrease computational power requirement, standard deviation filter and differential expression filter can be enhanced with <strong>std_value_thread (default = 1.0)</strong> and <strong>log2fc_thread (default = None)</strong> correspondingly.</p>
-<p>To increase result consistency, increasing <strong>unit_num (default = 2)</strong> is recommended.</p>
-<p>For more API information, please visit <a class="reference external" href="https://nkmtmsys.github.io/Ageas/html/generated/ageas.Launch.html#ageas.Launch">documentaion page</a>.</p>
-<p>Below is test_raw with modifications:</p>
+<p>Few adjustments can be made with ageas.Launch() pipeline like:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_raw</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
-    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;../GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;../GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">log2fc_thread</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">std_value_thread</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
-    <span class="n">sliding_window_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">mute_unit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">protocol</span> <span class="o">=</span> <span class="s1">&#39;multi&#39;</span><span class="p">,</span>
     <span class="n">unit_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+
+    <span class="c1"># ageas.Get_Pseudo_Samples() args</span>
+    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
+
+    <span class="c1"># ageas.Unit() args</span>
+    <span class="n">std_value_thread</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<p>Herein, instead of using 2 AGEAS extractor units by default, 4 units are used with <strong>unit_num = 4</strong>. Extraction result should be more generalized.</p>
+<p>To save running time, <strong>protocol = ‘multi’</strong> set units to run parallelly with multithreading.</p>
+<p>With <strong>mute_unit = True</strong>, same as default setting, no log will be printed out by any unit.</p>
+<p><strong>std_value_thread = 3.0</strong> can rule out genes with relatively low expression variability and, thus, limit amount of GRPs in meta level processed GRN and pseudo-sample GRNs.</p>
+<p>For more API information, please visit <a class="reference external" href="https://nkmtmsys.github.io/Ageas/html/generated/ageas.Launch.html#ageas.Launch">documentaion page</a>.</p>
 <p>Extraction reports can be saved as files with:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_raw</span><span class="o">.</span><span class="n">save_reports</span><span class="p">(</span>
-    <span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;../report_files/&#39;</span><span class="p">,</span>
+    <span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;report_files/&#39;</span><span class="p">,</span>
     <span class="n">save_unit_reports</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -591,26 +598,229 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>Within folder <em>report_files</em>. there should have following files:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>report_files/
+    │
     ├─ no_1/
     │  ├─ grps_importances.txt
     │  ├─ outlier_grps.js
+    │
     ├─ no_2/
+    │
     ├─ no_3/
+    │
     ├─ no_4/
     │
     ├─ key_atlas.js
+    │
     ├─ metaGRN.js
+    │
     ├─ meta_report.csv
+    │
     ├─ psGRNs.js
+    │
     ├─ report.csv
 </pre></div>
 </div>
-<p>Folders <strong>no_1</strong>, <strong>no_2</strong>, <strong>no_3</strong>, <strong>no_4</strong> contain key Gene Regulatory Pathways(GRPs) extracted by each extractor unit as <strong>grps_importances.txt</strong> which has GRPs ranked with importance scores and <strong>outlier_grps.js</strong> which has GRPs once removed during feature selection due to extremly high importance score.</p>
+<p>Folders <strong>no_1</strong>, <strong>no_2</strong>, <strong>no_3</strong>, <strong>no_4</strong> contain key Gene Regulatory Pathways(GRPs) extracted by each extractor unit as <strong>grps_importances.txt</strong> which has GRPs ranked with importance scores and <strong>outlier_grps.js</strong> which has GRPs once removed during feature selection due to extremly high importance score. If these information not needed, keep <strong>save_unit_reports</strong> as False by default.</p>
 <p><strong>metaGRN.js</strong> contains meta-level processed Gene Regulatory Networks(GRN) cast with all data in each sample group.</p>
-<p><strong>psGRNs.js</strong> contains GRNs cast with each pseudo-samples.</p>
+<p><strong>psGRNs.js</strong> contains GRNs cast with each pseudo-sample.</p>
 <p><strong>key_atlas.js</strong> contains regulons cast with all of the key GRPs extracted and bridge GRPs which can connect separate regulons to form larger network.</p>
-<p><strong>meta_report.csv</strong> is generated only with meta-GRN.</p>
-<p><strong>report.csv</strong> is generated with <strong>key_atlas.js</strong>.</p>
+<p><strong>meta_report.csv</strong> is generated only with meta-GRN. Which should looks like:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 26%" />
+<col style="width: 9%" />
+<col style="width: 14%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>Gene Symbol</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Degree</p></th>
+<th class="head"><p>Log2FC</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Pou5f1</p></td>
+<td><p>Pou5f1</p></td>
+<td><p>TF</p></td>
+<td><p>786</p></td>
+<td><p>18.0654266535883</p></td>
+</tr>
+<tr class="row-odd"><td><p>Trim28</p></td>
+<td><p>Trim28</p></td>
+<td><p>TF</p></td>
+<td><p>727</p></td>
+<td><p>16.7739633684336</p></td>
+</tr>
+<tr class="row-even"><td><p>Trp53</p></td>
+<td><p>Trp53</p></td>
+<td><p>TF</p></td>
+<td><p>725</p></td>
+<td><p>15.9708922902521</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rest</p></td>
+<td><p>Rest</p></td>
+<td><p>TF</p></td>
+<td><p>695</p></td>
+<td><p>15.0240141813129</p></td>
+</tr>
+<tr class="row-even"><td><p>Sox2</p></td>
+<td><p>Sox2</p></td>
+<td><p>TF</p></td>
+<td><p>687</p></td>
+<td><p>15.4459524481466</p></td>
+</tr>
+<tr class="row-odd"><td><p>Junb</p></td>
+<td><p>Junb</p></td>
+<td><p>TF</p></td>
+<td><p>683</p></td>
+<td><p>14.1196706687477</p></td>
+</tr>
+<tr class="row-even"><td><p>Cebpb</p></td>
+<td><p>Cebpb</p></td>
+<td><p>TF</p></td>
+<td><p>682</p></td>
+<td><p>13.8599229728618</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>report.csv</strong> is generated with <strong>key_atlas.js</strong>. Which should looks like:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 14%" />
+<col style="width: 11%" />
+<col style="width: 5%" />
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 14%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>ID</p></th>
+<th class="head"><p>Gene Symbol</p></th>
+<th class="head"><p>Regulon</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Source_Num</p></th>
+<th class="head"><p>Target_Num</p></th>
+<th class="head"><p>Meta_Degree</p></th>
+<th class="head"><p>Log2FC</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Pou5f1</p></td>
+<td><p>Pou5f1</p></td>
+<td><p>regulon_0</p></td>
+<td><p>TF</p></td>
+<td><p>5</p></td>
+<td><p>68</p></td>
+<td><p>786</p></td>
+<td><p>18.065426653588275</p></td>
+</tr>
+<tr class="row-odd"><td><p>Klf2</p></td>
+<td><p>Klf2</p></td>
+<td><p>regulon_0</p></td>
+<td><p>TF</p></td>
+<td><p>0</p></td>
+<td><p>71</p></td>
+<td><p>592</p></td>
+<td><p>17.77230812962195</p></td>
+</tr>
+<tr class="row-even"><td><p>Trim28</p></td>
+<td><p>Trim28</p></td>
+<td><p>regulon_0</p></td>
+<td><p>TF</p></td>
+<td><p>8</p></td>
+<td><p>136</p></td>
+<td><p>727</p></td>
+<td><p>16.77396336843356</p></td>
+</tr>
+<tr class="row-odd"><td><p>Trp53</p></td>
+<td><p>Trp53</p></td>
+<td><p>regulon_0</p></td>
+<td><p>TF</p></td>
+<td><p>7</p></td>
+<td><p>133</p></td>
+<td><p>724</p></td>
+<td><p>15.97089229025213</p></td>
+</tr>
+<tr class="row-even"><td><p>Sox2</p></td>
+<td><p>Sox2</p></td>
+<td><p>regulon_0</p></td>
+<td><p>TF</p></td>
+<td><p>3</p></td>
+<td><p>83</p></td>
+<td><p>687</p></td>
+<td><p>15.44595244814661</p></td>
+</tr>
+<tr class="row-odd"><td><p>Nanog</p></td>
+<td><p>Nanog</p></td>
+<td><p>regulon_0</p></td>
+<td><p>TF</p></td>
+<td><p>4</p></td>
+<td><p>81</p></td>
+<td><p>656</p></td>
+<td><p>15.417885470810674</p></td>
+</tr>
+<tr class="row-even"><td><p>Klf4</p></td>
+<td><p>Klf4</p></td>
+<td><p>regulon_0</p></td>
+<td><p>TF</p></td>
+<td><p>3</p></td>
+<td><p>62</p></td>
+<td><p>428</p></td>
+<td><p>15.348589852448784</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>(I will add more explanation~)</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;GSE103221_normalized_counts.csv&#39;</span><span class="p">,</span> <span class="n">index_col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="n">mef_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;mef&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)]</span>
+<span class="n">esc_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;esc&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)]</span>
+
+<span class="n">data</span><span class="p">[</span><span class="n">mef_samples</span><span class="p">]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;mef.csv.gz&#39;</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="n">esc_samples</span><span class="p">]</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;esc.csv.gz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_normalized</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
+    <span class="n">unit_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+
+    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;mef.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;esc.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">sliding_window_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">sliding_window_stride</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+
+    <span class="n">log2fc_thread</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">std_value_thread</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">test_normalized</span><span class="o">.</span><span class="n">save_reports</span><span class="p">(</span>
+    <span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;report_files/&#39;</span><span class="p">,</span>
+    <span class="n">save_unit_reports</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Considering the sample scale of raw data for each group is few thousands, generating pseudo-samples, which abstracts gene expressions from several distinct samples as continuous expression data in order to calculate gene expression correlations, with every 100 samples by default setting is acceptable.</p>
 </div>
 </div>
 
@@ -663,7 +873,7 @@ div.rendered_html tbody tr:hover {
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Launch AGEAS</a><ul>
+<li><a class="reference internal" href="#">Launch AGEAS with ageas.Launch()</a><ul>
 <li><a class="reference internal" href="#CSV-example:">CSV example:</a></li>
 </ul>
 </li>

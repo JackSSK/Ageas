@@ -38,7 +38,7 @@ Test
 After installation, a performance test can be carried out with::
 
   import ageas
-  ageas.Test(cpu_mode = False)
+  ageas.Test(protocol = 'multi')
 
 
 
