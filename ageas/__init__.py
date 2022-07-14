@@ -53,7 +53,7 @@ from ._visualizer import (
 )
 
 from ._psgrn import (
-    Get_Pseudo_Samples
+    Data_Preprocess
 )
 
 from .test import (
@@ -62,7 +62,7 @@ from .test import (
 
 __all__ = [
     'Test',
-    'Get_Pseudo_Samples',
+    'Data_Preprocess',
     'Launch',
     'Unit',
     'Plot_Regulon',

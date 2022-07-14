@@ -118,10 +118,12 @@ class Launch:
 				https://docs.python.org/3/library/warnings.html#warning-filter
 
 			Additional:
-				All args in **ageas.Get_Pseudo_Samples()**
+				All args in **ageas.Data_Preprocess()**
 
 				All args in **ageas.Unit()** excluding database_info, meta,
 				model_config, and pseudo_grns,
+
+		:ivar self.atalas: key
 		"""
 		super(Launch, self).__init__()
 
@@ -144,7 +146,7 @@ class Launch:
 
 		# integrate database info
 		# and make meta GRN, pseudo samples if not loaded
-		self.database_info,self.meta,self.pseudo_grns=ageas.Get_Pseudo_Samples(
+		self.database_info, self.meta, self.pseudo_grns = ageas.Data_Preprocess(
 			correlation_thread = correlation_thread,
 			database_path = database_path,
 			database_type = database_type,

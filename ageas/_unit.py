@@ -15,7 +15,7 @@ import ageas.lib.atlas_extractor as extractor
 
 class Unit(object):
     """
-    Extractor Unit to get candidate key regulatory pathways
+    Extractor Unit object to get candidate key regulatory pathways
     and corresponding genes.
 
     Results are stored in attributes and can be saved as files.
@@ -27,7 +27,7 @@ class Unit(object):
                  meta = None,
                  model_config = None,
                  pseudo_grns = None,
-                 
+
                  # Parameters
                  clf_keep_ratio:float = 0.5,
                  clf_accuracy_thread:float = 0.8,
@@ -51,11 +51,11 @@ class Unit(object):
         Parameters:
             database_info: <object> Default = None
                 Integrated database information returned by
-                ageas.Get_Pseudo_Samples()
+                ageas.Data_Preprocess()
 
             meta: <object> Default = None
                 Meta level processed GRN information returned by
-                ageas.Get_Pseudo_Samples()
+                ageas.Data_Preprocess()
 
             model_config: <dict> Default = None
                 Dictionary containing configs of all candidate classification
@@ -63,7 +63,7 @@ class Unit(object):
 
             pseudo_grns: <object> Default = None
                 pseudo-sample GRNs returned by
-                ageas.Get_Pseudo_Samples()
+                ageas.Data_Preprocess()
 
             clf_keep_ratio: <float> Default = 0.5
                 Portion of classifier model to keep after each model selection
@@ -142,10 +142,11 @@ class Unit(object):
                 The lower bound of Z-score scaled importance value to extract
                 a GRP.
         """
-        super(Unit, self).__init__()
+
 
         """ Initialization """
-        self.far_out_grps = {}
+        super(Unit, self).__init__()
+        self.far_out_grps = dict()
         self.no_change_iteration_num = 0
 
         self.meta = meta
@@ -174,6 +175,9 @@ class Unit(object):
 
     # Select Classification models for later interpretations
     def select_models(self,):
+        """
+        Function to perform model selection.
+        """
         print('\nEntering Model Selection')
         start = time.time()
 
@@ -195,11 +199,14 @@ class Unit(object):
         print('Finished Model Selection', time.time() - start)
 
     def launch(self,):
+        """
+        Function to launch extractor unit after model selection.
+        """
         start = time.time()
-        self.grp_importances = interpreter.Interpret(self.clf)
+        grp_importances = interpreter.Interpret(self.clf)
         self.atlas = extractor.Atlas(
             self.correlation_thread,
-            self.grp_importances,
+            grp_importances,
             self.z_score_extract_thread,
             self.far_out_grps,
             self.top_grp_amount
@@ -214,7 +221,7 @@ class Unit(object):
                 start = time.time()
                 prev_grps = self.atlas.top_grps.index
                 rm = self.__get_grp_remove_list(
-                            self.grp_importances.result,
+                            grp_importances.result,
                             self.feature_dropout_ratio,
                             self.outlier_thread
                 )
@@ -228,10 +235,10 @@ class Unit(object):
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
 
-                self.grp_importances = interpreter.Interpret(self.clf)
+                grp_importances = interpreter.Interpret(self.clf)
                 self.atlas = extractor.Atlas(
                     self.correlation_thread,
-                    self.grp_importances,
+                    grp_importances,
                     self.z_score_extract_thread,
                     self.far_out_grps,
                     self.top_grp_amount
@@ -258,10 +265,10 @@ class Unit(object):
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
 
-                self.grp_importances.add(interpreter.Interpret(self.clf).result)
+                grp_importances.add(interpreter.Interpret(self.clf).result)
                 self.atlas = extractor.Atlas(
                     self.correlation_thread,
-                    self.grp_importances,
+                    grp_importances,
                     self.z_score_extract_thread,
                     self.far_out_grps,
                     self.top_grp_amount
@@ -270,20 +277,22 @@ class Unit(object):
                 if self.__early_stop(prev_grps, self.atlas.top_grps.index):
                     break
 
-            self.grp_importances.divide(denominator)
+            grp_importances.divide(denominator)
             self.atlas = extractor.Atlas(
                 self.correlation_thread,
-                self.grp_importances,
+                grp_importances,
                 self.z_score_extract_thread,
                 self.far_out_grps,
                 self.top_grp_amount
             )
 
             print('Time to stabilize key GRPs : ', time.time() - start)
-        del self.grp_importances
 
     # Construct Regulons with Extracted GRPs and Access Them
     def generate_regulons(self,):
+        """
+        Function to build regulon networks with extracted GRPs.
+        """
         print('\nBuilding Regulons with key GRPs')
         start = time.time()
         self.atlas.build_regulon(meta_grn = self.meta.grn,)

@@ -12,6 +12,6 @@ to use the API of each object/function.
 
     Launch
     Test
-    Get_Pseudo_Samples
+    Data_Preprocess
     Unit
     Plot_Regulon

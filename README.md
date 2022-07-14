@@ -3,7 +3,8 @@
 
 **AGEAS (AutoML-based Genomic fEatrue extrAction System)** is to find key genomic factors, including genes and regulatory pathways, in determining cellular phenotype.
 
-
+# Workflow Summary
+![Workflow](docs/images/summary.png)
 
 # Install
 
@@ -23,6 +24,12 @@ Ageas can be installed from [PyPI](https://pypi.org/project/Ageas/):
 
 <pre>
 pip install ageas
+
+OR
+
+git clone https://github.com/nkmtmsys/Ageas.git
+cd Ageas
+pip install .
 </pre>
 
 

@@ -19,14 +19,14 @@ GRP_TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 class Atlas(object):
 	"""
-	Object to extract Atalas of key Regulons from the most important GRPs
+	Object to extract Atalas of key Regulons from the most important GRPs.
 	"""
 
 	def __init__(self,
 				 correlation_thread:float = 0.2,
 				 grp_importances = None,
 				 score_thread = None,
-				 outlier_grps = {},
+				 outlier_grps = dict(),
 				 top_grp_amount = None
 				):
 		self.regulons = list()

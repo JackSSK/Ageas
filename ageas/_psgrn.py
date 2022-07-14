@@ -24,25 +24,25 @@ import ageas.database_setup.binary_class as binary_db
 
 
 
-def Get_Pseudo_Samples(correlation_thread:float = 0.2,
-					   database_path:str = None,
-					   database_type:str = 'gem_files',
-					   group1_path:str = None,
-					   group2_path:str = None,
-					   interaction_database:str = 'gtrd',
-					   log2fc_thread:float = None,
-					   meta_load_path:str = None,
-					   mww_p_val_thread:float = 0.05,
-					   prediction_thread = 'auto',
-					   psgrn_load_path:str = None,
-					   specie:str = 'mouse',
-					   sliding_window_size:int = 100,
-					   sliding_window_stride:int = None,
-					   std_value_thread:float = 1.0,
-					   std_ratio_thread:float = None,
-					  ):
+def Data_Preprocess(correlation_thread:float = 0.2,
+					database_path:str = None,
+					database_type:str = 'gem_files',
+					group1_path:str = None,
+					group2_path:str = None,
+					interaction_database:str = 'gtrd',
+					log2fc_thread:float = None,
+					meta_load_path:str = None,
+					mww_p_val_thread:float = 0.05,
+					prediction_thread = 'auto',
+					psgrn_load_path:str = None,
+					specie:str = 'mouse',
+					sliding_window_size:int = 100,
+					sliding_window_stride:int = None,
+					std_value_thread:float = 1.0,
+					std_ratio_thread:float = None,
+					):
 	"""
-	Integrate database information and get pseudo-sample GRNs
+	Function to integrate database information and get pseudo-sample GRNs
 	from gene expression data.
 
 	Parameters:

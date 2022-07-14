@@ -14,6 +14,9 @@ including genes and regulatory pathways, in determining cellular phenotype.
    This project is under active development.
 
 
+Workflow Summary
+=================================
+.. image:: images/summary.png
 
 
 

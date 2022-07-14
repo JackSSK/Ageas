@@ -17,15 +17,12 @@ def Test(**kwargs):
 	Function to test whether AGEAS is performing properly or not.
 
 	Parameters:
-		kwargs: All args in ageas.Launch except group1_path, group2_path,
-		sliding_window_size
+		kwargs: All args in ageas.Launch except **group1_path**,
+		**group2_path**, **sliding_window_size**
 
 	Outputs:
 		ageas._main.Launch object
 
-	Example::
-		import ageas
-		result = ageas.Test(cpu_mode = False)
 	"""
 	print('Start Test')
 	easy = ageas.Launch(
