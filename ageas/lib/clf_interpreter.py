@@ -28,8 +28,10 @@ class Interpret:
         # ToDo:
         # Background generation may need to be revised
         # We may just use grn generated based on universal exp matrix
-        bases = pd.DataFrame().append(trainer_data.allData.mean(axis = 0),
-                                        ignore_index = True)
+        bases = pd.DataFrame().append(
+            trainer_data.allData.mean(axis = 0),
+            ignore_index = True
+        )
         self.result = self.__interpret_process(trainer_data, bases)
         self.result = self.__subtract_feature_score(self.result)
 

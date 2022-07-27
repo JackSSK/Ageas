@@ -2,10 +2,10 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="API Examples" href="../examples.html" />
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="ageas.Plot_Regulon()" href="plot_regulon.html" /><link rel="prev" title="Examples" href="../examples.html" />
 
     <meta name="generator" content="sphinx-5.0.2, furo 2022.06.21"/>
-        <title>Launch AGEAS with ageas.Launch() - AGEAS documentation</title>
+        <title>ageas.Launch() - AGEAS documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
@@ -163,7 +163,8 @@
 </ul>
 </li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../examples.html">Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Launch AGEAS with ageas.Launch()</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">ageas.Launch()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot_regulon.html">ageas.Plot_Regulon()</a></li>
 </ul>
 </li>
 </ul>
@@ -455,9 +456,9 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Launch-AGEAS-with-ageas.Launch()">
-<h1>Launch AGEAS with ageas.Launch()<a class="headerlink" href="#Launch-AGEAS-with-ageas.Launch()" title="Permalink to this heading">#</a></h1>
-<p>This notebook demonstrate how to use ageas.Launch() in extracting key genomic features from Gene Expression Matrices(GEMs) containing RNA-seq based gene counts data of different sample groups.</p>
+<div class="section" id="ageas.Launch()">
+<h1>ageas.Launch()<a class="headerlink" href="#ageas.Launch()" title="Permalink to this heading">#</a></h1>
+<p>This notebook demonstrate how to use ageas.Launch() to launch AGEAS in extracting key genomic features from Gene Expression Matrices(GEMs) containing RNA-seq based gene counts data of different sample groups.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -466,9 +467,10 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p>Currently, AGEAS support data under two different formats:</p>
+<p>Currently, AGEAS support input data under two different formats:</p>
 <ol class="arabic">
-<li><p>Dataframe under CSV or TXT format with rows representing genes and columns representing samples, which should looks like:</p>
+<li><p><strong>‘gem_files’</strong>: Gene expression of all groups are presented as dataframes under CSV or TXT format with rows representing genes and columns representing samples.</p>
+<p>Example:</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <colgroup>
@@ -534,55 +536,56 @@ div.rendered_html tbody tr:hover {
 </tbody>
 </table>
 </div>
-<p>Genes must either be named with Gene Symbols or Ensembl Gene IDs.</p>
+<p>Genes must either be named with official gene symbols or Ensembl gene IDs(ENS***).</p>
 <p>There is no requirement for sample name type. Barcodes, numbers, any artificial names can work.</p>
 </li>
-<li><p>Market Exchange Format (MEX) output by <a class="reference external" href="https://github.com/10XGenomics/cellranger">cellranger</a> pipeline. For more information: <a class="reference external" href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices">https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices</a></p></li>
+<li><p><strong>‘mex_folders’</strong>: Each folder containing Market Exchange Format (MEX) files output by <a class="reference external" href="https://github.com/10XGenomics/cellranger">cellranger</a> pipeline representing a group of samples. For more information: <a class="reference external" href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices">https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices</a></p></li>
 </ol>
-<div class="section" id="CSV-example:">
-<h2>CSV example:<a class="headerlink" href="#CSV-example:" title="Permalink to this heading">#</a></h2>
-<p>Extract key genomic factors to perform cell reprogramming from Mouse Embryonic Fibroblast(MEF) into Induced Pluripotent Stem Cell(iPSC), one of the most well known cell reprogramming case, with AGEAS.</p>
-<p>Here, we can use scRNA-seq data published as <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103221">GSE103221</a>.</p>
-<p>Either raw data in GSE103221_RAW.tar or normalized counts in GSE103221_normalized_counts.csv.gz can be processed with AGEAS.</p>
-<p>For using raw data with AGEAS default settings:</p>
+<div class="section" id="Mouse-Embryonic-Fibroblast(MEF)-vs-Embryonic-Stem-Cells(ESC)-example:">
+<h2>Mouse Embryonic Fibroblast(MEF) vs Embryonic Stem Cells(ESC) example:<a class="headerlink" href="#Mouse-Embryonic-Fibroblast(MEF)-vs-Embryonic-Stem-Cells(ESC)-example:" title="Permalink to this heading">#</a></h2>
+<p>This example represent how to use ageas.Launch() with <strong>‘gem_files’</strong>.</p>
+<p>Here, we attempt to extract key genomic factors to perform cell reprogramming from <strong>MEF</strong> into <strong>Induced Pluripotent Stem Cell(iPSC)</strong>, one of the most well known cell reprogramming case, with AGEAS.</p>
+<p>The scRNA-seq based gene expression data for both <strong>MEF</strong> and <strong>ESC</strong> are retrieved from <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103221">GSE103221</a>.</p>
+<p>Either raw data in <strong>GSE103221_RAW.tar</strong> or normalized counts in <strong>GSE103221_normalized_counts.csv.gz</strong> can be processed with AGEAS.</p>
+<div class="section" id="For-using-raw-data">
+<h3>For using raw data<a class="headerlink" href="#For-using-raw-data" title="Permalink to this heading">#</a></h3>
+<p>With all setting remain default, we can launch AGEAS as:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># This part will be very computational expensive!</span>
-<span class="c1"># Feel free to skip to adjusted version below!</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
+    <span class="c1"># since &#39;gem_files&#39; is the default setting, this line can be deleted</span>
+    <span class="n">database_type</span> <span class="o">=</span> <span class="s1">&#39;gem_files&#39;</span><span class="p">,</span>
 
-<span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
+    <span class="c1"># ageas.Data_Preprocess() args</span>
     <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
     <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>Few adjustments can be made with ageas.Launch() pipeline like:</p>
+<p><strong>However, section above could be too computational expensive for PC!</strong></p>
+<p>Few adjustments can be made:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_raw</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
-    <span class="n">mute_unit</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">protocol</span> <span class="o">=</span> <span class="s1">&#39;multi&#39;</span><span class="p">,</span>
     <span class="n">unit_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
 
     <span class="c1"># ageas.Data_Preprocess() args</span>
     <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
     <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
-
-    <span class="c1"># ageas.Unit() args</span>
     <span class="n">std_value_thread</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>Herein, instead of using 2 AGEAS extractor units by default, 4 units are used with <strong>unit_num = 4</strong>. Extraction result should be more generalized.</p>
-<p>To save running time, <strong>protocol = ‘multi’</strong> set units to run parallelly with multithreading.</p>
-<p>With <strong>mute_unit = True</strong>, same as default setting, no log will be printed out by any unit.</p>
-<p><strong>std_value_thread = 3.0</strong> can rule out genes with relatively low expression variability and, thus, limit amount of GRPs in meta level processed GRN and pseudo-sample GRNs.</p>
+<p>With <strong>std_value_thread = 3.0</strong>, more genes with relatively low expression variability will be ruled out during meta-processing and, thus, limit amount of Gene Regulatory Pathways(GRPs) in meta level processed Gene Regulatory Network(GRN) and pseudo-sample GRNs.</p>
+<p>Instead of using only one AGEAS extractor units by default, four units are used with <strong>unit_num = 4</strong>. Result now is generalized from GRPs extracted with every unit.</p>
+<p>To reduce running time, <strong>protocol = ‘multi’</strong> set units to run parallelly with multithreading.</p>
 <p>For more API information, please visit <a class="reference external" href="https://nkmtmsys.github.io/Ageas/html/generated/ageas.Launch.html#ageas.Launch">documentaion page</a>.</p>
 <p>Extraction reports can be saved as files with:</p>
 <div class="nbinput nblast docutils container">
@@ -596,7 +599,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p>Within folder <em>report_files</em>. there should have following files:</p>
+<p>Within folder <em>report_files</em>, there should have following files:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>report_files/
     │
     ├─ no_1/
@@ -604,27 +607,29 @@ div.rendered_html tbody tr:hover {
     │  ├─ outlier_grps.js
     │
     ├─ no_2/
+    <span class="p">|</span>  ├─ ...
     │
     ├─ no_3/
+    <span class="p">|</span>  ├─ ...
     │
     ├─ no_4/
+    <span class="p">|</span>  ├─ ...
     │
+    ├─ full_atlas.js
+    ├─ grp_scores.csv
     ├─ key_atlas.js
-    │
-    ├─ metaGRN.js
-    │
+    ├─ meta_GRN.js
     ├─ meta_report.csv
-    │
-    ├─ psGRNs.js
-    │
+    ├─ pseudo_sample_GRNs.js
     ├─ report.csv
 </pre></div>
 </div>
-<p>Folders <strong>no_1</strong>, <strong>no_2</strong>, <strong>no_3</strong>, <strong>no_4</strong> contain key Gene Regulatory Pathways(GRPs) extracted by each extractor unit as <strong>grps_importances.txt</strong> which has GRPs ranked with importance scores and <strong>outlier_grps.js</strong> which has GRPs once removed during feature selection due to extremly high importance score. If these information not needed, keep <strong>save_unit_reports</strong> as False by default.</p>
-<p><strong>metaGRN.js</strong> contains meta-level processed Gene Regulatory Networks(GRN) cast with all data in each sample group.</p>
-<p><strong>psGRNs.js</strong> contains GRNs cast with each pseudo-sample.</p>
-<p><strong>key_atlas.js</strong> contains regulons cast with all of the key GRPs extracted and bridge GRPs which can connect separate regulons to form larger network.</p>
-<p><strong>meta_report.csv</strong> is generated only with meta-GRN. Which should looks like:</p>
+<p>Folders <strong>no_1</strong>, <strong>no_2</strong>, <strong>no_3</strong>, <strong>no_4</strong> contain GRP importance scores returned by each extractor unit as <strong>grps_importances.csv</strong> which has GRPs ranked with importance scores and <strong>outlier_grps.js</strong> which has GRPs once removed during feature selection due to extremly high importance score. If these information not needed, keep <strong>save_unit_reports</strong> as <strong>False</strong> by default.</p>
+<p><strong>full_atlas.js</strong>: regulons reconstructed with every important GRP extracted by every extractor unit.</p>
+<p><strong>grp_scores.csv</strong>: GRPs with max importance score each can achieve after extracted by every extractor unit.</p>
+<p><strong>key_atlas.js</strong>: pruned regulons reconstructed only with genes being capable to regulate other genes in full atlas.</p>
+<p><strong>meta_GRN.js</strong>: meta-level processed GRN cast with all data in each sample group.</p>
+<p><strong>meta_report.csv</strong>: summary of every gene in meta-processed GRN. By default, records are ranked by <strong>Degree</strong>. Top few rows should look like:</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <colgroup>
@@ -688,7 +693,13 @@ div.rendered_html tbody tr:hover {
 </tbody>
 </table>
 </div>
-<p><strong>report.csv</strong> is generated with <strong>key_atlas.js</strong>. Which should looks like:</p>
+<ul class="simple">
+<li><p>Type can either be Gene or TF(Transcription Factor).</p></li>
+<li><p>Degree here stands for <a class="reference external" href="https://en.wikipedia.org/wiki/Degree_(graph_theory)">degree in graph theory</a>.</p></li>
+<li><p>Log2FC is calcualted with all expression values in two given sample groups.</p></li>
+</ul>
+<p><strong>pseudo_sample_GRNs.js</strong>: GRNs cast for each pseudo-sample generated with <a class="reference external" href="https://stackoverflow.com/questions/8269916/what-is-sliding-window-algorithm-examples">Sliding Window Algorithm</a>.</p>
+<p><strong>report.csv</strong>: information about key regulatory-source genes in <strong>full_atlas.js</strong>. By default, records are ranked by <strong>Log2FC</strong>. Top few rows should look like:</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <colgroup>
@@ -779,7 +790,15 @@ div.rendered_html tbody tr:hover {
 </tbody>
 </table>
 </div>
-<p>(I will add more explanation~)</p>
+<ul class="simple">
+<li><p>Type can either be Gene or TF(Transcription Factor).</p></li>
+<li><p>Source-Num and Target_Num indicate amount of directly related regulatory source and target in full atlas.</p></li>
+<li><p>Meta_Degree and Log2FC here are same with Degree and Log2FC in <strong>meta_report.csv</strong>.</p></li>
+</ul>
+</div>
+<div class="section" id="For-using-normalized-gene-counts">
+<h3>For using normalized gene counts<a class="headerlink" href="#For-using-normalized-gene-counts" title="Permalink to this heading">#</a></h3>
+<p>We will need to make new gene expression matrices with all MEF samples and ESC samples respectively.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -797,6 +816,9 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<p>Considering the sample size of raw data for each group is few thousands, generating pseudo-samples, which abstracts gene expressions from several distinct samples as continuous expression data in order to calculate gene expression correlations, with every distinct 100 samples by default setting should be acceptable.</p>
+<p>However, in this normalized data, only dozens of samples clearly labeled as MEF or ESC. To make at least dozens of pseudo-samples, we can adjust few arguments for Sliding Window Algorithm.</p>
+<p>Furthermore, with normalized expression value, GRP filters shall also be adjusted to keep total amount of GRP after meta-processing reasonable. <strong>log2fc_thread</strong> can rule out genes and corresponding GRPs based on expression difference.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -804,23 +826,66 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_normalized</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
     <span class="n">unit_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
 
+    <span class="c1"># ageas.Data_Preprocess() args</span>
     <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;mef.csv.gz&#39;</span><span class="p">,</span>
     <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;esc.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">sliding_window_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="n">sliding_window_stride</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-
     <span class="n">log2fc_thread</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">std_value_thread</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">sliding_window_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">sliding_window_stride</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">test_normalized</span><span class="o">.</span><span class="n">save_reports</span><span class="p">(</span>
-    <span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;report_files/&#39;</span><span class="p">,</span>
-    <span class="n">save_unit_reports</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;report_files/&#39;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>Considering the sample scale of raw data for each group is few thousands, generating pseudo-samples, which abstracts gene expressions from several distinct samples as continuous expression data in order to calculate gene expression correlations, with every 100 samples by default setting is acceptable.</p>
+<p>Files within folder <em>report_files</em> are under same structure and formats described above.</p>
+</div>
+</div>
+<div class="section" id="Carbon-Tetrachloride(CCl4)-induced-liver-fibrosis-example:">
+<h2>Carbon Tetrachloride(CCl4) induced liver fibrosis example:<a class="headerlink" href="#Carbon-Tetrachloride(CCl4)-induced-liver-fibrosis-example:" title="Permalink to this heading">#</a></h2>
+<p>This example represent how to use ageas.Launch() with <strong>‘mex_folders’</strong>.</p>
+<p>Stimulating portal fibroblasts(PFs) as activated hepatic stellate cells(HSCs), we can try to find key genomic factors in liver fibrosis through extracting key genomic differences among HSCs and PFs.</p>
+<p>The scRNA-seq based gene expression data for PF is retrieved from <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM4085627">GSM4085627</a> and data for HSC is retrieved from <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM4085625">GSM4085625</a>.</p>
+<p>Files retrieved are managed as:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>a6w_pf/
+    ├─ GSM4085627_10x_5_barcodes.tsv.gz
+    ├─ GSM4085627_10x_5_genes.tsv.gz
+    ├─ GSM4085627_10x_5_matrix.mtx.gz
+
+a6w_hsc/
+    ├─ GSM4085625_10x_3_barcodes.tsv.gz
+    ├─ GSM4085625_10x_3_genes.tsv.gz
+    ├─ GSM4085625_10x_3_matrix.mtx.gz
+</pre></div>
+</div>
+<p>Then, we can launch AGEAS with:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">test_raw</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Launch</span><span class="p">(</span>
+    <span class="n">unit_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+
+    <span class="c1"># ageas.Data_Preprocess() args</span>
+    <span class="n">database_type</span> <span class="o">=</span> <span class="s1">&#39;mex_folders&#39;</span><span class="p">,</span>
+    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;a6w_hsc/&#39;</span><span class="p">,</span>
+    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;a6w_pf/&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">test_normalized</span><span class="o">.</span><span class="n">save_reports</span><span class="p">(</span>
+    <span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;report_files/&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Files within folder <em>report_files</em> are under same structure and formats described in example above.</p>
+</div>
+<div class="section" id="And-then…">
+<h2>And then…<a class="headerlink" href="#And-then…" title="Permalink to this heading">#</a></h2>
+<p>We can visualize each regulon as a network graph with <a class="reference external" href="https://nkmtmsys.github.io/Ageas/html/generated/ageas.Plot_Regulon.html">ageas.Plot_Regulon()</a></p>
 </div>
 </div>
 
@@ -829,7 +894,15 @@ div.rendered_html tbody tr:hover {
       <footer>
         
         <div class="related-pages">
-          
+          <a class="next-page" href="plot_regulon.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">ageas.Plot_Regulon()</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
           <a class="prev-page" href="../examples.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
@@ -837,7 +910,7 @@ div.rendered_html tbody tr:hover {
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">API Examples</div>
+                <div class="title">Examples</div>
                 
               </div>
             </a>
@@ -873,8 +946,14 @@ div.rendered_html tbody tr:hover {
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Launch AGEAS with ageas.Launch()</a><ul>
-<li><a class="reference internal" href="#CSV-example:">CSV example:</a></li>
+<li><a class="reference internal" href="#">ageas.Launch()</a><ul>
+<li><a class="reference internal" href="#Mouse-Embryonic-Fibroblast(MEF)-vs-Embryonic-Stem-Cells(ESC)-example:">Mouse Embryonic Fibroblast(MEF) vs Embryonic Stem Cells(ESC) example:</a><ul>
+<li><a class="reference internal" href="#For-using-raw-data">For using raw data</a></li>
+<li><a class="reference internal" href="#For-using-normalized-gene-counts">For using normalized gene counts</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Carbon-Tetrachloride(CCl4)-induced-liver-fibrosis-example:">Carbon Tetrachloride(CCl4) induced liver fibrosis example:</a></li>
+<li><a class="reference internal" href="#And-then…">And then…</a></li>
 </ul>
 </li>
 </ul>

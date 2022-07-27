@@ -11,6 +11,7 @@ import math
 import numpy as np
 import pandas as pd
 import ageas.lib as lib
+import ageas.lib.normalizer as normalizer
 import ageas.tool as tool
 import ageas.tool.gem as gem
 import ageas.tool.mex as mex
@@ -106,31 +107,57 @@ class Load_GEM:
     """
     def __init__(self,
                  database_info,
-                 mww_thread = 0.05,
-                 log2fc_thread = None,
-                 std_value_thread = None,
-                 std_ratio_thread = None
+                 mww_thread:float = 0.05,
+                 normalize:str = None,
+                 log2fc_thread:float = None,
+                 std_value_thread:float = None,
+                 std_ratio_thread:float = None
                 ):
         super(Load_GEM, self).__init__()
         # Initialization
+        self.feature_map = dict()
         self.database_info = database_info
 
         # process file or folder based on database type
         if self.database_info.type == 'gem_folders':
-            self.group1, self.group2 = self.__process_gem_folder(
-                std_value_thread,
-                std_ratio_thread
-            )
+            self.group1 = gem.Folder(self.database_info.group1_path)
+            self.group1.data = self.group1.combine()
+            self.group2 = gem.Folder(self.database_info.group2_path)
+            self.group2.data = self.group2.combine()
         elif self.database_info.type == 'gem_files':
-            self.group1, self.group2 = self.__process_gem_file(
-                std_value_thread,
-                std_ratio_thread
+            self.group1 = gem.Reader(
+                path = self.database_info.group1_path,
+                header = 0,
+                index_col = 0
+            )
+            self.group2 = gem.Reader(
+                path = self.database_info.group2_path,
+                header = 0,
+                index_col = 0
             )
         elif self.database_info.type == 'mex_folders':
-            self.group1, self.group2 = self.__process_mex_folders(
-                std_value_thread,
-                std_ratio_thread
-            )
+            self.group1 = self.__read_mex(self.database_info.group1_path,)
+            self.group2 = self.__read_mex(self.database_info.group2_path,)
+
+        # Perform Normalization if needed
+        if normalize is not None:
+            if normalize == 'CPM':
+                self.group1.data = normalizer.CPM(self.group1.data)
+                self.group2.data = normalizer.CPM(self.group2.data)
+            else:
+                raise db_setup.Error('Unknown normalization method.')
+
+        # Standard Deviation Filter here
+        self.group1.data = tool.STD_Filter(
+            df = self.group1.data,
+            std_value_thread = std_value_thread,
+            std_ratio_thread = std_ratio_thread
+        )
+        self.group2.data = tool.STD_Filter(
+            df = self.group2.data,
+            std_value_thread = std_value_thread,
+            std_ratio_thread = std_ratio_thread
+        )
 
         # detect feature_type
         feature_type_1 = tool.Check_Feature_Type(self.group1.data.index)
@@ -168,70 +195,28 @@ class Load_GEM:
                 self.group2.data.index.intersection(self.genes)
             ]
         else:
-            self.genes = group1.data.index.union(group2.data.index)
+            self.genes = self.group1.data.index.union(self.group2.data.index)
 
-        self.feature_map = self.get_feature_map()
-
-    def get_feature_map(self):
         # Get features/genes information from processed GEM data
-        feature_map = dict()
         if (self.group1.features is not None and
             self.group2.features is not None):
             for ele in self.group1.features:
-                if ele['id'] not in feature_map:
-                    feature_map[ele['id']] = ele
-                elif feature_map[ele['id']] == ele:
+                if ele['id'] not in self.feature_map:
+                    self.feature_map[ele['id']] = ele
+                elif self.feature_map[ele['id']] == ele:
                     continue
                 else:
                     raise db_setup.Error('Gene with different feature records.')
             for ele in self.group2.features:
-                if ele['id'] not in feature_map:
-                    feature_map[ele['id']] = ele
-                elif feature_map[ele['id']] == ele:
+                if ele['id'] not in self.feature_map:
+                    self.feature_map[ele['id']] = ele
+                elif self.feature_map[ele['id']] == ele:
                     continue
                 else:
                     raise db_setup.Error('Gene with different feature records.')
-        return feature_map
-
-    # Process in expression matrix file (dataframe) scenario
-    def __process_gem_file(self, std_value_thread, std_ratio_thread):
-        group1 = gem.Reader(
-            path = self.database_info.group1_path,
-            header = 0,
-            index_col = 0
-        )
-        group1.STD_Filter(
-            std_value_thread = std_value_thread,
-            std_ratio_thread = std_ratio_thread
-        )
-        group2 = gem.Reader(
-            path = self.database_info.group2_path,
-            header = 0,
-            index_col = 0
-        )
-        group2.STD_Filter(
-            std_value_thread = std_value_thread,
-            std_ratio_thread = std_ratio_thread
-        )
-        return group1, group2
-
-
-    # Process in expression matrix file (dataframe) scenario
-    def __process_mex_folders(self, std_value_thread, std_ratio_thread):
-        group1 = self.__read_mex(
-            self.database_info.group1_path,
-            std_value_thread,
-            std_ratio_thread
-        )
-        group2 = self.__read_mex(
-            self.database_info.group2_path,
-            std_value_thread,
-            std_ratio_thread
-        )
-        return group1, group2
 
     # Read in gem files
-    def __read_mex(self, path, std_value_thread, std_ratio_thread):
+    def __read_mex(self, path,):
         keyword = None
         matrix_path = None
         features_path = None
@@ -272,22 +257,7 @@ class Load_GEM:
             barcodes_path = barcodes_path
         )
         gem.get_gem()
-        gem.data = tool.STD_Filter(gem.data, std_value_thread, std_ratio_thread)
         return gem
-
-    # Process in Database scenario
-    def __process_gem_folder(self, std_value_thread, std_ratio_thread):
-        group1 = gem.Folder(self.database_info.group1_path)
-        group1.data = group1.combine(
-            std_value_thread = std_value_thread,
-            std_ratio_thread = std_ratio_thread
-        )
-        group2 = gem.Folder(self.database_info.group2_path)
-        group2.data = group2.combine(
-            std_value_thread = std_value_thread,
-            std_ratio_thread = std_ratio_thread
-        )
-        return group1, group2
 
 
 

@@ -2,15 +2,16 @@
 
 .. _examples:
 
-API Examples
+Examples
 ----------------
 
-These examples parallel the namespace structure of AGEAS.
-Each public object or function in AGEAS has a corresponding example notebook here that demonstrates its API usage.
-The source notebooks are `available on GitHub <Link here>`_.
+Here are some examples parallel the namespace structure of AGEAS.
+Each public object or function in AGEAS has (or going to have) a corresponding example notebook here that demonstrates its API usage.
+The source notebooks are `available on GitHub <https://github.com/nkmtmsys/Ageas/tree/main/docs/notebooks>`_.
 
 .. toctree::
     :glob:
     :maxdepth: 1
 
     notebooks/launch.ipynb
+    notebooks/plot_regulon.ipynb

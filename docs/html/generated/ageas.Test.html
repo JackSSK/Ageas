@@ -163,7 +163,8 @@
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../examples.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../notebooks/launch.html">Launch AGEAS with ageas.Launch()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/launch.html">ageas.Launch()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../notebooks/plot_regulon.html">ageas.Plot_Regulon()</a></li>
 </ul>
 </li>
 </ul>
@@ -206,13 +207,10 @@
 <span class="sig-prename descclassname"><span class="pre">ageas.</span></span><span class="sig-name descname"><span class="pre">Test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ageas.Test" title="Permalink to this definition">#</a></dt>
 <dd><p>Function to test whether AGEAS is performing properly or not.</p>
 <dl class="simple">
-<dt>Parameters:</dt><dd><p>kwargs: All args in ageas.Launch except group1_path, group2_path,
-sliding_window_size</p>
+<dt>Parameters:</dt><dd><p>kwargs: All args in ageas.Launch except <strong>group1_path</strong>,
+<strong>group2_path</strong>, <strong>sliding_window_size</strong></p>
 </dd>
 <dt>Outputs:</dt><dd><p>ageas._main.Launch object</p>
-</dd>
-<dt>Example::</dt><dd><p>&gt;&gt; import ageas
-&gt;&gt; result = ageas.Test(cpu_mode = False)</p>
 </dd>
 </dl>
 </dd></dl>

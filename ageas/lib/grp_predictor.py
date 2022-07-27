@@ -23,7 +23,10 @@ class Predict:
         assert sample_grps is not None or thread is not None
         self.group1_gem = gem_data.group1
         self.group2_gem = gem_data.group2
+        # roughly set thread simply with amount of genes in GEMs
         self.thread = 1 / len(gem_data.genes)
+
+        # Set Thread
         if thread is not None and thread != 'auto':
             self.thread = float(thread)
         elif thread == 'auto':
@@ -35,20 +38,20 @@ class Predict:
     # documented targets
     def expand_meta_grn(self, meta_grn, genes, correlation_thread):
         for gene in genes:
-            group1FeatImpts, group2FeatImpts = self._getFeatureImportences(gene)
+            group1_targets, group2_targets = self.__predict_key_targets(gene)
             self.__update_grps_to_meta_grn(
                 meta_grn,
                 correlation_thread,
                 gene,
                 self.group1_gem.data.index,
-                group1FeatImpts,
+                group1_targets,
             )
             self.__update_grps_to_meta_grn(
                 meta_grn,
                 correlation_thread,
                 gene,
                 self.group2_gem.data.index,
-                group2FeatImpts,
+                group2_targets,
             )
         return meta_grn
 
@@ -62,13 +65,12 @@ class Predict:
                                  ):
         if feature_importances is None: return
         for i in range(len(gene_list)):
-            tar = gene_list[i]
             if feature_importances[i] > self.thread:
-                grp_id = grn.GRP(gene, tar).id
+                grp_id = grn.GRP(gene, gene_list[i]).id
                 if grp_id not in meta_grn.grps:
                     meta_grn.update_grn(
 						source = gene,
-						target = tar,
+						target = gene_list[i],
 						gem1 = self.group1_gem,
 						gem2 = self.group2_gem,
 						correlation_thread = correlation_thread
@@ -97,11 +99,11 @@ class Predict:
             if (src in self.group1_gem.data.index and
                 src in self.group2_gem.data.index):
                 grps = regulatory_sources[src]
-                group1FeatImpts, group2FeatImpts = self._getFeatureImportences(
+                group1_targets, group2_targets = self.__predict_key_targets(
                     src, True
                 )
-                assert len(self.group1_gem.data.index) == len(group1FeatImpts)
-                assert len(self.group2_gem.data.index) == len(group2FeatImpts)
+                assert len(self.group1_gem.data.index) == len(group1_targets)
+                assert len(self.group2_gem.data.index) == len(group2_targets)
                 break
 
         if grps is None:
@@ -117,15 +119,15 @@ class Predict:
 
         # assign feature importances to each gene in selected reg source's GRPs
         for i in range(len(self.group1_gem.data.index)):
-            if self.group1_gem.data.index[i] in genes and group1FeatImpts[i]>0:
-                genes[self.group1_gem.data.index[i]] = group1FeatImpts[i]
+            if self.group1_gem.data.index[i] in genes and group1_targets[i]>0:
+                genes[self.group1_gem.data.index[i]] = group1_targets[i]
         for i in range(len(self.group2_gem.data.index)):
             gene = self.group2_gem.data.index[i]
-            if gene in genes and group2FeatImpts[i] > 0:
+            if gene in genes and group2_targets[i] > 0:
                 if genes[gene] == 0:
-                    genes[gene] = group2FeatImpts[i]
+                    genes[gene] = group2_targets[i]
                 else:
-                    genes[gene] = (genes[gene] + group2FeatImpts[i]) / 2
+                    genes[gene] = (genes[gene] + group2_targets[i]) / 2
 
         # take out genes with 0 importances and reorder the dict
         genes = {x:genes[x] for x in genes if genes[x] > 0}
@@ -133,24 +135,24 @@ class Predict:
         return min(genes[next(iter(genes))], self.thread)
 
     # Basically, this part mimicing what GRNBoost2 does
-    def _getFeatureImportences(self, key, checked_in_gem = False):
+    def __predict_key_targets(self, key, checked_in_gem = False):
         if checked_in_gem or key in self.group1_gem.data.index:
-            c1_result = self.__gbm_feature_importances_calculate(
+            group1_result = self.__gbm_feature_importances_calculate(
                 self.group1_gem.data,
                 key
             )
         else:
-            c1_result = None
+            group1_result = None
 
         if checked_in_gem or key in self.group2_gem.data.index:
-            c2_result = self.__gbm_feature_importances_calculate(
+            group2_result = self.__gbm_feature_importances_calculate(
                 self.group2_gem.data,
                 key
             )
         else:
-            c2_result = None
+            group2_result = None
 
-        return c1_result, c2_result
+        return group1_result, group2_result
 
     # as named
     def __gbm_feature_importances_calculate(self, gem, key, random_state = 0):

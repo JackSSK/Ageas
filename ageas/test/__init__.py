@@ -37,3 +37,15 @@ def Test(**kwargs):
 	assert 'Klf4' in easy.atlas.regulons[0].genes
 	print('Finished Test. LGTM')
 	return easy
+
+# little example to save report files
+# if __name__ == '__main__':
+# 	test = ageas.Test(
+# 		cpu_mode = True,
+# 		protocol = 'multi',
+# 	)
+# 	test.save_reports(
+# 		folder_path = 'easy_test.report',
+# 		save_unit_reports = True
+# 	)
+# 	print('CMPL Easy Test')

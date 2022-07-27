@@ -3,8 +3,8 @@
 
 
 # Copyright (C) 2022 Jack Yu <gyu17@jh.edu>
-# Author: Jack Yu <gyu17@jh.edu> <Itself Tech inc.>
-# Author: Masayoshi Nakamoto <nkmtmsys@gmail.com> <Itself Tech inc.>
+# Author: Jack Yu <gyu17@jh.edu> <Shenzhen Mozhou Technology Co., Ltd.>
+# Author: Masayoshi Nakamoto <nkmtmsys@gmail.com> <Shenzhen Mozhou Technology Co., Ltd.>
 
 # This program is free software
 # You can redistribute it and/or modify it

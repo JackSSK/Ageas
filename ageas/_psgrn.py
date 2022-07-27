@@ -33,6 +33,7 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 					log2fc_thread:float = None,
 					meta_load_path:str = None,
 					mww_p_val_thread:float = 0.05,
+					normalize:str = None,
 					prediction_thread = 'auto',
 					psgrn_load_path:str = None,
 					specie:str = 'mouse',
@@ -112,6 +113,14 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 			To make sure one gene's expression profile is not constant among
 			differnt classes.
 
+		normalize: <str> Default = None
+			Choose of normalization method on input GEMs.
+			Supporting:
+
+				None: No normalization will be done.
+
+				'CPM': Counts Per Million(CPM).
+
 		prediction_thread: <str> or <float> Default = 'auto'
 			The importance thread for a GRP predicted with GRNBoost2-like
 			algo to be included.
@@ -172,6 +181,7 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 		gem_data = binary_db.Load_GEM(
 			database_info,
 			mww_p_val_thread,
+			normalize,
 			log2fc_thread,
 			std_value_thread
 		)
@@ -452,12 +462,11 @@ class Make:
 		for filename in os.listdir(path):
 			filename = path + '/' + filename
 			# read in GEM files
-			temp = gem.Reader(filename, header = 0, index_col = 0)
-			temp.STD_Filter(
-				std_value_thread = self.std_value_thread,
-				std_ratio_thread = self.std_ratio_thread
-			)
-			result[filename] = temp.data
+			result[filename] = tool.STD_Filter(
+	            df = gem.Reader(filename, header = 0, index_col = 0).data,
+	            std_value_thread = std_value_thread,
+	            std_ratio_thread = std_ratio_thread
+	        )
 		return result
 
 	# as named

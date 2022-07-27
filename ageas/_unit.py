@@ -34,7 +34,7 @@ class Unit(object):
                  correlation_thread:float = 0.2,
                  cpu_mode:bool = False,
                  feature_dropout_ratio:float = 0.1,
-                 feature_select_iteration:int = 1,
+                 feature_select_iteration:int = 3,
                  grp_changing_thread:float = 0.05,
                  max_train_size:float = 0.95,
                  model_select_iteration:int = 2,
@@ -93,7 +93,7 @@ class Unit(object):
                 Portion of features(GRPs) to be dropped out after each
                 iteration of feature selection.
 
-            feature_select_iteration: <int> Default = 1
+            feature_select_iteration: <int> Default = 3
                 Number of iteration for feature(GRP) selection before
                 key GRP extraction
 
@@ -289,7 +289,7 @@ class Unit(object):
             print('Time to stabilize key GRPs : ', time.time() - start)
 
     # Construct Regulons with Extracted GRPs and Access Them
-    def generate_regulons(self,):
+    def generate_atlas(self,):
         """
         Function to build regulon networks with extracted GRPs.
         """
@@ -303,6 +303,7 @@ class Unit(object):
 
         self.atlas.find_bridges(meta_grn = self.meta.grn)
         print('Time to build key regulons : ', time.time() - start)
+        return self.atlas
 
     # take out some GRPs based on feature dropout ratio
     def __get_grp_remove_list(self,

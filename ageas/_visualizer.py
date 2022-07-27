@@ -26,7 +26,9 @@ TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 class Plot_Regulon(object):
     """
-    Visualize full or partial Regulon and save in PDF format by default
+    Visualize full or partial Regulon extracted with AGEAS.
+
+
     """
 
     def __init__(self,
@@ -72,12 +74,12 @@ class Plot_Regulon(object):
              node_base_size:int = 2,
              figure_size:int = 20,
              method:str = 'netgraph',
-             legend_pos:set = (1.3, -0.05),
+             legend_pos:set = (1.05, 0.3),
              layout:str = 'spring',
              colorbar_shrink:float = 0.25,
              font_size:int = 10,
              hide_target_labels:bool = False,
-             edge_width_scale:float = 4.0,
+             edge_width_scale:float = 1.0,
              save_path:str = None
             ):
         # initialization
@@ -389,7 +391,10 @@ class Plot_Regulon(object):
                 c = 'black',
                 label = 'Key GRP'
             )
-        ax.legend(bbox_to_anchor=(legend_pos[0], legend_pos[1]),  prop = {'size': font_size})
+        ax.legend(
+            bbox_to_anchor = (legend_pos[0], legend_pos[1]),
+            prop = {'size': font_size}
+        )
 
     # save the plot. PDF by default
     def save(self, path:str = None, format:str = 'pdf'):

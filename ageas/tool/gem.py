@@ -26,7 +26,7 @@ class Reader(object):
 
 		# Decide which seperation mark to use
 		if re.search(r'csv', path): 	self.sep = ','
-		elif re.search(r'txt', path): 	self.vsep = '\t'
+		elif re.search(r'txt', path): 	self.sep = '\t'
 
 		# determine compression method
 		if re.search(r'.gz', path): 	self.compression = 'gzip'
@@ -47,23 +47,6 @@ class Reader(object):
 			self.data = self.data[~self.data.index.duplicated(keep = 'first')]
 		elif handle_repeat == 'sum':
 			self.data = self.data.groupby(self.data.index).sum()
-
-
-	def STD_Filter(self, std_value_thread = None, std_ratio_thread = None):
-		"""
-		Filter DataFrame based on standered deviation of gene expression values.
-
-		Args:
-			std_value_thread = None
-
-			std_ratio_thread = None
-
-		"""
-		self.data = tool.STD_Filter(
-			df = self.data,
-			std_value_thread = std_value_thread,
-			std_ratio_thread = std_ratio_thread
-		)
 
 
 
@@ -140,10 +123,6 @@ class Folder(object):
 			elif handle_repeat_gene == 'sum':
 				result = result.groupby(result.index).sum()
 		del gem
-
-		# filter by standard deviations if needed
-		if std_value_thread is not None or std_ratio_thread is not None:
-			result = tool.STD_Filter(result, std_value_thread, std_ratio_thread)
 
 		# return or save matrix
 		if outpath is None:

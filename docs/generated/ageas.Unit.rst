@@ -14,7 +14,7 @@
    .. autosummary::
    
       ~Unit.__init__
-      ~Unit.generate_regulons
+      ~Unit.generate_atlas
       ~Unit.launch
       ~Unit.select_models
    
