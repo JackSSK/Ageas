@@ -72,7 +72,7 @@ class Launch:
 		"""
 		Start a new pipeline to launch AGEAS.
 
-		Parameters:
+		Args:
 			model_config_path: <str> Default = None
 				Path to load model config file which will be used to initialize
 				classifiers.

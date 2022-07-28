@@ -9,6 +9,7 @@ to use the API of each object/function.
 
 .. autosummary::
     :toctree: generated/
+    :recursive:
 
     Launch
     Test

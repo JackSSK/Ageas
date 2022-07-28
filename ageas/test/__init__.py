@@ -16,7 +16,7 @@ def Test(**kwargs):
 	"""
 	Function to test whether AGEAS is performing properly or not.
 
-	Parameters:
+	Args:
 		kwargs: All args in ageas.Launch except **group1_path**,
 		**group2_path**, **sliding_window_size**
 

@@ -28,16 +28,47 @@ class Plot_Regulon(object):
     """
     Visualize full or partial Regulon extracted with AGEAS.
 
+    Args:
+        depth:<int> Default = 1
+            If 'root_gene' is specified, borrowing concept of tree graph, this
+            means how far the tree graph shall reach.
 
+        hide_bridge:<bool> Default = True
+            Whether hide non-AGEAS-extracted GRPs which can link key genes or
+            not.
+
+        plot_group:<str> Default = 'all'
+            What kind of information to show for GRPs on plot.
+
+            Supporting:
+
+                'all': Which group of samples a GRP has higher correlation.
+
+                'group1': GRP's correlation value calculated with samples in
+                group1
+
+                'group2': GRP's correlation value calculated with samples in
+                group2
+
+        regulon:<ageas.tool.grn.GRN> Default = None
+            Which regulon to plot out.
+
+        root_gene:<str> Default = None
+            Specific gene of interest. Only GRPs being capable to link with this
+            gene directly or indirectly will be visualized. Borrowing concept of
+            tree graph, this will be the root to expand a tree.
+
+        weight_thread:<float> Default = 0.0
+            Minimun weight for a GRP to be kept on plot.
     """
 
     def __init__(self,
+                 depth:int = 1,
+                 hide_bridge:bool = True,
+                 plot_group:str = 'all',
                  regulon = None,
                  root_gene:str = None,
                  weight_thread:float = 0.0,
-                 plot_group:str = 'all',
-                 depth:int = 1,
-                 hide_bridge:bool = True,
                 ):
         super(Plot_Regulon, self).__init__()
         self.plot_group = str(plot_group)
@@ -57,31 +88,61 @@ class Plot_Regulon(object):
         # now we make the graph
         self.graph = regulon.as_digraph(grp_ids = grps_to_plot.keys())
 
-
-    # check whether keep a GRP to plot or not
-    def __check(self, grp, weight_thread, hide_bridge):
-        weight = self.get_weight(grp.correlations)
-        grp.weight = weight
-        if abs(weight) >= weight_thread:
-            return grp.type != TYPES[2] or not hide_bridge
-        else:
-            return False
-
-    # make sure which GRPs are qualified and plot them
     def draw(self,
+             colorbar_shrink:float = 0.25,
+             edge_width_scale:float = 1.0,
+             font_size:int = 10,
+             figure_size:int = 20,
+             hide_target_labels:bool = False,
+             layout:str = 'spring',
+             legend_pos:set = (1.05, 0.3),
+             method:str = 'netgraph',
+             node_base_size:int = 2,
+             save_path:str = None,
              scale:int = 1,
              seed:int = 1936,
-             node_base_size:int = 2,
-             figure_size:int = 20,
-             method:str = 'netgraph',
-             legend_pos:set = (1.05, 0.3),
-             layout:str = 'spring',
-             colorbar_shrink:float = 0.25,
-             font_size:int = 10,
-             hide_target_labels:bool = False,
-             edge_width_scale:float = 1.0,
-             save_path:str = None
             ):
+        """
+        Draw the plot for selected regulon.
+
+        Args:
+            colorbar_shrink:<float> Default = 0.25
+                From the size having equal length with graph plot, what ratio
+                should the color bar be shrinked to.
+
+            edge_width_scale:<float> Default = 1.0
+
+            font_size:<int> Default = 10
+                Font size.
+
+            figure_size:<int> Default = 20
+                Figure size.
+
+            hide_target_labels:<bool> Default = False
+
+            layout:<str> Default = 'spring'
+
+            legend_pos:<set> Default = (1.05, 0.3)
+                Where the legend should be located.
+
+            method:<str> Default = 'netgraph'
+                What exact method to be used for plotting.
+
+                Supporting:
+
+                    'netgraph':
+
+                    'networkx':
+
+            node_base_size:<int> Default = 2
+
+            save_path:<str> Default = None
+
+            scale:<int> Default = 1
+
+            seed:<int> Default = 1936
+
+        """
         # initialization
         self.node_cmap = plt.cm.Set3
         self.edge_cmap = plt.cm.coolwarm
@@ -102,7 +163,7 @@ class Plot_Regulon(object):
 
         # draw with specified method
         if method == 'networkx':
-            self.draw_with_networkx(
+            self._draw_with_networkx(
                 ax = ax,
                 scale = scale,
                 layout = layout,
@@ -112,7 +173,7 @@ class Plot_Regulon(object):
                 edge_width_scale =edge_width_scale,
             )
         elif method == 'netgraph':
-            self.draw_with_netgraph(
+            self._draw_with_netgraph(
                 ax = ax,
                 scale = scale,
                 seed = seed,
@@ -123,12 +184,12 @@ class Plot_Regulon(object):
                 edge_width_scale = edge_width_scale,
             )
 
-        self.set_color_bar(
+        self._set_color_bar(
             ax = ax,
             shrink = colorbar_shrink,
             font_size = font_size
         )
-        self.set_legend(
+        self._set_legend(
             ax = ax,
             font_size = font_size,
             legend_pos = legend_pos,
@@ -139,23 +200,44 @@ class Plot_Regulon(object):
         if save_path is not None:
             self.save(save_path)
 
+    def save(self, path:str = None, format:str = 'pdf'):
+        """
+        Save the plot. PDF format by default.
+
+        Args:
+            path:<str> Default = None
+
+            format:<str> Default = 'pdf'
+
+        """
+        plt.savefig(path, format = format)
+        plt.close()
+
+    # check whether keep a GRP to plot or not
+    def __check(self, grp, weight_thread, hide_bridge):
+        grp.weight = self._get_weight(grp.correlations)
+        if abs(grp.weight) >= weight_thread:
+            return grp.type != TYPES[2] or not hide_bridge
+        else:
+            return False
+
     # Netgraph plot method
-    def draw_with_netgraph(self,
-                           ax = plt.gca(),
-                           base_size:int = 2,
-                           scale:int = 1,
-                           seed:int = 1936,
-                           layout:str = 'spring',
-                           font_size:int = 5,
-                           hide_target_labels:bool = False,
-                           edge_width_scale:float = 0.1,
-                          ):
-        node_size, node_color, node_alhpa, node_labels = self.get_node_info(
+    def _draw_with_netgraph(self,
+                            ax = plt.gca(),
+                            base_size:int = 2,
+                            scale:int = 1,
+                            seed:int = 1936,
+                            layout:str = 'spring',
+                            font_size:int = 5,
+                            hide_target_labels:bool = False,
+                            edge_width_scale:float = 0.1,
+                            ):
+        node_size, node_color, node_alhpa, node_labels = self._get_node_info(
             base_size = base_size,
             color_type = 'rgba',
             hide_target_labels = hide_target_labels,
         )
-        edge_width, edge_style, edge_color, edge_alpha = self.get_edge_info(
+        edge_width, edge_style, edge_color, edge_alpha = self._get_edge_info(
             width_scale = edge_width_scale,
             color_type = 'rgba',
         )
@@ -181,7 +263,7 @@ class Plot_Regulon(object):
         )
 
     # Networkx plot method
-    def draw_with_networkx(self,
+    def _draw_with_networkx(self,
                            ax = plt.gca(),
                            base_size:int = 600,
                            scale:int = 1,
@@ -191,11 +273,11 @@ class Plot_Regulon(object):
                            hide_target_labels:bool = False,
                            edge_width_scale:float = 1.0,
                           ):
-        node_size, node_color, node_alhpa, node_labels = self.get_node_info(
+        node_size, node_color, node_alhpa, node_labels = self._get_node_info(
             base_size = base_size,
             hide_target_labels = hide_target_labels,
         )
-        edge_width, edge_style, edge_color, edge_alpha = self.get_edge_info(
+        edge_width, edge_style, edge_color, edge_alpha = self._get_edge_info(
             width_scale = edge_width_scale,
         )
         node_size = [node_size[node] for node in self.graph.nodes]
@@ -256,11 +338,11 @@ class Plot_Regulon(object):
             edges[i].set_alpha(edge_alpha[i])
 
     # Get Edge Information
-    def get_edge_info(self,
+    def _get_edge_info(self,
                       width_scale = 1,
                       color_type = 'int',
                       return_type = 'dict'
-                     ):
+                      ):
         edge_width = dict()
         edge_style = dict()
         edge_color = dict()
@@ -289,12 +371,12 @@ class Plot_Regulon(object):
 
 
     # Get Node information
-    def get_node_info(self,
-                      base_size = 800,
-                      hide_target_labels = False,
-                      color_type = 'int',
-                      return_type = 'dict'
-                     ):
+    def _get_node_info(self,
+                       base_size = 800,
+                       hide_target_labels = False,
+                       color_type = 'int',
+                       return_type = 'dict'
+                       ):
         node_size = dict()
         node_color = dict()
         node_alhpa = 0.8
@@ -321,7 +403,7 @@ class Plot_Regulon(object):
         return node_size, node_color, node_alhpa, node_labels
 
     # just as named
-    def get_weight(self, correlations):
+    def _get_weight(self, correlations):
         if self.plot_group == 'group1' or self.plot_group == '1':
             weight = correlations['group1']
         elif self.plot_group == 'group2' or self.plot_group == '2':
@@ -331,7 +413,7 @@ class Plot_Regulon(object):
         return weight
 
     # Set up a color bar with fixed scale from -1.0 to 1.0
-    def set_color_bar(self, ax, shrink = 1, font_size = 10):
+    def _set_color_bar(self, ax, shrink = 1, font_size = 10):
         cbar = plt.colorbar(self.edge_scalar_map, ax = ax, shrink = shrink)
         if self.plot_group == 'all':
             cbar.set_ticks([-1,0,1])
@@ -348,7 +430,7 @@ class Plot_Regulon(object):
         )
 
     # Set Up Legend
-    def set_legend(self, ax, font_size, legend_pos, method):
+    def _set_legend(self, ax, font_size, legend_pos, method):
         ax.scatter(
             [],[],
             s = font_size * 10,
@@ -395,11 +477,6 @@ class Plot_Regulon(object):
             bbox_to_anchor = (legend_pos[0], legend_pos[1]),
             prop = {'size': font_size}
         )
-
-    # save the plot. PDF by default
-    def save(self, path:str = None, format:str = 'pdf'):
-        plt.savefig(path, format = format)
-        plt.close()
 
     # # show the interactive graph
     # def show(self):

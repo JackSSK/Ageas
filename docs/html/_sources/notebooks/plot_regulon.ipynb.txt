@@ -32,7 +32,7 @@
    "outputs": [],
    "source": [
     "# ageas.Test() is a Launch() object using internalized data\n",
-    "# This would a few minutes to run\n",
+    "# This would take a few minutes to run\n",
     "test_launch_object = ageas.Test(cpu_mode = True)\n",
     "\n",
     "# Here we use first regulon in atlas, regulon_0 for example\n",
@@ -93,8 +93,8 @@
    "outputs": [],
    "source": [
     "plotter.draw(\n",
-    "    legend_pos = (1.05, 0.3),\n",
-    "    edge_width_scale = 1.0,\n",
+    "    legend_pos = (1.05, 0.3), # adjust legend position\n",
+    "    edge_width_scale = 1.0,   # adjust edge(GRP) width\n",
     ")\n",
     "plotter.save(path = 'test_plot.png', format = 'png')"
    ]
@@ -103,7 +103,73 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Now, we should be able to get a network graph looks like ![this one](../images/a.png)"
+    "Now, we should be able to get a network graph looks like: ![this one](../images/test.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Also, we can visualize GRPs by correlation strength calculated with group 1 samples or group 2 samples."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plotter = ageas.Plot_Regulon(\n",
+    "    regulon = regulon,\n",
+    "    plot_group = 'group2',  # using mef data here. 'group1' will be ipsc data\n",
+    "    hide_bridge = False,    # unhide GRPs linking regulatory sources \n",
+    ")\n",
+    "plotter.draw(\n",
+    "    legend_pos = (1.15, 0.3), # adjust legend position\n",
+    "    edge_width_scale = 1.0,   # adjust edge(GRP) width\n",
+    ")\n",
+    "plotter.save(path = 'test_plot.png', format = 'png')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Output should looks like: ![next one](../images/group2_plot.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Surely, we can only visualize GRPs related to one specific gene of interest in order to avoid over-crowded graph."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plotter = ageas.Plot_Regulon(\n",
+    "    regulon = regulon,\n",
+    "    hide_bridge = False,    # unhide GRPs linking regulatory sources\n",
+    "    root_gene = 'Klf4',     # Klf4 is our gene of interest\n",
+    "    depth = 1,              # and we are visualizing all GRPs directly linked with Klf4\n",
+    ")\n",
+    "plotter.draw(\n",
+    "    figure_size = 10,           # less GRPs here, smaller size would be better\n",
+    "    legend_pos = (1.3, 0.3),   # adjust legend position\n",
+    "    edge_width_scale = 2.0,     # adjust edge(GRP) width\n",
+    ")\n",
+    "plotter.save(path = 'test_plot_1.png', format = 'png')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "And we shoud get something looks like: ![klf4 one](../images/klf4.png)"
    ]
   }
  ],

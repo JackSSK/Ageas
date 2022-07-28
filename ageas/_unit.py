@@ -48,7 +48,7 @@ class Unit(object):
         """
         Start a new AGEAS Extractor Unit.
 
-        Parameters:
+        Args:
             database_info: <object> Default = None
                 Integrated database information returned by
                 ageas.Data_Preprocess()

@@ -29,7 +29,7 @@ class Reader(gem.Reader):
 		"""
 		Initialize a new MEX reader object.
 
-		Parameters:
+		Args:
 			matrix_path:str = None
 
 			features_path:str = None
@@ -58,7 +58,7 @@ class Reader(gem.Reader):
 		"""
 		Obtain GEM data frame from processed MEX file.
 
-		Parameters:
+		Args:
 			save_path:str = None
 
 			handle_repeat:str = 'sum'

@@ -46,7 +46,7 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 	Function to integrate database information and get pseudo-sample GRNs
 	from gene expression data.
 
-	Parameters:
+	Args:
 		correlation_thread: <float> Default = 0.2
 			Gene expression correlation thread value of GRPs.
 
