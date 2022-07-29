@@ -8,7 +8,7 @@ setuptools.setup(
     version = "v0.0.1-alpha6",
     author = "nkmtmsys and JackSSK",
     author_email = "gyu17@alumni.jh.edu",
-    description = "AutoML-based Genomic fEatrue extrAction System",
+    description = "AutoML-based Genomics fEatrue extrAction System",
     long_description = long_description,
     long_description_content_type = "text/markdown",
     url = "https://github.com/nkmtmsys/Ageas",
