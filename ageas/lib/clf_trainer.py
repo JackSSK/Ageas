@@ -55,9 +55,10 @@ class Train(clf.Make_Template):
         self.test_split_set = test_split_set
 
     def general_process(self,
-                        train_size = 0.3,
-                        clf_keep_ratio = None,
-                        clf_accuracy_thread = None
+                        train_size:float = 0.3,
+                        auroc_thread:float = 0.8,
+                        clf_keep_ratio:float = None,
+                        clf_accuracy_thread:float = None
                        ):
         """
         Generate training data and testing data iteratively
@@ -88,7 +89,9 @@ class Train(clf.Make_Template):
         for modelSet in self.models:
             modelSet.train(data, self.test_split_set)
             if self.test_split_set:
-                modelSet._filter_models(clf_keep_ratio, clf_accuracy_thread)
+                modelSet._filter_models(
+                    auroc_thread, clf_keep_ratio, clf_accuracy_thread
+                )
 
         # Concat models together based on performace
         temp = []
@@ -98,23 +101,28 @@ class Train(clf.Make_Template):
         self.models = temp
         # Keep best performancing models in local test
         if self.test_split_set and clf_keep_ratio is not None:
-            self._filter_models(clf_keep_ratio, clf_accuracy_thread)
+            self._filter_models(
+                auroc_thread, clf_keep_ratio, clf_accuracy_thread
+            )
 
         # Filter based on global test performace
-        self.models = self.get_clf_accuracy(
-            clf_list = self.models,
+        self.models = self.update_model_records(
+            model_records = self.models,
             data = self.allData.to_numpy(),
             label = self.allLabel
         )
-        self._filter_models(clf_keep_ratio, clf_accuracy_thread)
+        self._filter_models(
+            auroc_thread, clf_keep_ratio, clf_accuracy_thread
+        )
         print('Keeping ', len(self.models), ' models')
 
 
     def successive_pruning(self,
-                           iteration = 2,
-                           clf_keep_ratio = 0.5,
-                           clf_accuracy_thread = 0.9,
-                           last_train_size = 0.9,
+                           iteration:int = 2,
+                           auroc_thread:float = 0.8,
+                           clf_keep_ratio:float = 0.5,
+                           clf_accuracy_thread:float = 0.9,
+                           last_train_size:float = 0.9,
                           ):
         """
         Train out models in Successive Halving manner
@@ -142,22 +150,27 @@ class Train(clf.Make_Template):
             # remove more and more portion as more resource being avaliable
             self.general_process(
                 train_size = train_size,
+                auroc_thread = auroc_thread,
+                clf_keep_ratio = keep_ratio,
                 clf_accuracy_thread = clf_accuracy_thread,
-                clf_keep_ratio = keep_ratio
             )
-            self.__prune_model_config(id_keep={x[0].id:''for x in self.models})
+            self.__prune_clf_config(id_keep={x.model.id:''for x in self.models})
             if breaking: break
 
         if train_size < last_train_size:
             print('Iteration Last: with training size:', last_train_size)
             self.general_process(
                 train_size = last_train_size,
+                auroc_thread = auroc_thread,
                 clf_accuracy_thread = clf_accuracy_thread
             )
         else:
-            self._filter_models(clf_accuracy_thread = clf_accuracy_thread)
+            self._filter_models(
+                auroc_thread = auroc_thread,
+                clf_accuracy_thread = clf_accuracy_thread
+            )
 
-        self.__prune_model_config(id_keep = {x[0].id:'' for x in self.models})
+        self.__prune_clf_config(id_keep = {x.model.id:'' for x in self.models})
 
         total_model = 0
         for genra in self.model_config:
@@ -166,49 +179,29 @@ class Train(clf.Make_Template):
         print('Selecting ', total_model, ' Models after Model Selection')
 
     # Re-assign accuracy based on all data performance
-    def get_clf_accuracy(self, clf_list, data, label):
-        i = 0
-        for record in clf_list:
-            model = record[0]
-            i += 1
+    def update_model_records(self, model_records, data, label):
+        for i, record in enumerate(model_records):
             # Handel SVM and XGB cases
             # Or maybe any sklearn-style case
-            if (model.model_type == 'SVM' or
-                model.model_type == 'Logit' or
-                model.model_type == 'GNB' or
-                model.model_type == 'RFC' or
-                model.model_type == 'XGB_GBM'):
-                pred_result = model.clf.predict(data)
-                pred_accuracy = difflib.SequenceMatcher(
-                    None,
-                    pred_result,
-                    label
-                ).ratio()
+            if (record.model.model_type == 'SVM' or
+                record.model.model_type == 'Logit' or
+                record.model.model_type == 'GNB' or
+                record.model.model_type == 'RFC' or
+                record.model.model_type == 'XGB_GBM'):
+                new_record = self._evaluate_sklearn(record.model, data, label)
             # RNN type handling + CNN cases
-            elif (model.model_type == 'RNN' or
-                    model.model_type == 'LSTM' or
-                    model.model_type == 'GRU' or
-                    model.model_type == 'Transformer' or
-                    re.search(r'CNN', model.model_type)):
+            elif (record.model.model_type == 'RNN' or
+                  record.model.model_type == 'LSTM' or
+                  record.model.model_type == 'GRU' or
+                  record.model.model_type == 'Transformer' or
+                  re.search(r'CNN', record.model.model_type)):
                 # Enter eval mode and turn off gradient calculation
-                model.eval()
-                with torch.no_grad():
-                    pred_result = model(clf.reshape_tensor(data))
-                pred_accuracy, pred_result = self.__evaluate_torch(
-                    pred_result,
-                    label
-                )
+                new_record = self._evaluate_torch(record.model, data, label)
             else:
-                raise lib.Error('Cannot handle classifier: ', model.model_type)
-            record[-1] = pred_result
-            record.append(pred_accuracy)
-            # For debug purpose
-            # print('Performined all data test on model', i,
-            #         ' type:', model.model_type, '\n',
-            #         'test set accuracy:', round(accuracy, 2),
-            #         ' all data accuracy: ', round(pred_accuracy, 2), '\n')
-        clf_list.sort(key = lambda x:x[-1], reverse = True)
-        return clf_list
+                raise lib.Error('Cannot handle: ', record.model.model_type)
+            model_records[i] = new_record
+        model_records.sort(key = lambda x:x.accuracy, reverse = True)
+        return model_records
 
     # clear stored data
     def clear_data(self):
@@ -295,7 +288,7 @@ class Train(clf.Make_Template):
         return list
 
     # delete model configs not on while list(dict)
-    def __prune_model_config(self, id_keep):
+    def __prune_clf_config(self, id_keep):
         result = {}
         for genra in self.model_config:
             temp = {}
@@ -306,15 +299,3 @@ class Train(clf.Make_Template):
                     print('     Pruning:', id)
             if len(temp) > 0: result[genra] = temp
         self.model_config = result
-
-    # Evaluate pytorch based methods'accuracies
-    def __evaluate_torch(self, result, label):
-        modifiedResult = []
-        correct = 0
-        for i in range(len(result)):
-            if result[i][0] > result[i][1]: predict = 0
-            else: predict = 1
-            if predict == label[i]: correct += 1
-            modifiedResult.append(predict)
-        accuracy = correct / len(label)
-        return accuracy, modifiedResult

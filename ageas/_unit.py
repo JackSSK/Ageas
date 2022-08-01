@@ -29,6 +29,7 @@ class Unit(object):
                  pseudo_grns = None,
 
                  # Parameters
+                 auroc_thread:float = 0.8,
                  clf_keep_ratio:float = 0.5,
                  clf_accuracy_thread:float = 0.8,
                  correlation_thread:float = 0.2,
@@ -46,7 +47,7 @@ class Unit(object):
                  z_score_extract_thread:float = 0.0,
                 ):
         """
-        Start a new AGEAS Extractor Unit.
+        Initialize a new AGEAS Extractor Unit.
 
         Args:
             database_info: <object> Default = None
@@ -64,6 +65,10 @@ class Unit(object):
             pseudo_grns: <object> Default = None
                 pseudo-sample GRNs returned by
                 ageas.Data_Preprocess()
+
+            auroc_thread: <float> Default = 0.8
+                Filter thread of classifier's AUROC in local test performed
+                at each model selection iteration.
 
             clf_keep_ratio: <float> Default = 0.5
                 Portion of classifier model to keep after each model selection
@@ -160,6 +165,7 @@ class Unit(object):
         self.z_score_extract_thread = z_score_extract_thread
 
         self.max_train_size = max_train_size
+        self.auroc_thread = auroc_thread
         self.clf_keep_ratio = clf_keep_ratio
         self.clf_accuracy_thread = clf_accuracy_thread
         self.model_select_iteration = model_select_iteration
@@ -192,6 +198,7 @@ class Unit(object):
         # start model selection
         self.clf.successive_pruning(
             iteration = self.model_select_iteration,
+            auroc_thread = self.auroc_thread,
             clf_keep_ratio = self.clf_keep_ratio,
             clf_accuracy_thread = self.clf_accuracy_thread,
             last_train_size = self.max_train_size
@@ -231,6 +238,7 @@ class Unit(object):
                 self.clf.grns = self.pseudo_grns
                 self.clf.general_process(
                     train_size = self.max_train_size,
+                    auroc_thread = self.auroc_thread,
                     clf_keep_ratio = self.clf_keep_ratio,
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )
@@ -261,6 +269,7 @@ class Unit(object):
                 prev_grps = self.atlas.top_grps.index
                 self.clf.general_process(
                     train_size = self.max_train_size,
+                    auroc_thread = self.auroc_thread,
                     clf_keep_ratio = self.clf_keep_ratio,
                     clf_accuracy_thread = self.clf_accuracy_thread
                 )

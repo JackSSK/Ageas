@@ -101,7 +101,7 @@
           "gbtree"
       ],
       "objective": [
-          "multi:softmax",
+          "multi:softprob",
           "binary:logistic"
       ],
       "eval_metric": [

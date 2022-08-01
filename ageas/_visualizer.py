@@ -70,6 +70,9 @@ class Plot_Regulon(object):
                  root_gene:str = None,
                  weight_thread:float = 0.0,
                 ):
+        """
+        Initialize a new plot object.
+        """
         super(Plot_Regulon, self).__init__()
         self.plot_group = str(plot_group)
 

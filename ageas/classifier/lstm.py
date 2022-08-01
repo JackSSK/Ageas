@@ -11,6 +11,7 @@ author: jy, nkmtmsys
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as func
 import ageas.classifier as classifier
 
 
@@ -53,7 +54,7 @@ class LSTM(nn.Module):
         out, _ = self.lstm(input, (h0, c0))
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         # Decode the hidden state of the last time step
-        out = self.fc(out[:, -1, :])
+        out = func.softmax(self.fc(out[:, -1, :]), dim = 1)
         return out
 
 
@@ -66,18 +67,16 @@ class Make(classifier.Make_Template):
     """
     # Perform classifier training process for given times
     def train(self, dataSets, test_split_set):
-        testData = classifier.reshape_tensor(dataSets.dataTest)
-        testLabel = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
         for id in self.configs:
             model = LSTM(id, num_features, **self.configs[id]['config'])
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(epoch, batch_size, model, dataSets)
-            accuracy = self._evaluate_torch(
+            model_record = self._evaluate_torch(
                 model,
-                testData,
-                testLabel,
+                dataSets.dataTest,
+                dataSets.labelTest,
                 test_split_set
             )
-            self.models.append([model, accuracy])
+            self.models.append(model_record)

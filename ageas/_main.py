@@ -54,6 +54,7 @@ class Launch:
 				 sliding_window_stride:int = None,
 				 std_value_thread:float = 1.0,
 				 std_ratio_thread:float = None,
+				 auroc_thread:float = 0.8,
 				 clf_keep_ratio:float = 0.5,
 				 clf_accuracy_thread:float = 0.8,
 				 cpu_mode:bool = False,
@@ -70,7 +71,7 @@ class Launch:
 				 z_score_extract_thread:float = 0.0,
 				):
 		"""
-		Start a new pipeline to launch AGEAS.
+		Pipeline to launch AGEAS.
 
 		Args:
 			model_config_path: <str> Default = None
@@ -183,6 +184,7 @@ class Launch:
 			pseudo_grns = self.pseudo_grns,
 
 			# raw parameters
+			auroc_thread = auroc_thread,
 			clf_keep_ratio = clf_keep_ratio,
 			clf_accuracy_thread = clf_accuracy_thread,
 			correlation_thread = correlation_thread,

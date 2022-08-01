@@ -1549,7 +1549,7 @@
         "xgboost_gbm_8": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.3,
                 "gamma": 0.1,
@@ -1562,7 +1562,7 @@
         "xgboost_gbm_9": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.3,
                 "gamma": 0.1,
@@ -1575,7 +1575,7 @@
         "xgboost_gbm_10": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.3,
                 "gamma": 0,
@@ -1588,7 +1588,7 @@
         "xgboost_gbm_11": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.3,
                 "gamma": 0,
@@ -1601,7 +1601,7 @@
         "xgboost_gbm_12": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.1,
                 "gamma": 0.1,
@@ -1614,7 +1614,7 @@
         "xgboost_gbm_13": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.1,
                 "gamma": 0.1,
@@ -1627,7 +1627,7 @@
         "xgboost_gbm_14": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.1,
                 "gamma": 0,
@@ -1640,7 +1640,7 @@
         "xgboost_gbm_15": {
             "config": {
                 "booster": "gbtree",
-                "objective": "multi:softmax",
+                "objective": "multi:softprob",
                 "eval_metric": "mlogloss",
                 "eta": 0.1,
                 "gamma": 0,

@@ -200,7 +200,7 @@ class XGBoost_GBM(lib.Config_Maker_Template):
 
     # verify a GBM config before adding it to set
     def __verify_config(self, query):
-        if 'objective' in query and query['objective'] == 'multi:softmax':
+        if 'objective' in query and query['objective'] == 'multi:softprob':
             query['num_class'] = 2
         return query
 

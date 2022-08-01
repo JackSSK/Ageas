@@ -40,83 +40,76 @@ class Interpret:
         shap_explainer = SHAP_Explainer(bases)
         feature_score_sum = None
         # sumFIs = None
-        for records in trainer_data.models:
+        for record in trainer_data.models:
             # get model and data to explain
-            model = records[0]
-            accuracy = records[-1]
-            print('     Interpreting:',model.id,' which reached ACC:',accuracy)
-            test_data = ''
-            # Get sample index when test result consist with ground truth
-            for i in range(len(records[-2])):
-                if trainer_data.allLabel[i] == records[-2][i]:
-                    test_data += str(i) + ';'
-            test_data =  list(map(int, test_data.split(';')[:-1]))
-            # usefullLabel = trainer_data.allLabel[test_data]
-            test_data = trainer_data.allData.iloc[test_data,:]
+            print('     Interpreting:',record.model.id)
+            print('         Accuracy:',record.accuracy)
+            print('         AUROC:',record.auroc)
             # Handling RFC cases
-            if model.model_type == 'RFC':
+            if record.model.model_type == 'RFC':
                 feature_score = shap_explainer.get_tree_explain(
-                    model.clf,
-                    test_data
+                    record.model.clf,
+                    trainer_data.allData.iloc[record.correct_predictions,:]
                 )
             # Handling GNB cases
-            elif model.model_type == 'GNB':
+            elif record.model.model_type == 'GNB':
                 feature_score = shap_explainer.get_kernel_explain(
-                    model.clf.predict_proba,
-                    test_data
+                    record.model.clf.predict_proba,
+                    trainer_data.allData.iloc[record.correct_predictions,:]
                 )
             # Handling Logistic Regression cases
-            elif model.model_type == 'Logit':
-                feature_score = softmax(abs(model.clf.coef_[0]))
+            elif record.model.model_type == 'Logit':
+                feature_score = softmax(abs(record.model.clf.coef_[0]))
             # Handling SVM cases
-            elif model.model_type == 'SVM':
+            elif record.model.model_type == 'SVM':
                 # Handle linear kernel SVC here
-                if model.param['kernel'] == 'linear':
-                    feature_score = softmax(abs(model.clf.coef_[0]))
+                if record.param['kernel'] == 'linear':
+                    feature_score = softmax(abs(record.clf.coef_[0]))
                 # Handle other cases here
                 else:
                     feature_score = shap_explainer.get_kernel_explain(
-                        model.clf.predict_proba,
-                        test_data
+                        record.model.clf.predict_proba,
+                        trainer_data.allData.iloc[record.correct_predictions,:]
                     )
             # Hybrid CNN cases and 1D CNN cases
-            elif re.search(r'CNN', model.model_type):
+            elif re.search(r'CNN', record.model.model_type):
                 # Use DeepExplainer when in limited mode
-                if re.search(r'Limited', model.model_type):
+                if re.search(r'Limited', record.model.model_type):
                     feature_score = shap_explainer.get_deep_explain(
-                        model,
-                        test_data
+                        record.model,
+                        trainer_data.allData.iloc[record.correct_predictions,:]
                     )
                 # Use GradientExplainer when in unlimited mode
-                elif re.search(r'Unlimited', model.model_type):
+                elif re.search(r'Unlimited', record.model.model_type):
                     feature_score = shap_explainer.get_gradient_explain(
-                        model,
-                        test_data
+                        record.model,
+                        trainer_data.allData.iloc[record.correct_predictions,:]
                     )
                 else:
-                    raise lib.Error('Unrecogonized CNN model:',model.model_type)
+                    raise lib.Error('Unknown CNN Type:',record.model.model_type)
             # XGB's GBM cases
-            elif model.model_type == 'XGB_GBM':
-                feature_score = softmax(model.clf.feature_importances_)
+            elif record.model.model_type == 'XGB_GBM':
+                feature_score = softmax(record.model.clf.feature_importances_)
             # RNN_base model cases
-            elif (model.model_type == 'RNN' or
-                    model.model_type == 'LSTM' or
-                    model.model_type == 'GRU' or
-                    model.model_type == 'Transformer'):
+            elif (record.model.model_type == 'RNN' or
+                  record.model.model_type == 'LSTM' or
+                  record.model.model_type == 'GRU' or
+                  record.model.model_type == 'Transformer'):
                 feature_score = shap_explainer.get_gradient_explain(
-                    model,
-                    test_data
+                    record.model,
+                    trainer_data.allData.iloc[record.correct_predictions,:]
                 )
-            else:raise lib.Error('Unrecogonized model type: ', model.model_type)
+            else:
+                raise lib.Error('Unknown type: ', record.model.model_type)
 
             # Update feature_score_sum
             if feature_score_sum is None and feature_score is not None:
                 feature_score_sum = pd.array(
-                    (feature_score * accuracy),
+                    (feature_score * record.accuracy),
                     dtype = float
                 )
             elif feature_score is not None:
-                feature_score_sum += (feature_score * accuracy)
+                feature_score_sum += (feature_score * record.accuracy)
 
         # Make feature importnace matrix
         feature_score = pd.DataFrame()

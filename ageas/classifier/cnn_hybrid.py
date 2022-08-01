@@ -216,8 +216,6 @@ class Make(classifier.Make_Template):
 
     # Perform classifier training process for given times
     def train(self, dataSets, test_split_set):
-        testData = classifier.reshape_tensor(dataSets.dataTest)
-        testLabel = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
         for id in self.configs:
             if self.configs[id]['config']['num_layers'] < 3:
@@ -227,13 +225,13 @@ class Make(classifier.Make_Template):
             epoch = self.configs[id]['epoch']
             batch_size = self.configs[id]['batch_size']
             self._train_torch(epoch, batch_size, model, dataSets)
-            accuracy = self._evaluate_torch(
+            model_record = self._evaluate_torch(
                 model,
-                testData,
-                testLabel,
+                dataSets.dataTest,
+                dataSets.labelTest,
                 test_split_set
             )
-            self.models.append([model, accuracy])
+            self.models.append(model_record)
 
     # Check whether matrix sizes are reasonable or not
     def __check_input_matrix_size(self, grp_amount):

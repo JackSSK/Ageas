@@ -125,8 +125,6 @@ class Make(classifier.Make_Template):
     """
     # Perform classifier training process for given times
     def train(self, dataSets, test_split_set):
-        test_data = classifier.reshape_tensor(dataSets.dataTest)
-        test_label = dataSets.labelTest
         num_features = len(dataSets.dataTest[0])
         for id in self.configs:
             model = Transformer(id, num_features, **self.configs[id]['config'])
@@ -134,13 +132,13 @@ class Make(classifier.Make_Template):
             batch_size = self.configs[id]['batch_size']
             self._train_torch(epoch, batch_size, model, dataSets)
             # local test
-            accuracy = self._evaluate_torch(
+            model_record = self._evaluate_torch(
                 model,
-                test_data,
-                test_label,
+                dataSets.dataTest,
+                dataSets.labelTest,
                 test_split_set
             )
-            self.models.append([model, accuracy])
+            self.models.append(model_record)
 
 
 """ For testing """
