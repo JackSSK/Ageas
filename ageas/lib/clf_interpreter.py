@@ -63,8 +63,8 @@ class Interpret:
             # Handling SVM cases
             elif record.model.model_type == 'SVM':
                 # Handle linear kernel SVC here
-                if record.param['kernel'] == 'linear':
-                    feature_score = softmax(abs(record.clf.coef_[0]))
+                if record.model.param['kernel'] == 'linear':
+                    feature_score = softmax(abs(record.model.clf.coef_[0]))
                 # Handle other cases here
                 else:
                     feature_score = shap_explainer.get_kernel_explain(
