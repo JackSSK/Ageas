@@ -46,8 +46,8 @@ class Train(clf.Make_Template):
         # Initialization
         self.grns = psGRNs
         self.models = None
-        self.allData = None
-        self.allLabel = None
+        self.all_data = None
+        self.all_labels = None
         self.cpu_mode = cpu_mode
         self.random_state = random_state
         self.model_config = model_config
@@ -56,9 +56,7 @@ class Train(clf.Make_Template):
 
     def general_process(self,
                         train_size:float = 0.3,
-                        auroc_thread:float = 0.8,
                         clf_keep_ratio:float = None,
-                        clf_accuracy_thread:float = None
                        ):
         """
         Generate training data and testing data iteratively
@@ -70,112 +68,83 @@ class Train(clf.Make_Template):
             self.grns,
             train_size,
             self.random_state,
-            self.allData,
-            self.allLabel
+            self.all_data,
+            self.all_labels
         )
         data.auto_inject_fake_grps()
 
         # Update allGRP_IDs, allData, allLabel after first iteration
         # to try to avoid redundant calculation
-        if self.allData is None and self.allLabel is None:
+        if self.all_data is None and self.all_labels is None:
             print('Total GRP amount: ', len(data.all_grp_ids))
-            self.allData = data.dataTrain + data.dataTest
-            self.allLabel = np.concatenate((data.labelTrain, data.labelTest))
-            assert len(self.allData) == len(self.allLabel)
-            self.allData = pd.DataFrame(self.allData, columns= data.all_grp_ids)
+            self.all_data = data.dataTrain + data.dataTest
+            self.all_labels = np.concatenate((data.labelTrain, data.labelTest))
+            assert len(self.all_data) == len(self.all_labels)
+            self.all_data = pd.DataFrame(self.all_data,columns=data.all_grp_ids)
 
         # Do trainings
+        temp = list()
         self.models = self.__initialize_classifiers(self.model_config)
-        for modelSet in self.models:
-            modelSet.train(data, self.test_split_set)
+        for model_set in self.models:
+            model_set.train(data, self.test_split_set)
             if self.test_split_set:
-                modelSet._filter_models(
-                    auroc_thread, clf_keep_ratio, clf_accuracy_thread
-                )
-
-        # Concat models together based on performace
-        temp = []
-        for models in self.models:
-            for model in models.models:
+                model_set._performance_filter(clf_keep_ratio)
+            # Concat all models of different type to one list
+            for model in model_set.models:
                 temp.append(model)
         self.models = temp
+
         # Keep best performancing models in local test
         if self.test_split_set and clf_keep_ratio is not None:
-            self._filter_models(
-                auroc_thread, clf_keep_ratio, clf_accuracy_thread
-            )
+            self._performance_filter(clf_keep_ratio)
 
         # Filter based on global test performace
         self.models = self.update_model_records(
             model_records = self.models,
-            data = self.allData.to_numpy(),
-            label = self.allLabel
+            data = self.all_data.to_numpy(),
+            label = self.all_labels
         )
-        self._filter_models(
-            auroc_thread, clf_keep_ratio, clf_accuracy_thread
-        )
+        self._performance_filter(clf_keep_ratio)
         print('Keeping ', len(self.models), ' models')
 
 
     def successive_pruning(self,
-                           iteration:int = 2,
-                           auroc_thread:float = 0.8,
+                           iteration:int = 3,
                            clf_keep_ratio:float = 0.5,
-                           clf_accuracy_thread:float = 0.9,
-                           last_train_size:float = 0.9,
+                           max_train_size:float = 0.9,
                           ):
         """
         Train out models in Successive Halving manner
         Amount of training data is set as limited resouce
         While accuracy is set as evaluation standard
         """
-        assert last_train_size < 1.0
-        if self.test_split_set:
-            warn('Trainer Warning: test_split_set is True! Changing to False.')
-            self.test_split_set = False
-        # set iteration to 0 if not doing model selection
-        if iteration is None: iteration = 0
+        # set iteration to 0 if not doing SHA
+        if iteration is None: iteration = 1
+
         # initialize training data set
-        init_train_size = float(1 / pow(2, iteration))
+        init_train_size = float(1 / pow(2, iteration - 1))
         train_size = 0
-        for i in range(iteration):
-            breaking = False
+        for i in range(iteration - 1):
             train_size = float(init_train_size * pow(2, i))
-            # about last round, we set train size to the max resouce
-            if train_size >= last_train_size:
-                train_size = last_train_size
-                breaking = True
-            print('Iteration:', i, ' with training size:', train_size)
-            keep_ratio = max(1 - train_size, clf_keep_ratio)
+            print('Iteration:', i + 1, ' with training size:', train_size)
             # remove more and more portion as more resource being avaliable
             self.general_process(
                 train_size = train_size,
-                auroc_thread = auroc_thread,
-                clf_keep_ratio = keep_ratio,
-                clf_accuracy_thread = clf_accuracy_thread,
+                clf_keep_ratio = max(1 - train_size, clf_keep_ratio),
             )
             self.__prune_clf_config(id_keep={x.model.id:''for x in self.models})
-            if breaking: break
 
-        if train_size < last_train_size:
-            print('Iteration Last: with training size:', last_train_size)
-            self.general_process(
-                train_size = last_train_size,
-                auroc_thread = auroc_thread,
-                clf_accuracy_thread = clf_accuracy_thread
-            )
-        else:
-            self._filter_models(
-                auroc_thread = auroc_thread,
-                clf_accuracy_thread = clf_accuracy_thread
-            )
+        print('Iteration:Last with training size:', max_train_size)
+        self.general_process(
+            train_size = max_train_size,
+            clf_keep_ratio = clf_keep_ratio
+        )
 
         self.__prune_clf_config(id_keep = {x.model.id:'' for x in self.models})
 
         total_model = 0
         for genra in self.model_config:
             total_model += len(self.model_config[genra])
-
         print('Selecting ', total_model, ' Models after Model Selection')
 
     # Re-assign accuracy based on all data performance
@@ -207,8 +176,8 @@ class Train(clf.Make_Template):
     def clear_data(self):
         self.grns = None
         self.models = None
-        self.allData = None
-        self.allLabel = None
+        self.all_data = None
+        self.all_labels = None
 
     # Save result models in given path
     def save_models(self, path):
@@ -264,7 +233,7 @@ class Train(clf.Make_Template):
             list.append(cnn_hybrid.Make(
                     config = config['CNN_Hybrid'],
                     cpu_mode = self.cpu_mode,
-                    grp_amount = len(self.allData.columns),
+                    grp_amount = len(self.all_data.columns),
                 )
             )
         if 'RNN' in config:
@@ -297,5 +266,6 @@ class Train(clf.Make_Template):
                     temp[id] = self.model_config[genra][id]
                 else:
                     print('     Pruning:', id)
-            if len(temp) > 0: result[genra] = temp
+            if len(temp) > 0:
+                result[genra] = temp
         self.model_config = result

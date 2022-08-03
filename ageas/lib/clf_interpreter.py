@@ -29,7 +29,7 @@ class Interpret:
         # Background generation may need to be revised
         # We may just use grn generated based on universal exp matrix
         bases = pd.DataFrame().append(
-            trainer_data.allData.mean(axis = 0),
+            trainer_data.all_data.mean(axis = 0),
             ignore_index = True
         )
         self.result = self.__interpret_process(trainer_data, bases)
@@ -45,17 +45,18 @@ class Interpret:
             print('     Interpreting:',record.model.id)
             print('         Accuracy:',record.accuracy)
             print('         AUROC:',record.auroc)
+            print('         Loss:',float(record.loss))
             # Handling RFC cases
             if record.model.model_type == 'RFC':
                 feature_score = shap_explainer.get_tree_explain(
                     record.model.clf,
-                    trainer_data.allData.iloc[record.correct_predictions,:]
+                    trainer_data.all_data.iloc[record.correct_predictions,:]
                 )
             # Handling GNB cases
             elif record.model.model_type == 'GNB':
                 feature_score = shap_explainer.get_kernel_explain(
                     record.model.clf.predict_proba,
-                    trainer_data.allData.iloc[record.correct_predictions,:]
+                    trainer_data.all_data.iloc[record.correct_predictions,:]
                 )
             # Handling Logistic Regression cases
             elif record.model.model_type == 'Logit':
@@ -69,7 +70,7 @@ class Interpret:
                 else:
                     feature_score = shap_explainer.get_kernel_explain(
                         record.model.clf.predict_proba,
-                        trainer_data.allData.iloc[record.correct_predictions,:]
+                        trainer_data.all_data.iloc[record.correct_predictions,:]
                     )
             # Hybrid CNN cases and 1D CNN cases
             elif re.search(r'CNN', record.model.model_type):
@@ -77,13 +78,13 @@ class Interpret:
                 if re.search(r'Limited', record.model.model_type):
                     feature_score = shap_explainer.get_deep_explain(
                         record.model,
-                        trainer_data.allData.iloc[record.correct_predictions,:]
+                        trainer_data.all_data.iloc[record.correct_predictions,:]
                     )
                 # Use GradientExplainer when in unlimited mode
                 elif re.search(r'Unlimited', record.model.model_type):
                     feature_score = shap_explainer.get_gradient_explain(
                         record.model,
-                        trainer_data.allData.iloc[record.correct_predictions,:]
+                        trainer_data.all_data.iloc[record.correct_predictions,:]
                     )
                 else:
                     raise lib.Error('Unknown CNN Type:',record.model.model_type)
@@ -97,7 +98,7 @@ class Interpret:
                   record.model.model_type == 'Transformer'):
                 feature_score = shap_explainer.get_gradient_explain(
                     record.model,
-                    trainer_data.allData.iloc[record.correct_predictions,:]
+                    trainer_data.all_data.iloc[record.correct_predictions,:]
                 )
             else:
                 raise lib.Error('Unknown type: ', record.model.model_type)
@@ -105,11 +106,10 @@ class Interpret:
             # Update feature_score_sum
             if feature_score_sum is None and feature_score is not None:
                 feature_score_sum = pd.array(
-                    (feature_score * record.accuracy),
-                    dtype = float
+                    (feature_score * (1.0 - record.loss)), dtype = float
                 )
             elif feature_score is not None:
-                feature_score_sum += (feature_score * record.accuracy)
+                feature_score_sum += (feature_score * (1.0 - record.loss))
 
         # Make feature importnace matrix
         feature_score = pd.DataFrame()

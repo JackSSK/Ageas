@@ -29,9 +29,7 @@ class Unit(object):
                  pseudo_grns = None,
 
                  # Parameters
-                 auroc_thread:float = 0.8,
                  clf_keep_ratio:float = 0.5,
-                 clf_accuracy_thread:float = 0.8,
                  correlation_thread:float = 0.2,
                  cpu_mode:bool = False,
                  feature_dropout_ratio:float = 0.1,
@@ -66,23 +64,9 @@ class Unit(object):
                 pseudo-sample GRNs returned by
                 ageas.Data_Preprocess()
 
-            auroc_thread: <float> Default = 0.8
-                Filter thread of classifier's AUROC in local test performed
-                at each model selection iteration.
-
             clf_keep_ratio: <float> Default = 0.5
-                Portion of classifier model to keep after each model selection
+                Portion of classifiers to keep on last model selection
                 iteration.
-
-                When performing SHA based model selection, this value is
-                set as lower bound to keep models
-
-            clf_accuracy_thread: <float> Default = 0.8
-                Filter thread of classifier's accuracy in local test performed
-                at each model selection iteration.
-
-                When performing SHA based model selection, this value is
-                only used at last iteration
 
             correlation_thread: <float> Default = 0.2
                 Gene expression correlation thread value of GRPs.
@@ -114,9 +98,8 @@ class Unit(object):
                 stabilize iterations lower than this thread, these two
                 iterations will be considered as having consistent result.
 
-            model_select_iteration: <int> Default = 2
-                Number of iteration for classification model selection before
-                the mandatory filter.
+            model_select_iteration: <int> Default = 3
+                Number of iteration for classification model selection.
 
             outlier_thread: <float> Default = 3.0
                 The lower bound of Z-score scaled importance value to consider
@@ -165,9 +148,7 @@ class Unit(object):
         self.z_score_extract_thread = z_score_extract_thread
 
         self.max_train_size = max_train_size
-        self.auroc_thread = auroc_thread
         self.clf_keep_ratio = clf_keep_ratio
-        self.clf_accuracy_thread = clf_accuracy_thread
         self.model_select_iteration = model_select_iteration
 
         self.outlier_thread = outlier_thread
@@ -198,10 +179,8 @@ class Unit(object):
         # start model selection
         self.clf.successive_pruning(
             iteration = self.model_select_iteration,
-            auroc_thread = self.auroc_thread,
             clf_keep_ratio = self.clf_keep_ratio,
-            clf_accuracy_thread = self.clf_accuracy_thread,
-            last_train_size = self.max_train_size
+            max_train_size = self.max_train_size
         )
         print('Finished Model Selection', time.time() - start)
 
@@ -238,9 +217,7 @@ class Unit(object):
                 self.clf.grns = self.pseudo_grns
                 self.clf.general_process(
                     train_size = self.max_train_size,
-                    auroc_thread = self.auroc_thread,
                     clf_keep_ratio = self.clf_keep_ratio,
-                    clf_accuracy_thread = self.clf_accuracy_thread
                 )
 
                 grp_importances = interpreter.Interpret(self.clf)
@@ -269,9 +246,7 @@ class Unit(object):
                 prev_grps = self.atlas.top_grps.index
                 self.clf.general_process(
                     train_size = self.max_train_size,
-                    auroc_thread = self.auroc_thread,
                     clf_keep_ratio = self.clf_keep_ratio,
-                    clf_accuracy_thread = self.clf_accuracy_thread
                 )
 
                 grp_importances.add(interpreter.Interpret(self.clf).result)

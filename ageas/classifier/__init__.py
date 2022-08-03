@@ -5,6 +5,7 @@ Ageas Reborn
 author: jy, nkmtmsys
 """
 
+import numpy as np
 import torch
 import difflib
 import itertools
@@ -62,43 +63,27 @@ class Make_Template:
 
 	# Perform classifier training process for given times
 	# and keep given ratio of top performing classifiers
-	def train(self, dataSets, clf_keep_ratio, clf_accuracy_thread):
+	def train(self,):
 		return self
 
 	# Filter models based on checking accuracy (or ranking)
-	def _filter_models(self,
-					  auroc_thread:float = 0.8,
-					  clf_keep_ratio:float = None,
-					  clf_accuracy_thread:float = None):
-		# filter models with low AUROC values
-		self.models = [x for x in self.models if x.auroc >= auroc_thread]
-
+	def _performance_filter(self, clf_keep_ratio:float = None,):
 		# nothing to do
-		if ((clf_keep_ratio is None and clf_accuracy_thread is None)
-			or (len(self.models) <= 1)): return
+		if clf_keep_ratio is None or len(self.models) <= 1:
+			return
 
-		# Or we do the job
-		accuracy_thread = None
-		self.models.sort(key = lambda x:x.accuracy, reverse = True)
-		if clf_keep_ratio is not None:
-			index = int(len(self.models) * clf_keep_ratio) - 1
-			accuracy_thread = self.models[index].accuracy
-		if clf_accuracy_thread is not None:
-			if accuracy_thread is None:
-				accuracy_thread = clf_accuracy_thread
-			else:
-				accuracy_thread = min(accuracy_thread, clf_accuracy_thread)
-		# now we partition
-		if accuracy_thread > self.models[0].accuracy:
-			print('accuracy_thread is too high! Returning the best we can get')
-			accuracy_thread = self.models[0].accuracy
-		print('accuracy_thread is set to:', accuracy_thread)
-		low_bound = len(self.models)
-		for i in reversed(range(low_bound)):
-			accuracy = self.models[i].accuracy
-			if accuracy >= accuracy_thread:break
-			low_bound -= 1
-		self.models = self.models[:low_bound]
+		pos = int(np.ceil(len(self.models) * clf_keep_ratio))
+		# Set up thread values
+		acc_thread = sorted([x.accuracy for x in self.models],reverse=True)[pos]
+		auroc_thread = sorted([x.auroc for x in self.models],reverse=True)[pos]
+		loss_thread = sorted([x.loss for x in self.models])[pos]
+		self.models = [
+			x for x in self.models if (
+				x.accuracy >= acc_thread and
+				x.auroc >= auroc_thread and
+				x.loss <= loss_thread
+			)
+		]
 		return
 
 	# generalized pytorch model training process
@@ -130,7 +115,8 @@ class Make_Template:
 			output = model(batch_data)
 			loss = model.loss_func(output, batch_label)
 			loss.backward()
-			if model.optimizer is not None: model.optimizer.step()
+			if model.optimizer is not None:
+				model.optimizer.step()
 
 	# common func to evaluate both torch based and sklearn based API models
 	def _evaluate(self, output, label):
@@ -141,21 +127,26 @@ class Make_Template:
 				correct_predictions.append(i)
 			elif output[i][0] < output[i][1] and label[i] == 1:
 				correct_predictions.append(i)
+
 		auroc = roc_auc_score(label, output[:, 1], average = None)
-		accuracy = len(correct_predictions) / len(label)
-		return correct_predictions, accuracy, auroc
+		loss = torch.nn.CrossEntropyLoss()(
+			torch.tensor(output, dtype = torch.float),
+			torch.tensor(label)
+		)
+		return correct_predictions, float(loss), auroc
 
 	# Evaluate the accuracy of given model with testing data
 	def _evaluate_torch(self, model, data, label, do_test = True):
 		if do_test:
 			model.eval()
 			with torch.no_grad(): output = model(reshape_tensor(data))
-			correct_predictions, accuracy, auroc = self._evaluate(output, label)
+			correct_predictions, loss, auroc = self._evaluate(output, label)
 			return Model_Record(
 				model = model,
 				correct_predictions = correct_predictions,
-				accuracy = accuracy,
-				auroc = auroc
+				accuracy = len(correct_predictions) / len(label),
+				auroc = auroc,
+				loss = loss
 			)
 		else:
 			return Model_Record(model = model,)
@@ -164,12 +155,13 @@ class Make_Template:
 	def _evaluate_sklearn(self, model, data, label, do_test = True):
 		if do_test:
 			output = model.clf.predict_proba(data)
-			correct_predictions, accuracy, auroc = self._evaluate(output, label)
+			correct_predictions, loss, auroc = self._evaluate(output, label)
 			return Model_Record(
 				model = model,
 				correct_predictions = correct_predictions,
-				accuracy = accuracy,
-				auroc = auroc
+				accuracy = len(correct_predictions) / len(label),
+				auroc = auroc,
+				loss = loss
 			)
 		else:
 			return Model_Record(model = model,)
@@ -188,11 +180,13 @@ class Model_Record(object):
 				correct_predictions:list = None,
 				accuracy:float = 0.0,
 				auroc:float = 0.0,
+				loss:float = 1.0,
 				**kwargs):
 		super(Model_Record, self).__init__()
 		self.model = model
 		self.correct_predictions = correct_predictions
 		self.accuracy = accuracy
 		self.auroc = auroc
+		self.loss = loss
 		for key in kwargs:
 			setattr(self, key, kwargs[key])
