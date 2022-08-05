@@ -42,7 +42,9 @@ def Test(**kwargs):
 # if __name__ == '__main__':
 # 	test = ageas.Test(
 # 		cpu_mode = True,
-# 		protocol = 'multi',
+# 		# protocol = 'multi',
+# 		mute_unit = False,
+# 		normalize = 'Min_Max_100',
 # 	)
 # 	test.save_reports(
 # 		folder_path = 'easy_test.report',
