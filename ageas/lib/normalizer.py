@@ -14,8 +14,8 @@ def CPM(df):
         df[sample] = (df[sample] * 1000000) / sum(df[sample])
     return df
 
-def Min_Max_100(df):
+def Min_Max_1000(df):
     """
-    Values multiplied by 100 after Min-Max Normalization
+    Values multiplied by 1000 after Min-Max Normalization
     """
-    return 100 * (df - df.min())/ (df.max() - df.min())
+    return 1000 * (df - df.min())/ (df.max() - df.min())

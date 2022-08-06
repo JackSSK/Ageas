@@ -144,9 +144,9 @@ class Load_GEM:
             if normalize == 'CPM':
                 self.group1.data = normalizer.CPM(self.group1.data)
                 self.group2.data = normalizer.CPM(self.group2.data)
-            elif normalize == 'Min_Max_100':
-                self.group1.data = normalizer.Min_Max_100(self.group1.data)
-                self.group2.data = normalizer.Min_Max_100(self.group2.data)
+            elif normalize == 'Min_Max_1000':
+                self.group1.data = normalizer.Min_Max_1000(self.group1.data)
+                self.group2.data = normalizer.Min_Max_1000(self.group2.data)
             else:
                 raise db_setup.Error('Unknown normalization method.')
 

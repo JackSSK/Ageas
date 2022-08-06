@@ -21,24 +21,26 @@ class Processor:
     """
     Object to process stratified GTRD file.
     """
-    def __init__(self, specie_path, feature_type):
+    def __init__(self, specie_path:str = '', feature_type:str = 'ens_id'):
         self.data = dict()
         self.idmap = json.decode(
             specie_path + 'uniprot_idmapping.stratified.js.gz'
         )[feature_type]
 
         if os.path.exists(specie_path + 'gtrd_whole_genes.js.gz'):
-        	data = json.decode(specie_path + 'gtrd_whole_genes.js.gz')
+            data = json.decode(specie_path + 'gtrd_whole_genes.js.gz')
         else:
-        	data = json.decode(specie_path + 'gtrd_[-1000,+100].js.gz')
+            data = json.decode(specie_path + 'gtrd_[-1000,+100].js.gz')
 
         if feature_type == 'gene_symbol':
             ind = 1
         elif feature_type == 'ens_id':
             ind = 0
 
-        for source in data:
-            self.data[source] = {ele[ind]:ele[-1] for ele in data[source]}
+        for source in data['data']:
+            self.data[source] = {
+                data['ens_idmap'][x[0]][ind]:x[-1] for x in data['data'][source]
+            }
 
 
 class Packer:
@@ -55,7 +57,9 @@ class Packer:
             outpath:str = None
 
         """
-        self.dict = {}
+        self.dict = dict()
+        self.token_rec = list()
+        self.id_token = dict()
         filenames = os.listdir(database_path)
         for ele in filenames:
             uniprot_id = ele.split('.txt')[0].upper()
@@ -65,15 +69,29 @@ class Packer:
                 )
             else:
                 raise tool.Error('Duplicated TF file in:', database_path)
-
         if outpath is not None:
-            json.encode(self.dict, outpath)
+            json.encode(
+                {'ens_idmap': self.token_rec, 'data': self.dict},
+                outpath
+            )
+
 
     def _process(self, filepath, sep = '\t', header = 0):
+        result = list()
         data = pd.read_csv(filepath, sep = sep, header = header)
-        result = list(zip(data['ID'], data['Gene symbol'], data['SiteCount']))
+
+        for i, id in enumerate(data['ID']):
+            symbol = data['Gene symbol'][i]
+            if id not in self.id_token:
+                self.id_token[id] = len(self.token_rec)
+                self.token_rec.append([id, symbol])
+            else:
+                assert self.token_rec[self.id_token[id]][1] == symbol
+            result.append([self.id_token[id], int(data['SiteCount'][i])])
+
         return result
 
 
 
-# Packer('mouse/genes promoter[-1000,+100]', 'gtrd_promoter[-1000,+100].js.gz')
+# Packer('mouse/genes whole[-5000,+5000]', 'gtrd_whole_genes.js.gz')
+# Processor()

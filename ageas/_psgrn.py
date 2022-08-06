@@ -121,7 +121,7 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 
 				'CPM': Counts Per Million(CPM).
 
-				'Min_Max_100': Values multiplied by 100 after Min-Max
+				'Min_Max_1000': Values multiplied by 100 after Min-Max
 					Normalization
 
 		prediction_thread: <str> or <float> Default = 'auto'

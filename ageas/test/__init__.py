@@ -44,7 +44,7 @@ def Test(**kwargs):
 # 		cpu_mode = True,
 # 		# protocol = 'multi',
 # 		mute_unit = False,
-# 		normalize = 'Min_Max_100',
+# 		normalize = 'Min_Max_1000',
 # 	)
 # 	test.save_reports(
 # 		folder_path = 'easy_test.report',
