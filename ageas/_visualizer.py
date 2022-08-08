@@ -28,38 +28,6 @@ class Plot_Regulon(object):
     """
     Visualize full or partial Regulon extracted with AGEAS.
 
-    Args:
-        depth:<int> Default = 1
-            If 'root_gene' is specified, borrowing concept of tree graph, this
-            means how far the tree graph shall reach.
-
-        hide_bridge:<bool> Default = True
-            Whether hide non-AGEAS-extracted GRPs which can link key genes or
-            not.
-
-        plot_group:<str> Default = 'all'
-            What kind of information to show for GRPs on plot.
-
-            Supporting:
-
-                'all': Which group of samples a GRP has higher correlation.
-
-                'group1': GRP's correlation value calculated with samples in
-                group1
-
-                'group2': GRP's correlation value calculated with samples in
-                group2
-
-        regulon:<ageas.tool.grn.GRN> Default = None
-            Which regulon to plot out.
-
-        root_gene:<str> Default = None
-            Specific gene of interest. Only GRPs being capable to link with this
-            gene directly or indirectly will be visualized. Borrowing concept of
-            tree graph, this will be the root to expand a tree.
-
-        weight_thread:<float> Default = 0.0
-            Minimun weight for a GRP to be kept on plot.
     """
 
     def __init__(self,
@@ -72,6 +40,38 @@ class Plot_Regulon(object):
                 ):
         """
         Initialize a new plot object.
+
+        :param depth: <int Default = 1>
+            If 'root_gene' is specified, borrowing concept of tree graph, this
+            means how far the tree graph shall reach.
+
+        :param hide_bridge: <bool Default = True>
+            Whether hide non-AGEAS-extracted GRPs which can link key genes or
+            not.
+
+        :param plot_group: <str Default = 'all'>
+            What kind of information to show for GRPs on plot.
+
+            Supporting:
+
+                'all': Which group of samples a GRP has higher correlation.
+
+                'group1': GRP's correlation value calculated with samples in
+                group1
+
+                'group2': GRP's correlation value calculated with samples in
+                group2
+
+        :param regulon: <ageas.tool.grn.GRN Default = None>
+            Which regulon to plot out.
+
+        :param root_gene: <str Default = None>
+            Specific gene of interest. Only GRPs being capable to link with this
+            gene directly or indirectly will be visualized. Borrowing concept of
+            tree graph, this will be the root to expand a tree.
+
+        :param weight_thread: <float Default = 0.0>
+            Minimun weight for a GRP to be kept on plot.
         """
         super(Plot_Regulon, self).__init__()
         self.plot_group = str(plot_group)
@@ -108,42 +108,42 @@ class Plot_Regulon(object):
         """
         Draw the plot for selected regulon.
 
-        Args:
-            colorbar_shrink:<float> Default = 0.25
-                From the size having equal length with graph plot, what ratio
-                should the color bar be shrinked to.
+        :param colorbar_shrink:<float> Default = 0.25
+            From the size having equal length with graph plot, what ratio
+            should the color bar be shrinked to.
 
-            edge_width_scale:<float> Default = 1.0
+        :param edge_width_scale:<float> Default = 1.0
 
-            font_size:<int> Default = 10
-                Font size.
+        :param font_size:<int> Default = 10
+            Font size.
 
-            figure_size:<int> Default = 20
-                Figure size.
+        :param figure_size:<int> Default = 20
+            Figure size.
 
-            hide_target_labels:<bool> Default = False
+        :param hide_target_labels:<bool> Default = False
 
-            layout:<str> Default = 'spring'
+        :param layout:<str> Default = 'spring'
 
-            legend_pos:<set> Default = (1.05, 0.3)
-                Where the legend should be located.
+        :param legend_pos:<set> Default = (1.05, 0.3)
+            Where the legend should be located.
 
-            method:<str> Default = 'netgraph'
-                What exact method to be used for plotting.
+        :param method:<str> Default = 'netgraph'
+            What exact method to be used for plotting.
 
-                Supporting:
+            Supporting:
 
-                    'netgraph':
+                'netgraph':
 
-                    'networkx':
+                'networkx':
 
-            node_base_size:<int> Default = 2
+        :param node_base_size:<int> Default = 2
 
-            save_path:<str> Default = None
+        :param save_path:<str> Default = None
 
-            scale:<int> Default = 1
+        :param scale:<int> Default = 1
 
-            seed:<int> Default = 1936
+        :param seed:<int> Default = 1936
+
 
         """
         # initialization
@@ -207,11 +207,9 @@ class Plot_Regulon(object):
         """
         Save the plot. PDF format by default.
 
-        Args:
-            path:<str> Default = None
+        :param path:<str> Default = None
 
-            format:<str> Default = 'pdf'
-
+        :param format:<str> Default = 'pdf'
         """
         plt.savefig(path, format = format)
         plt.close()

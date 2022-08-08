@@ -14,12 +14,12 @@ def Get_Pearson(source = None, target = None, p_thread = 0.05):
     """
     Get pearson correlation value while p-value not lower than thread.
 
-    Args:
-        source = None
+    :param source = None
 
-        target = None
+    :param target = None
 
-        p_thread = 0.05
+    :param p_thread = 0.05
+
 
     """
     pearson = pearsonr(source, target)
@@ -33,13 +33,9 @@ def STD_Filter(df = None, std_value_thread = None, std_ratio_thread = None):
     """
     Standard Deviation (STD) Filter for data frame(df).
 
-    Args:
-        df = None
-
-        std_value_thread = None
-
-        std_ratio_thread = None
-
+    :param df = None
+    :param std_value_thread = None
+    :param std_ratio_thread = None
     """
     data = df.transpose()
     sd_list = data[data.columns].std().sort_values(ascending=False)
@@ -94,9 +90,7 @@ class Reader_Template:
         """
         Initialize a Reader Object
 
-        Args:
-            filename:str = None
-
+        :param filename:str = None
         """
         self.filePath = filename
         self.file = None

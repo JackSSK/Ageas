@@ -13,12 +13,9 @@ def encode(data = None, out:str = 'out.js', indent:int = 4):
     """
     Encode data in json format file.
 
-    Args:
-        data = None
-
-        out:str = 'out.js'
-
-        indent:int = 4
+    :param data = None
+    :param out:str = 'out.js'
+    :param indent:int = 4
 
     """
     if re.search(r'\.gz$', out):
@@ -33,8 +30,7 @@ def decode(path:str = None):
     """
     Decode data from JSON format file.
 
-    Args:
-        path:str = None
+    :param path:str = None
     """
     if re.search(r'\.gz$', path):
         with gzip.open(path, 'r') as json_file:

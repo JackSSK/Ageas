@@ -51,11 +51,8 @@ class Packer:
         """
         Initialize an object.
 
-        Args:
-            database_path:str = None
-
-            outpath:str = None
-
+        :param database_path:str = None
+        :param outpath:str = None
         """
         self.dict = dict()
         self.token_rec = list()

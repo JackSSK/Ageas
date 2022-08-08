@@ -16,13 +16,10 @@ def Test(**kwargs):
 	"""
 	Function to test whether AGEAS is performing properly or not.
 
-	Args:
-		kwargs: All args in ageas.Launch except **group1_path**,
+	:param kwargs: All args in ageas.Launch except **group1_path**,
 		**group2_path**, **sliding_window_size**
 
-	Outputs:
-		ageas._main.Launch object
-
+	:return: <ageas._main.Launch object>
 	"""
 	print('Start Test')
 	easy = ageas.Launch(

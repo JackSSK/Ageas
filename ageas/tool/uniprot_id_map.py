@@ -21,8 +21,8 @@ class Reader(tool.Reader_Template):
         """
         Initialize a Reader object.
 
-        Args:
-            filepath:str = None
+        :param filepath:str = None
+
         """
         self.load(filepath)
 

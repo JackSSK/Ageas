@@ -71,57 +71,57 @@ class Launch:
 		"""
 		Pipeline to launch AGEAS.
 
-		Args:
-			model_config_path: <str> Default = None
-				Path to load model config file which will be used to initialize
-				classifiers.
+		:param model_config_path: <str Default = None>
+			Path to load model config file which will be used to initialize
+			classifiers.
 
-				By default, AGEAS will use internalized model config file
-				which contians following model types:
+			By default, AGEAS will use internalized model config file which
+			contians following model types:
 
-					Transformer
+				Transformer
 
-					Random Forest(RFC)
+				Random Forest(RFC)
 
-					Support Vector Machine(SVM)
+				Support Vector Machine(SVM)
 
-					Gradient Boosting Machine(GBM)
+				Gradient Boosting Machine(GBM)
 
-					Convolutional Neural Network(CNN_1D, CNN_Hybrid)
+				Convolutional Neural Network(CNN_1D, CNN_Hybrid)
 
-					Recurrent Neural Network(RNN)
+				Recurrent Neural Network(RNN)
 
-					Long Short Term Memory(LSTM)
+				Long Short Term Memory(LSTM)
 
-					Gated Recurrent Unit(GRU)
+				Gated Recurrent Unit(GRU)
 
-			mute_unit: <bool> Default = True
-				Whether AGEAS unit print out log while running.
-				It is not mandatory but encouraged to remain True
-				especially when using 'multi' protocol
+		:param mute_unit: <bool Default = True>
+			Whether AGEAS unit print out log while running.
+			It is not mandatory but encouraged to remain True especially when
+			using 'multi' protocol.
 
-			protocol: <str> Default = 'solo'
-				AGEAS unit launching protocol.
+		:param protocol: <str Default = 'solo'>
+			AGEAS unit launching protocol.
 
-				Supporting:
+			Supporting:
 
-					'solo': All units will run separately.
+				'solo': All units will run separately.
 
-					'multi': All units will run parallelly by multithreading.
+				'multi': All units will run parallelly by multithreading.
 
-			unit_num: <int> Default = 1
-				Amount of AGEAS extractor units to launch.
+		:param unit_num: <int Default = 1>
+			Amount of AGEAS extractor units to launch.
 
-			warning_filter: <str> Default = 'ignore'
-				How warnings should be filtered. For other options,
-				please check 'The Warnings Filter' section in:
-				https://docs.python.org/3/library/warnings.html#warning-filter
+		:param warning_filter: <str Default = 'ignore'>
+			How warnings should be filtered. For other options,
+			please check 'The Warnings Filter' section in:
+			https://docs.python.org/3/library/warnings.html#warning-filter
 
-			Additional:
-				All args in **ageas.Data_Preprocess()**
+		Additional Parameters:
+			All args in **ageas.Data_Preprocess()**
 
-				All args in **ageas.Unit()** excluding database_info, meta,
-				model_config, and pseudo_grns,
+			All args in **ageas.Unit()** excluding database_info, meta,
+			model_config, and pseudo_grns,
+
 
 		Attributes:
 			self.atlas
@@ -225,17 +225,17 @@ class Launch:
 		meta-GRN based analysis report,
 		AGEAS based analysis report, and key atlas extracted by AGEAS.
 
-		Args:
-			folder_path: <str> Default = None
-				Path to create folder for saving AGEAS report files.
+		:param folder_path: <str Default = None>
+			Path to create folder for saving AGEAS report files.
 
-			regulon_header: <str> Default = 'regulon_'
-				The name header for each regulon in atlas.
+		:param regulon_header: <str Default = 'regulon_'>
+			The name header for each regulon in atlas.
 
-			save_unit_reports: <bool> Default = False
-				Whether saving key GRPs extracted by each AGEAS Unit or not.
-				If True, reports will be saved in folder_path under folders
-				named 'no_{}'.format(unit_num) starting from 0.
+		:param save_unit_reports: <bool Default = False>
+			Whether saving key GRPs extracted by each AGEAS Unit or not.
+			If True, reports will be saved in folder_path under folders
+			named 'no_{}'.format(unit_num) starting from 0.
+
 		"""
 		# prepare folder path
 		if folder_path[-1] != '/':

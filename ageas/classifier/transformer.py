@@ -26,9 +26,10 @@ class Positional_Encoding(nn.Module):
         \text{PosEncoder}(pos, 2i) = sin(pos/10000^(2i/d_model))
         \text{PosEncoder}(pos, 2i+1) = cos(pos/10000^(2i/d_model))
         \text{where pos is the position and i is the embed idx)
-    Args:
-        d_model: the embed dim (required).
-        dropout: the dropout value (default=0.1).
+
+    :param d_model: the embed dim (required).
+    :param dropout: the dropout value (default=0.1).
+
     Examples:
         >>> pos_encoder = Positional_Encoding(d_model)
     """
@@ -47,8 +48,7 @@ class Positional_Encoding(nn.Module):
 
     def forward(self, x):
         """
-        Args:
-            x: the sequence fed to the positional encoder model (required).
+        :param x: the sequence fed to the positional encoder model (required).
         Shape:
             x: [sequence length, batch size, embed dim]
             output: [sequence length, batch size, embed dim]

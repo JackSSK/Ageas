@@ -215,14 +215,13 @@ class Gene(object):
 		"""
 		Initialize a object.
 
-		Args:
-			id:str = None
+		:param id:str = None
 
-			type:str = 'Gene'
+		:param type:str = 'Gene'
 
-			expression_sum:float = None
+		:param expression_sum:float = None
 
-			**kwargs
+		:param **kwargs
 		"""
 		self.id = id
 		self.type = type
@@ -263,22 +262,21 @@ class GRP(object):
 		"""
 		Initialize a object.
 
-		Args:
-			regulatory_source:str = None
+		:param regulatory_source:str = None
 
-			regulatory_target:str = None
+		:param regulatory_target:str = None
 
-			id:str = None
+		:param id:str = None
 
-			type:str = None
+		:param type:str = None
 
-			score:str = None
+		:param score:str = None
 
-			reversable:bool = False
+		:param reversable:bool = False
 
-			correlations:float = None
+		:param correlations:float = None
 
-			**kwargs
+		:param **kwargs
 
 		"""
 		self.id = id
@@ -303,10 +301,9 @@ class GRP(object):
 		"""
 		Cast the id for GRP according to name of regulatory source and target.
 
-		Args:
-			source:str = None
-
-			target:str = None
+		:param source:str = None
+		:param target:str = None
+		:return:str ID of GRP
 
 		"""
 		if source > target:

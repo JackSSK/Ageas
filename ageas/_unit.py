@@ -47,88 +47,88 @@ class Unit(object):
         """
         Initialize a new AGEAS Extractor Unit.
 
-        Args:
-            database_info: <object> Default = None
-                Integrated database information returned by
-                ageas.Data_Preprocess()
+        :param database_info: <object Default = None>
+            Integrated database information returned by
+            ageas.Data_Preprocess()
 
-            meta: <object> Default = None
-                Meta level processed GRN information returned by
-                ageas.Data_Preprocess()
+        :param meta: <object Default = None>
+            Meta level processed GRN information returned by
+            ageas.Data_Preprocess()
 
-            model_config: <dict> Default = None
-                Dictionary containing configs of all candidate classification
-                models.
+        :param model_config: <dict Default = None>
+            Dictionary containing configs of all candidate classification
+            models.
 
-            pseudo_grns: <object> Default = None
-                pseudo-sample GRNs returned by
-                ageas.Data_Preprocess()
+        :param pseudo_grns: <object Default = None>
+            pseudo-sample GRNs returned by
+            ageas.Data_Preprocess()
 
-            clf_keep_ratio: <float> Default = 0.5
-                Portion of classifiers to keep on last model selection
-                iteration.
+        :param clf_keep_ratio: <float Default = 0.5>
+            Portion of classifiers to keep on last model selection
+            iteration.
 
-            correlation_thread: <float> Default = 0.2
-                Gene expression correlation thread value of GRPs.
+        :param correlation_thread: <float Default = 0.2>
+            Gene expression correlation thread value of GRPs.
 
-                Potential GRPs failed to reach this value will be dropped.
+            Potential GRPs failed to reach this value will be dropped.
 
-            cpu_mode: <bool> Default = False
-                Whether force to use CPU only or not.
-                By default, AGEAS will automatically select device favoring
-                CUDA based GPUs.
+        :param cpu_mode: <bool Default = False>
+            Whether force to use CPU only or not.
+            By default, AGEAS will automatically select device favoring
+            CUDA based GPUs.
 
-            feature_dropout_ratio: <float> Default = 0.1
-                Portion of features(GRPs) to be dropped out after each
-                iteration of feature selection.
+        :param feature_dropout_ratio: <float Default = 0.1>
+            Portion of features(GRPs) to be dropped out after each
+            iteration of feature selection.
 
-            feature_select_iteration: <int> Default = 3
-                Number of iteration for feature(GRP) selection before
-                key GRP extraction
+        :param feature_select_iteration: <int Default = 3>
+            Number of iteration for feature(GRP) selection before
+            key GRP extraction
 
-            top_grp_amount: <int> Default = 100
-                Amount of GRPs an AGEAS extractor unit would extract.
+        :param top_grp_amount: <int Default = 100>
+            Amount of GRPs an AGEAS extractor unit would extract.
 
-                If outlier_thread is set, since outlier GRPs are extracted
-                during feature selection part and will also be considered as
-                key GRPs, actual amount of key GRPs would be greater.
+            If outlier_thread is set, since outlier GRPs are extracted
+            during feature selection part and will also be considered as
+            key GRPs, actual amount of key GRPs would be greater.
 
-            grp_changing_thread: <float> Default = 0.05
-                If changing portion of key GRPs extracted by AGEAS unit from two
-                stabilize iterations lower than this thread, these two
-                iterations will be considered as having consistent result.
+        :param grp_changing_thread: <float Default = 0.05>
+            If changing portion of key GRPs extracted by AGEAS unit from two
+            stabilize iterations lower than this thread, these two
+            iterations will be considered as having consistent result.
 
-            model_select_iteration: <int> Default = 3
-                Number of iteration for classification model selection.
+        :param model_select_iteration: <int Default = 3>
+            Number of iteration for classification model selection.
 
-            outlier_thread: <float> Default = 3.0
-                The lower bound of Z-score scaled importance value to consider
-                a GRP as outlier need to be retain.
+        :param outlier_thread: <float Default = 3.0>
+            The lower bound of Z-score scaled importance value to consider
+            a GRP as outlier need to be retain.
 
-            regulatory_trace_depth: <int> Default = 1
-                Trace regulatory upstream of regulatory sources included in key
-                regulons extracted.
+        :param regulatory_trace_depth: <int Default = 1>
+            Trace regulatory upstream of regulatory sources included in key
+            regulons extracted.
 
-            stabilize_patient: <int> Default = 3
-                If stabilize iterations continuously having consistent
-                result for this value, an early stop on result stabilization
-                will be executed.
+        :param stabilize_patient: <int Default = 3>
+            If stabilize iterations continuously having consistent
+            result for this value, an early stop on result stabilization
+            will be executed.
 
-            stabilize_iteration: <int> Default = 10
-                Number of iteration for a AGEAS unit to repeat key GRP
-                extraction after model and feature selections in order to find
-                key GRPs consistently being important.
+        :param stabilize_iteration: <int Default = 10>
+            Number of iteration for a AGEAS unit to repeat key GRP
+            extraction after model and feature selections in order to find
+            key GRPs consistently being important.
 
-            max_train_size: <float> Default = 0.95
-                The largest portion of avaliable data can be used to
-                train models.
+        :param max_train_size: <float Default = 0.95>
+            The largest portion of avaliable data can be used to
+            train models.
 
-                At the mandatory model filter,
-                this portion of data will be given to each model to train.
+            At the mandatory model filter,
+            this portion of data will be given to each model to train.
 
-            z_score_extract_thread: <float> Default = 0.0
-                The lower bound of Z-score scaled importance value to extract
-                a GRP.
+        :param z_score_extract_thread: <float Default = 0.0>
+            The lower bound of Z-score scaled importance value to extract
+            a GRP.
+
         """
 
 

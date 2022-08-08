@@ -29,12 +29,9 @@ class Reader(gem.Reader):
 		"""
 		Initialize a new MEX reader object.
 
-		Args:
-			matrix_path:str = None
-
-			features_path:str = None
-
-			barcodes_path:str = None
+		:param matrix_path:str = None
+		:param features_path:str = None
+		:param barcodes_path:str = None
 
 		"""
 		# Process features
@@ -58,10 +55,8 @@ class Reader(gem.Reader):
 		"""
 		Obtain GEM data frame from processed MEX file.
 
-		Args:
-			save_path:str = None
-
-			handle_repeat:str = 'sum'
+		:param save_path:str = None
+		:param handle_repeat:str = 'sum'
 		"""
 		self.data.index = [x['id'] for x in self.features]
 

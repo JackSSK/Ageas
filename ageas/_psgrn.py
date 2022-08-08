@@ -46,122 +46,121 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 	Function to integrate database information and get pseudo-sample GRNs
 	from gene expression data.
 
-	Args:
-		correlation_thread: <float> Default = 0.2
-			Gene expression correlation thread value of GRPs.
+	:param correlation_thread: <float Default = 0.2>
+		Gene expression correlation thread value of GRPs.
 
-			Potential GRPs failed to reach this value will be dropped.
+		Potential GRPs failed to reach this value will be dropped.
 
-		database_path: <str> Default = None
-			Database header.
+	:param database_path: <str Default = None>
+		Database header.
 
-			If specified, group1_path and group2_path will be rooted here.
+		If specified, group1_path and group2_path will be rooted here.
 
-		database_type: <str> Default = 'gem_files'
-			Type of data group1_path and group1_path are directing to
-			Supporting:
+	:param database_type: <str Default = 'gem_files'>
+		Type of data group1_path and group1_path are directing to
+		Supporting:
 
-				'gem_files': Each path is directing to a GEM file.
-				Pseudo samples will be generated with sliding window algo.
+			'gem_files': Each path is directing to a GEM file.
+			Pseudo samples will be generated with sliding window algo.
 
-				'gem_folders': Each path is directing to a GEM folder. Files in
-				each folder will be used to generate pseudo samples.
+			'gem_folders': Each path is directing to a GEM folder. Files in
+			each folder will be used to generate pseudo samples.
 
-				'mex_folders': Each path is directing to a folder consisting MEX
-				files(***matrix.mtx***, ***genes.tsv or features.tsv***,
-				***barcodes.tsv***)
+			'mex_folders': Each path is directing to a folder consisting MEX
+			files(***matrix.mtx***, ***genes.tsv or features.tsv***,
+			***barcodes.tsv***)
 
-			Pseudo-sample GRNs will be generated with sliding window method.
+		Pseudo-sample GRNs will be generated with sliding window method.
 
-		group1_path: <str> Default = None
-			Path to file or folder being considered as sample group 1 data
+	:param group1_path: <str Default = None>
+		Path to file or folder being considered as sample group 1 data
 
-		group2_path: <str> Default = None
-			Path to file or folder being considered as sample group 2 data
+	:param group2_path: <str Default = None>
+		Path to file or folder being considered as sample group 2 data
 
-		interaction_database: <str> Default = 'gtrd'
-			Which interaction database to use for confirming a GRP has a
-			high possibility to exist.
-			Supporting:
+	:param interaction_database: <str Default = 'gtrd'>
+		Which interaction database to use for confirming a GRP has a
+		high possibility to exist.
+		Supporting:
 
-				None: No database will be used. As long as a GRP can pass
-				all related filters, it's good to go.
+			None: No database will be used. As long as a GRP can pass
+			all related filters, it's good to go.
 
-				'gtrd': Using GTRD as regulatory pathway reference.
-				https://gtrd.biouml.org/
+			'gtrd': Using GTRD as regulatory pathway reference.
+			https://gtrd.biouml.org/
 
-				'biogrid': Using BioGRID as regulatory pathway reference.
-				Gene symbols must be given as index in GEM matrix or MEX feature
-				file.
-				https://thebiogrid.org/
+			'biogrid': Using BioGRID as regulatory pathway reference.
+			Gene symbols must be given as index in GEM matrix or MEX feature
+			file.
+			https://thebiogrid.org/
 
-		log2fc_thread: <float> Default = None
-			Log2 fold change thread to filer non-differntial expressing genes.
+	:param log2fc_thread: <float Default = None>
+		Log2 fold change thread to filer non-differntial expressing genes.
 
-			It's generally not encouraged to set up this filter since it can
-			result in lossing key TFs not having great changes on overall
-			expression volume but having changes on expression pattern.
+		It's generally not encouraged to set up this filter since it can
+		result in lossing key TFs not having great changes on overall
+		expression volume but having changes on expression pattern.
 
-			If local computational power is relatively limited, setting up
-			this thread can help a lot to keep program runable.
+		If local computational power is relatively limited, setting up
+		this thread can help a lot to keep program runable.
 
-		meta_load_path: <str> Default = None
-			Path to load meta_GRN
+	:param meta_load_path: <str Default = None>
+		Path to load meta_GRN
 
-		mww_p_val_thread: <str> Default = 0.05
-			Gene expression Mann–Whitney–Wilcoxon test p-value thread.
-			To make sure one gene's expression profile is not constant among
-			differnt classes.
+	:param mww_p_val_thread: <str Default = 0.05>
+		Gene expression Mann–Whitney–Wilcoxon test p-value thread.
+		To make sure one gene's expression profile is not constant among
+		differnt classes.
 
-		normalize: <str> Default = None
-			Choose of normalization method on input GEMs.
-			Supporting:
+	:param normalize: <str Default = None>
+		Choose of normalization method on input GEMs.
+		Supporting:
 
-				None: No normalization will be done.
+			None: No normalization will be done.
 
-				'CPM': Counts Per Million(CPM).
+			'CPM': Counts Per Million(CPM).
 
-				'Min_Max_1000': Values multiplied by 100 after Min-Max
-					Normalization
+			'Min_Max_1000': Values multiplied by 100 after Min-Max
+				Normalization
 
-		prediction_thread: <str> or <float> Default = 'auto'
-			The importance thread for a GRP predicted with GRNBoost2-like
-			algo to be included.
-			Supporting:
+	:param prediction_thread: <str or float Default = 'auto'>
+		The importance thread for a GRP predicted with GRNBoost2-like
+		algo to be included.
+		Supporting:
 
-				'auto': Automatically set up thread value by minimum imporatnace
-				value of a interaction database recorded GRP of TF having
-				most amount of GRPs. If not using interaction database, it
-				will be set by (1 / amount of genes)
+			'auto': Automatically set up thread value by minimum imporatnace
+			value of a interaction database recorded GRP of TF having
+			most amount of GRPs. If not using interaction database, it
+			will be set by (1 / amount of genes)
 
-				float type: Value will be set as thread directly
+			float type: Value will be set as thread directly
 
-		psgrn_load_path: <str> Default = None
-			Path to load pseudo-sample GRNs.
+	:param psgrn_load_path: <str Default = None>
+		Path to load pseudo-sample GRNs.
 
-		specie: <str> Default = 'mouse'
-			Specify which sepcie's interaction database shall be used.
-			Supporting:
+	:param specie: <str Default = 'mouse'>
+		Specify which sepcie's interaction database shall be used.
+		Supporting:
 
-				'mouse': Mus Musculus.
+			'mouse': Mus Musculus.
 
-				'human': Homo sapiens.
+			'human': Homo sapiens.
 
-		sliding_window_size: <int> Default = 100
-			Number of samples a pseudo-sample generated with
-			sliding window technique contains.
+	:param sliding_window_size: <int Default = 100>
+		Number of samples a pseudo-sample generated with
+		sliding window technique contains.
 
-		sliding_window_stride: <int> Default = None
-			Stride of sliding window when generating pseudo-samples.
+	:param sliding_window_stride: <int Default = None>
+		Stride of sliding window when generating pseudo-samples.
 
-		std_value_thread: <float> Default = 1.0
-			Set up gene expression standard deviation thread by value.
-			To filter genes having relatively constant expression in each
-			group.
+	:param std_value_thread: <float Default = 1.0>
+		Set up gene expression standard deviation thread by value.
+		To filter genes having relatively constant expression in each
+		group.
 
-		std_ratio_thread: <float> Default = None
-			Set up gene expression standard deviation thread by portion.
-			Only genes reaching top portion will be kept in each group.
+	:param std_ratio_thread: <float Default = None>
+		Set up gene expression standard deviation thread by portion.
+		Only genes reaching top portion will be kept in each group.
 
 	"""
 

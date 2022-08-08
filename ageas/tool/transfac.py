@@ -20,10 +20,8 @@ class Reader(tool.Reader_Template):
         """
         Initialize a Reader Object.
 
-        Args:
-            filepath:str = None
-
-            feature_type:str = 'gene_symbol'
+        :param filepath:str = None
+        :param feature_type:str = 'gene_symbol'
 
         """
         self.load(filepath)
