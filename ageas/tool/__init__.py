@@ -36,9 +36,10 @@ def STD_Filter(df = None, std_value_thread = None, std_ratio_thread = None):
     :param df = None
     :param std_value_thread = None
     :param std_ratio_thread = None
+    :return: list of gene passing filter
     """
     data = df.transpose()
-    sd_list = data[data.columns].std().sort_values(ascending=False)
+    sd_list = data[data.columns].std().sort_values(ascending = False)
 
     # filter by stdev threshod value
     if std_value_thread is not None:
@@ -51,9 +52,7 @@ def STD_Filter(df = None, std_value_thread = None, std_ratio_thread = None):
     if std_ratio_thread is not None:
         gene_list = gene_list[:int(len(gene_list) * std_ratio_thread)]
 
-    # stratify data
-    data = data[gene_list]
-    return data.transpose()
+    return gene_list
 
 
 def Z_Score_Standardize(df, col):

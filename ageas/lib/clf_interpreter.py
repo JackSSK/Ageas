@@ -124,9 +124,8 @@ class Interpret:
         df['importance'] = df['importance'] - df['importance'][-1]
         remove_list = []
         for ele in df.index:
-            if re.search('FAKE', ele):
-                if df.loc[ele]['importance'] != 0.0:
-                    raise lib.Error('Fake GRP got attention!: ', ele)
+            if re.search('FAKE', ele) and df.loc[ele]['importance'] != 0.0:
+                raise lib.Error('Fake GRP got attention!: ', ele)
                 remove_list.append(ele)
         df = df.drop(index = remove_list)
         df = tool.Z_Score_Standardize(df = df, col = 'importance')

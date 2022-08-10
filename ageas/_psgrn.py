@@ -185,7 +185,6 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 			mww_p_val_thread,
 			normalize,
 			log2fc_thread,
-			std_value_thread
 		)
 
 		# Load meta GRN if path specified
@@ -198,6 +197,8 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 				gem_data = gem_data,
 				prediction_thread = prediction_thread,
 				correlation_thread = correlation_thread,
+				std_value_thread = std_value_thread,
+				std_ratio_thread = std_ratio_thread,
 			)
 			print('Time to cast Meta GRN : ', time.time() - start1)
 
@@ -462,13 +463,10 @@ class Make:
 	def __readin_folder(self, path):
 		result = dict()
 		for filename in os.listdir(path):
-			filename = path + '/' + filename
 			# read in GEM files
-			result[filename] = tool.STD_Filter(
-	            df = gem.Reader(filename, header = 0, index_col = 0).data,
-	            std_value_thread = std_value_thread,
-	            std_ratio_thread = std_ratio_thread
-	        )
+			result[path + '/' + filename] = gem.Reader(
+				filename, header = 0, index_col = 0
+			).data
 		return result
 
 	# as named

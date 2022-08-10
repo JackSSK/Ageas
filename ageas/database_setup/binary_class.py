@@ -110,8 +110,6 @@ class Load_GEM:
                  mww_thread:float = 0.05,
                  normalize:str = None,
                  log2fc_thread:float = None,
-                 std_value_thread:float = None,
-                 std_ratio_thread:float = None
                 ):
         super(Load_GEM, self).__init__()
         # Initialization
@@ -149,18 +147,6 @@ class Load_GEM:
                 self.group2.data = normalizer.Min_Max_1000(self.group2.data)
             else:
                 raise db_setup.Error('Unknown normalization method.')
-
-        # Standard Deviation Filter here
-        self.group1.data = tool.STD_Filter(
-            df = self.group1.data,
-            std_value_thread = std_value_thread,
-            std_ratio_thread = std_ratio_thread
-        )
-        self.group2.data = tool.STD_Filter(
-            df = self.group2.data,
-            std_value_thread = std_value_thread,
-            std_ratio_thread = std_ratio_thread
-        )
 
         # detect feature_type
         feature_type_1 = tool.Check_Feature_Type(self.group1.data.index)

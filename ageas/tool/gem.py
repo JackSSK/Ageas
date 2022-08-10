@@ -80,8 +80,6 @@ class Folder(object):
 				method = 'inner',
 				keep_repeated_samples = False,
 				handle_repeat_gene = 'sum',
-				std_value_thread = None,
-				std_ratio_thread = None,
 				outpath = None
 			   ):
 		# Grab all necessary samples first
