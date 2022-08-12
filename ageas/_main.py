@@ -332,7 +332,7 @@ class Launch:
 				for id, record in regulon.grps.items():
 					if id not in all_grps:
 						all_grps[id] = record
-					elif id in all_grps:
+					else:
 						all_grps[id] = self._combine_grp_records(
 							record_1 = all_grps[id],
 							record_2 = record

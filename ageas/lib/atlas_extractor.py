@@ -6,10 +6,10 @@ author: jy, nkmtmsys
 """
 
 import copy
-import itertools
 import numpy as np
 import pandas as pd
 import networkx as nx
+from itertools import product
 import ageas.lib as lib
 import ageas.tool.grn as grn
 
@@ -72,7 +72,7 @@ class Atlas(object):
 			combining = False
 			reg1_genes = self.regulons[i].genes.keys()
 			reg2_genes = self.regulons[j].genes.keys()
-			for comb in list(itertools.product(reg1_genes, reg2_genes)):
+			for comb in list(product(reg1_genes, reg2_genes)):
 				id = grn.GRP(comb[0], comb[1]).id
 				if id not in checked_grps:
 					checked_grps[id] = None
@@ -91,6 +91,17 @@ class Atlas(object):
 				if j == len(self.regulons):
 					i += 1
 					j = i + 1
+
+		# Need to do something here to add Bridges linking TFs in same regulon
+		for i, reg in enumerate(self.regulons):
+			for comb in list(product(reg.genes.keys(), reg.genes.keys())):
+				if comb[0] == comb[1]: continue
+				id = grn.GRP(comb[0], comb[1]).id
+				if (id not in reg.grps and id in meta_grn.grps):
+					meta_grn.grps[id].type = GRP_TYPES[2]
+					meta_grn.grps[id].score = 0
+					self.regulons[i].grps[id] = meta_grn.grps[id]
+
 		self.key_atlas = self.get_key_atlas()
 
 	# Use extra GRPs from meta GRN to link different Regulons

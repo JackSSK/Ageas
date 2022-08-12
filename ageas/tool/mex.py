@@ -57,6 +57,7 @@ class Reader(gem.Reader):
 
 		:param save_path:str = None
 		:param handle_repeat:str = 'sum'
+		:return: Pandas.DataFrame
 		"""
 		self.data.index = [x['id'] for x in self.features]
 
@@ -80,8 +81,15 @@ class Reader(gem.Reader):
 		assert len(self.data.columns) == len(list(set(self.data.columns)))
 		assert len(self.data.index) == len(list(set(self.data.index)))
 
+		# Remove Gfp counts
+		if 'bGH' in self.data.index:
+			self.data.drop('bGH')
+		if 'eGFP' in self.data.index:
+			self.data.drop('eGFP')
+
 		# save GEM if specified path to save
 		if save_path is not None: self.data.to_csv(save_path)
+		# Return df purned records only have 0 counts
 		return self.data.loc[~(self.data==0).all(axis=1)]
 
 

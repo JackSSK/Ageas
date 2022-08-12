@@ -176,7 +176,7 @@ class GRN(object):
 				rec.correlations['group2'],
 				rec.score,
 			])
-		answer = pd.DataFrame(sorted(answer, key = lambda x:x[-1], reverse = True))
+		answer = pd.DataFrame(sorted(answer, key=lambda x:x[-1], reverse=True))
 		answer.columns = [
 			'Regulatory source ID',
 			'Regulatory source Gene Symbol',
