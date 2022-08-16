@@ -30,7 +30,7 @@ class Processor:
         if os.path.exists(specie_path + 'gtrd_whole_genes.js.gz'):
             data = json.decode(specie_path + 'gtrd_whole_genes.js.gz')
         else:
-            data = json.decode(specie_path + 'gtrd_[-1000,+100].js.gz')
+            data = json.decode(specie_path + 'gtrd_promoter-1000.js.gz')
 
         if feature_type == 'gene_symbol':
             ind = 1

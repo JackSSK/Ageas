@@ -1,5 +1,13 @@
 include CODE_OF_CONDUCT.md
 include LICENSE
 include README.md
-recursive-include ageas/data *
+recursive-include ageas/data/config *
 recursive-include ageas/test *
+include ageas/data/mouse/Tranfac201803_MotifTFsF.txt
+include ageas/data/mouse/bioGRiD.stratified.js.gz
+include ageas/data/mouse/gtrd_promoter-1000.js.gz
+include ageas/data/mouse/uniprot_idmapping.stratified.js.gz
+include ageas/data/human/Tranfac201803_MotifTFsF.txt
+include ageas/data/human/bioGRiD.stratified.js.gz
+include ageas/data/human/gtrd_promoter-1000.js.gz
+include ageas/data/human/uniprot_idmapping.stratified.js.gz

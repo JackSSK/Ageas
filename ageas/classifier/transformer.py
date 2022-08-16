@@ -141,7 +141,7 @@ class Make(classifier.Make_Template):
             self.models.append(model_record)
 
 
-""" For testing """
+""" For test """
 # if __name__ == '__main__':
 #     param = {
 #                 'has_mask': True,
