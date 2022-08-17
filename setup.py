@@ -11,8 +11,8 @@ setuptools.setup(
     description = "AutoML-based Genomics fEatrue extrAction System",
     long_description = long_description,
     long_description_content_type = "text/markdown",
-    url = "https://github.com/nkmtmsys/Ageas",
-    project_urls = {"Bug Tracker": "https://github.com/nkmtmsys/Ageas/issues",},
+    url = "https://github.com/JackSSK/Ageas",
+    project_urls = {"Bug Tracker": "https://github.com/JackSSK/Ageas/issues",},
     packages = setuptools.find_packages(),
     package_data = {'': [
         'data/config/*',

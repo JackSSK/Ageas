@@ -27,7 +27,7 @@ pip install ageas
 
 OR
 
-git clone https://github.com/nkmtmsys/Ageas.git
+git clone https://github.com/JackSSK/Ageas.git
 cd Ageas
 pip install .
 </pre>
@@ -35,7 +35,7 @@ pip install .
 
 # Tutorial
 
-Please visit [Documentation Page](https://nkmtmsys.github.io/Ageas/html/index.html) for detailed API documentations and examples
+Please visit [Documentation Page](https://JackSSK.github.io/Ageas/html/index.html) for detailed API documentations and examples
 
 # Contributors
 

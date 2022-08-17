@@ -30,7 +30,7 @@ is to find key genomics factors, including genes and regulatory pathways,
 in determining cellular phenotype.
 
 For more information, please visit our GitHub repo:
-https://github.com/nkmtmsys/Ageas/
+https://github.com/JackSSK/Ageas/
 --------
 
 """

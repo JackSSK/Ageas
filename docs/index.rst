@@ -27,9 +27,9 @@ AGEAS can be installed from either `PyPI <https://pypi.org/project/Ageas/>`_ ::
 
   pip install ageas
 
-or cloned from `GitHub <https://github.com/nkmtmsys/Ageas/>`_ ::
+or cloned from `GitHub <https://github.com/JackSSK/Ageas/>`_ ::
 
-  git clone https://github.com/nkmtmsys/Ageas.git
+  git clone https://github.com/JackSSK/Ageas.git
   cd Ageas
   pip install .
 
