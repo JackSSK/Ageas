@@ -48,7 +48,7 @@ class Analysis(object):
         # adding log2FC
         for ele in temp:
             exp = meta_grn.genes[ele[0]].expression_sum
-            ele.append(abs(np.log2(exp['group1']+1) - np.log2(exp['group2']+1)))
+            ele.append(abs(np.log2(exp['class1']+1) - np.log2(exp['class2']+1)))
 
         # changing to dataframe type
         self.result = pd.DataFrame(
@@ -98,17 +98,17 @@ class Cast:
                 std_value_thread,
                 std_ratio_thread):
         # Standard Deviation Filter here
-        group1_genes = tool.STD_Filter(
-            df = gem_data.group1.data,
+        class1_genes = tool.STD_Filter(
+            df = gem_data.class1.data,
             std_value_thread = std_value_thread,
             std_ratio_thread = std_ratio_thread
         )
-        group2_genes = tool.STD_Filter(
-            df = gem_data.group2.data,
+        class2_genes = tool.STD_Filter(
+            df = gem_data.class2.data,
             std_value_thread = std_value_thread,
             std_ratio_thread = std_ratio_thread
         )
-        std_filtered_genes = list(set().union(group1_genes, group2_genes))
+        std_filtered_genes = list(set().union(class1_genes, class2_genes))
 
         # proces guidance casting process based on avaliable information
         if gem_data.interactions is not None:
@@ -232,8 +232,8 @@ class Cast:
                     self.grn.update_grn(
                         source = source,
                         target = target,
-                        gem1 = data.group1,
-                        gem2 = data.group2,
+                        gem1 = data.class1,
+                        gem2 = data.class2,
                         correlation_thread = correlation_thread
                     )
         return
@@ -312,8 +312,8 @@ class Cast:
                     self.grn.update_grn(
                         source = source,
                         target = target,
-                        gem1 = data.group1,
-                        gem2 = data.group2,
+                        gem1 = data.class1,
+                        gem2 = data.class2,
                         correlation_thread = correlation_thread
                     )
         return
@@ -335,8 +335,8 @@ class Cast:
                 self.grn.update_grn(
                     source = source,
                     target = target,
-                    gem1 = data.group1,
-                    gem2 = data.group2,
+                    gem1 = data.class1,
+                    gem2 = data.class2,
                     correlation_thread = correlation_thread
                 )
         return

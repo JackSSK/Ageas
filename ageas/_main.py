@@ -40,8 +40,8 @@ class Launch:
 				 correlation_thread:float = 0.2,
 				 database_path:str = None,
 				 database_type:str = 'gem_files',
-				 group1_path:str = None,
-				 group2_path:str = None,
+				 class1_path:str = None,
+				 class2_path:str = None,
 				 interaction_database:str = 'gtrd',
 				 log2fc_thread:float = None,
 				 meta_load_path:str = None,
@@ -154,8 +154,8 @@ class Launch:
 			correlation_thread = correlation_thread,
 			database_path = database_path,
 			database_type = database_type,
-			group1_path = group1_path,
-			group2_path = group2_path,
+			class1_path = class1_path,
+			class2_path = class2_path,
 			interaction_database = interaction_database,
 			log2fc_thread = log2fc_thread,
 			meta_load_path = meta_load_path,
@@ -217,7 +217,7 @@ class Launch:
 
 	def save_reports(self,
 					 folder_path:str = None,
-					 regulon_header:str = 'regulon_',
+					 network_header:str = 'network_',
 					 save_unit_reports:bool = False,
 					):
 		"""
@@ -228,8 +228,8 @@ class Launch:
 		:param folder_path: <str Default = None>
 			Path to create folder for saving AGEAS report files.
 
-		:param regulon_header: <str Default = 'regulon_'>
-			The name header for each regulon in atlas.
+		:param network_header: <str Default = 'network_'>
+			The name header for each network in atlas.
 
 		:param save_unit_reports: <bool Default = False>
 			Whether saving key GRPs extracted by each AGEAS Unit or not.
@@ -257,7 +257,7 @@ class Launch:
 				atlas.grps.save(report_path + 'grps_importances.csv')
 				json.encode(atlas.outlier_grps, report_path + 'outlier_grps.js')
 
-		self.atlas.report(self.meta.grn, header = regulon_header).to_csv(
+		self.atlas.report(self.meta.grn, header = network_header).to_csv(
 			folder_path + 'report.csv',
 			index = False
 		)
@@ -268,8 +268,8 @@ class Launch:
 		)
 
 		json.encode(
-			{regulon_header + str(k):v.as_dict() for k,v in enumerate(
-				self.atlas.regulons)},
+			{network_header + str(k):v.as_dict() for k,v in enumerate(
+				self.atlas.nets)},
 			folder_path + 'full_atlas.js'
 		)
 
@@ -312,7 +312,7 @@ class Launch:
 		if self._silent: sys.stdout = sys.__stdout__
 		print('Units RTB\n')
 
-	# Model selection and regulon contruction part run parallel
+	# Model selection and network contruction part run parallel
 	def _multi_unit(self,):
 		new_unit = copy.deepcopy(self._basic_unit)
 		new_unit.select_models()
@@ -328,8 +328,8 @@ class Launch:
 	def _combine_unit_reports(self):
 		all_grps = dict()
 		for atlas in self._reports:
-			for regulon in atlas.regulons:
-				for id, record in regulon.grps.items():
+			for network in atlas.nets:
+				for id, record in network.grps.items():
 					if id not in all_grps:
 						all_grps[id] = record
 					else:
@@ -341,7 +341,7 @@ class Launch:
 		# now we build the atlas
 		answer = extractor.Atlas()
 		for id, grp in all_grps.items():
-			answer.update_regulon_with_grp(grp = grp, meta_grn = self.meta.grn)
+			answer.update_net_with_grp(grp = grp, meta_grn = self.meta.grn)
 		answer.find_bridges(meta_grn = self.meta.grn)
 		return answer
 

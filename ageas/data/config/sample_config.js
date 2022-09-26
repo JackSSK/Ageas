@@ -4,11 +4,13 @@
             "config": {
                 "has_mask": false,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -17,11 +19,13 @@
             "config": {
                 "has_mask": false,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -30,9 +34,11 @@
             "config": {
                 "has_mask": false,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -43,9 +49,11 @@
             "config": {
                 "has_mask": false,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -57,10 +65,12 @@
                 "has_mask": false,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -70,10 +80,12 @@
                 "has_mask": false,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -83,8 +95,10 @@
                 "has_mask": false,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -96,8 +110,10 @@
                 "has_mask": false,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -108,11 +124,13 @@
             "config": {
                 "has_mask": false,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -121,11 +139,13 @@
             "config": {
                 "has_mask": false,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -134,9 +154,11 @@
             "config": {
                 "has_mask": false,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -147,9 +169,11 @@
             "config": {
                 "has_mask": false,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -161,10 +185,12 @@
                 "has_mask": false,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -174,10 +200,12 @@
                 "has_mask": false,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -187,8 +215,10 @@
                 "has_mask": false,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -200,8 +230,10 @@
                 "has_mask": false,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -212,11 +244,13 @@
             "config": {
                 "has_mask": true,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -225,11 +259,13 @@
             "config": {
                 "has_mask": true,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -238,9 +274,11 @@
             "config": {
                 "has_mask": true,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -251,9 +289,11 @@
             "config": {
                 "has_mask": true,
                 "emsize": 1024,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -265,10 +305,12 @@
                 "has_mask": true,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -278,10 +320,12 @@
                 "has_mask": true,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -291,8 +335,10 @@
                 "has_mask": true,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -304,8 +350,10 @@
                 "has_mask": true,
                 "emsize": 1024,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -316,11 +364,13 @@
             "config": {
                 "has_mask": true,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -329,11 +379,13 @@
             "config": {
                 "has_mask": true,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 4,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -342,9 +394,11 @@
             "config": {
                 "has_mask": true,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -355,9 +409,11 @@
             "config": {
                 "has_mask": true,
                 "emsize": 512,
-                "nhead": 4,
-                "nhid": 200,
-                "nlayers": 2,
+                "nhead": 16,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -369,10 +425,12 @@
                 "has_mask": true,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 10
@@ -382,10 +440,12 @@
                 "has_mask": true,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 4,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.1
             },
             "epoch": 2,
             "batch_size": 5
@@ -395,8 +455,10 @@
                 "has_mask": true,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -408,8 +470,10 @@
                 "has_mask": true,
                 "emsize": 512,
                 "nhead": 8,
-                "nhid": 200,
-                "nlayers": 2,
+                "dim_feedforward": 256,
+                "num_encoder_layers": 6,
+                "num_decoder_layers": 6,
+                "layer_norm_eps": 1e-05,
                 "learning_rate": 0.01,
                 "dropout": 0.2
             },
@@ -1291,7 +1355,10 @@
                 "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "nonlinearity": "tanh",
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 10
@@ -1301,7 +1368,10 @@
                 "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "nonlinearity": "tanh",
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 5
@@ -1311,7 +1381,10 @@
                 "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "nonlinearity": "tanh",
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 10
@@ -1321,7 +1394,10 @@
                 "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "nonlinearity": "tanh",
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 5
@@ -1333,7 +1409,9 @@
                 "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 10
@@ -1343,7 +1421,9 @@
                 "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 5
@@ -1353,7 +1433,9 @@
                 "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 10
@@ -1363,7 +1445,9 @@
                 "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false
             },
             "epoch": 2,
             "batch_size": 5
@@ -1375,7 +1459,10 @@
                 "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false,
+                "proj_size": 0
             },
             "epoch": 2,
             "batch_size": 10
@@ -1385,7 +1472,10 @@
                 "hidden_size": 128,
                 "num_layers": 3,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false,
+                "proj_size": 0
             },
             "epoch": 2,
             "batch_size": 5
@@ -1395,7 +1485,10 @@
                 "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false,
+                "proj_size": 0
             },
             "epoch": 2,
             "batch_size": 10
@@ -1405,7 +1498,10 @@
                 "hidden_size": 128,
                 "num_layers": 2,
                 "learning_rate": 0.01,
-                "dropout": 0.2
+                "dropout": 0.2,
+                "bias": true,
+                "bidirectional": false,
+                "proj_size": 0
             },
             "epoch": 2,
             "batch_size": 5

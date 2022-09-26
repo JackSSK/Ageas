@@ -15,4 +15,4 @@ to use the API of each object/function.
     Test
     Data_Preprocess
     Unit
-    Plot_Regulon
+    Plot

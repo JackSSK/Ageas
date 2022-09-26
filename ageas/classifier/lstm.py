@@ -27,7 +27,10 @@ class LSTM(nn.Module):
                  hidden_size,
                  dropout,
                  learning_rate,
-                 n_class = 2
+                 n_class = 2,
+                 bias = 'True',
+                 bidirectional = 'False',
+                 proj_size = 0,
                 ):
         super(LSTM, self).__init__()
         self.id = id
@@ -39,7 +42,10 @@ class LSTM(nn.Module):
             input_size,
             self.hidden_size,
             self.num_layers,
-            batch_first = True
+            batch_first = True,
+            bias = bias,
+            bidirectional = bidirectional,
+            proj_size = proj_size
         )
         self.fc = nn.Linear(self.hidden_size, n_class)
         self.optimizer = torch.optim.Adam(self.parameters(), lr = learning_rate)

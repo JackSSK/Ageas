@@ -33,8 +33,8 @@ class Setup:
     def __init__(self,
                  database_path = None,
                  database_type = 'gem_files',
-                 group1_path = 'CT1',
-                 group2_path = 'CT2',
+                 class1_path = 'CT1',
+                 class2_path = 'CT2',
                  specie = 'mouse',
                  interaction_db = 'biogrid',
                  sliding_window_size = None,
@@ -43,13 +43,13 @@ class Setup:
         super(Setup, self).__init__()
         # Auto GEM folder finder
         if database_path is None:
-            assert os.path.exists(group1_path) and os.path.exists(group2_path)
-        elif group1_path is None or group2_path is None:
+            assert os.path.exists(class1_path) and os.path.exists(class2_path)
+        elif class1_path is None or class2_path is None:
             if len(os.listdir(database_path)) != 2:
                 raise DB_Error('Please specify classes for binary clf')
             else:
-                group1_path = os.listdir(database_path)[0]
-                group2_path = os.listdir(database_path)[1]
+                class1_path = os.listdir(database_path)[0]
+                class2_path = os.listdir(database_path)[1]
 
         # Initialization
         self.db_path = database_path
@@ -59,10 +59,10 @@ class Setup:
         self.sliding_window_size = sliding_window_size
         self.sliding_window_stride = sliding_window_stride
         # Get classes'correspond folder paths
-        self.group1_path = self.__cast_path(group1_path)
-        self.group2_path = self.__cast_path(group2_path)
+        self.class1_path = self.__cast_path(class1_path)
+        self.class2_path = self.__cast_path(class2_path)
         # Perform label encoding
-        self.label_transformer = Label_Encode(group1_path, group2_path)
+        self.label_transformer = Label_Encode(class1_path, class2_path)
         self.label1 = self.label_transformer.get_label1()
         self.label2 = self.label_transformer.get_label2()
 
@@ -83,12 +83,12 @@ class Label_Encode:
     Transform labels into ints
     """
 
-    def __init__(self, group1_path, group2_path):
+    def __init__(self, class1_path, class2_path):
         super(Label_Encode, self).__init__()
         # Initialization
-        self.encoder = LabelEncoder().fit([group1_path, group2_path])
+        self.encoder = LabelEncoder().fit([class1_path, class2_path])
         self.transformed_labels = self.encoder.transform(
-            [group1_path, group2_path]
+            [class1_path, class2_path]
         )
 
     # Perform inverse_transform
@@ -118,39 +118,39 @@ class Load_GEM:
 
         # process file or folder based on database type
         if self.database_info.type == 'gem_folders':
-            self.group1 = gem.Folder(self.database_info.group1_path)
-            self.group1.data = self.group1.combine()
-            self.group2 = gem.Folder(self.database_info.group2_path)
-            self.group2.data = self.group2.combine()
+            self.class1 = gem.Folder(self.database_info.class1_path)
+            self.class1.data = self.class1.combine()
+            self.class2 = gem.Folder(self.database_info.class2_path)
+            self.class2.data = self.class2.combine()
         elif self.database_info.type == 'gem_files':
-            self.group1 = gem.Reader(
-                path = self.database_info.group1_path,
+            self.class1 = gem.Reader(
+                path = self.database_info.class1_path,
                 header = 0,
                 index_col = 0
             )
-            self.group2 = gem.Reader(
-                path = self.database_info.group2_path,
+            self.class2 = gem.Reader(
+                path = self.database_info.class2_path,
                 header = 0,
                 index_col = 0
             )
         elif self.database_info.type == 'mex_folders':
-            self.group1 = self.__read_mex(self.database_info.group1_path,)
-            self.group2 = self.__read_mex(self.database_info.group2_path,)
+            self.class1 = self.__read_mex(self.database_info.class1_path,)
+            self.class2 = self.__read_mex(self.database_info.class2_path,)
 
         # Perform Normalization if needed
         if normalize is not None:
             if normalize == 'CPM':
-                self.group1.data = normalizer.CPM(self.group1.data)
-                self.group2.data = normalizer.CPM(self.group2.data)
+                self.class1.data = normalizer.CPM(self.class1.data)
+                self.class2.data = normalizer.CPM(self.class2.data)
             elif normalize == 'Min_Max_1000':
-                self.group1.data = normalizer.Min_Max_1000(self.group1.data)
-                self.group2.data = normalizer.Min_Max_1000(self.group2.data)
+                self.class1.data = normalizer.Min_Max_1000(self.class1.data)
+                self.class2.data = normalizer.Min_Max_1000(self.class2.data)
             else:
                 raise db_setup.Error('Unknown normalization method.')
 
         # detect feature_type
-        feature_type_1 = tool.Check_Feature_Type(self.group1.data.index)
-        feature_type_2 = tool.Check_Feature_Type(self.group2.data.index)
+        feature_type_1 = tool.Check_Feature_Type(self.class1.data.index)
+        feature_type_2 = tool.Check_Feature_Type(self.class2.data.index)
         assert feature_type_1 == feature_type_2
         self.feature_type = feature_type_1
 
@@ -169,34 +169,34 @@ class Load_GEM:
         elif self.database_info.interaction_db == 'biogrid':
             self.interactions = biogrid.Processor(specie_path = specie)
 
-        # Distribuition Filter if threshod is specified
+        # Distribuition Filter if threshold is specified
         if mww_thread is not None or log2fc_thread is not None:
             self.genes = Find(
-                self.group1.data,
-                self.group2.data,
+                self.class1.data,
+                self.class2.data,
                 mww_thread = mww_thread,
                 log2fc_thread = log2fc_thread
             ).degs
-            self.group1.data = self.group1.data.loc[
-                self.group1.data.index.intersection(self.genes)
+            self.class1.data = self.class1.data.loc[
+                self.class1.data.index.intersection(self.genes)
             ]
-            self.group2.data = self.group2.data.loc[
-                self.group2.data.index.intersection(self.genes)
+            self.class2.data = self.class2.data.loc[
+                self.class2.data.index.intersection(self.genes)
             ]
         else:
-            self.genes = self.group1.data.index.union(self.group2.data.index)
+            self.genes = self.class1.data.index.union(self.class2.data.index)
 
         # Get features/genes information from processed GEM data
-        if (self.group1.features is not None and
-            self.group2.features is not None):
-            for ele in self.group1.features:
+        if (self.class1.features is not None and
+            self.class2.features is not None):
+            for ele in self.class1.features:
                 if ele['id'] not in self.feature_map:
                     self.feature_map[ele['id']] = ele
                 elif self.feature_map[ele['id']] == ele:
                     continue
                 else:
                     raise db_setup.Error('Gene with different feature records.')
-            for ele in self.group2.features:
+            for ele in self.class2.features:
                 if ele['id'] not in self.feature_map:
                     self.feature_map[ele['id']] = ele
                 elif self.feature_map[ele['id']] == ele:
@@ -279,32 +279,32 @@ class Process(object):
 
     # Process in database mode
     def __init_protocol(self, database_info, grnData):
-        # group1Result is [dataTrainC1, dataTestC1, lableTrainC1, labelTestC1]
-        group1Result = self.__split_train_test(
-            grnData.group1_psGRNs,
+        # class1Result is [dataTrainC1, dataTestC1, lableTrainC1, labelTestC1]
+        class1Result = self.__split_train_test(
+            grnData.class1_psGRNs,
             database_info.label1
         )
-        # similar with group1
-        group2Result = self.__split_train_test(
-            grnData.group2_psGRNs,
+        # similar with class1
+        class2Result = self.__split_train_test(
+            grnData.class2_psGRNs,
             database_info.label2
         )
-        self.labelTrain = np.array(group1Result[2] + group2Result[2])
-        self.labelTest = np.array(group1Result[3] + group2Result[3])
+        self.labelTrain = np.array(class1Result[2] + class2Result[2])
+        self.labelTest = np.array(class1Result[3] + class2Result[3])
         self.dataTrain = []
         self.dataTest = []
         # standardize feature data
         # to make sure all training and testing samples
         # will be in same dimmension
         self.__update_train_test(
-            grnData.group1_psGRNs,
-            train_set = group1Result[0],
-            test_set = group1Result[1]
+            grnData.class1_psGRNs,
+            train_set = class1Result[0],
+            test_set = class1Result[1]
         )
         self.__update_train_test(
-            grnData.group2_psGRNs,
-            train_set = group2Result[0],
-            test_set = group2Result[1]
+            grnData.class2_psGRNs,
+            train_set = class2Result[0],
+            test_set = class2Result[1]
         )
         # Add zeros for position holding
         self.__append_zeros(self.dataTrain)

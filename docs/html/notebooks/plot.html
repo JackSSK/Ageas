@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ageas.Plot_Regulon() &mdash; AGEAS  documentation</title>
+  <title>ageas.Plot() &mdash; AGEAS  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -43,7 +43,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../api.html">API reference</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../examples.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="launch.html">ageas.Launch()</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">ageas.Plot_Regulon()</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ageas.Plot()</a></li>
 </ul>
 </li>
 </ul>
@@ -63,9 +63,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../examples.html">Examples</a> &raquo;</li>
-      <li>ageas.Plot_Regulon()</li>
+      <li>ageas.Plot()</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/notebooks/plot_regulon.ipynb.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/notebooks/plot.ipynb.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -351,9 +351,9 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="ageas.Plot_Regulon()">
-<h1>ageas.Plot_Regulon()<a class="headerlink" href="#ageas.Plot_Regulon()" title="Permalink to this heading"></a></h1>
-<p>This notebook demonstrate how to use ageas.Plot_Regulon() to visualize regulon reconstructed with key Gene Regulatory Pathways(GRPs) extracted with AGEAS.</p>
+<div class="section" id="ageas.Plot()">
+<h1>ageas.Plot()<a class="headerlink" href="#ageas.Plot()" title="Permalink to this heading"></a></h1>
+<p>This notebook demonstrate how to use ageas.Plot() to visualize GRNs or regulons reconstructed with key GRPs extracted with AGEAS.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -362,7 +362,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p>If visualization will be done in script after ageas.Launch() or ageas.Unit(), initialization Plot_Regulon() object could be as simple as:</p>
+<p>If visualization will be done in script after ageas.Launch() or ageas.Unit(), initialization Plot() object could be as simple as:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -371,12 +371,12 @@ div.rendered_html tbody tr:hover {
 <span class="c1"># This would take a few minutes to run</span>
 <span class="n">test_launch_object</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Test</span><span class="p">(</span><span class="n">cpu_mode</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
-<span class="c1"># Here we use first regulon in atlas, regulon_0 for example</span>
-<span class="n">regulon</span> <span class="o">=</span> <span class="n">test_launch_object</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">regulons</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># Here we use first network in atlas, network_0 for example</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">test_launch_object</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">nets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
-<p>Otherwise, we can load in regulon from <strong>full_atlas.js</strong> or <strong>key_atalas.js</strong> output by <a class="reference external" href="https://JackSSK.github.io/Ageas/html/generated/ageas.Launch.html">ageas.Launch()</a>.</p>
+<p>Otherwise, we can load in networks from <strong>full_atlas.js</strong> or <strong>key_atalas.js</strong> output by <a class="reference external" href="https://JackSSK.github.io/Ageas/html/generated/ageas.Launch.html">ageas.Launch()</a>.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -384,11 +384,11 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ageas.tool.grn</span> <span class="k">as</span> <span class="nn">grn</span>
 <span class="kn">import</span> <span class="nn">ageas.tool.json</span> <span class="k">as</span> <span class="nn">json</span>
 
-<span class="c1"># Loading in regulon from atlas file</span>
-<span class="c1"># Here we use first regulon in atlas, regulon_0 for example</span>
-<span class="n">regulon</span> <span class="o">=</span> <span class="n">grn</span><span class="o">.</span><span class="n">GRN</span><span class="p">()</span>
-<span class="n">regulon</span><span class="o">.</span><span class="n">load_dict</span><span class="p">(</span>
-    <span class="n">json</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;full_atlas.js&#39;</span><span class="p">)[</span><span class="s1">&#39;regulon_0&#39;</span><span class="p">]</span>
+<span class="c1"># Loading in networks from atlas file</span>
+<span class="c1"># Here we use first network in atlas, network_0 for example</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">grn</span><span class="o">.</span><span class="n">GRN</span><span class="p">()</span>
+<span class="n">network</span><span class="o">.</span><span class="n">load_dict</span><span class="p">(</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;full_atlas.js&#39;</span><span class="p">)[</span><span class="s1">&#39;network_0&#39;</span><span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -398,11 +398,11 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Plot_Regulon</span><span class="p">(</span><span class="n">regulon</span> <span class="o">=</span> <span class="n">regulon</span><span class="p">,)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Plot</span><span class="p">(</span><span class="n">network</span> <span class="o">=</span> <span class="n">network</span><span class="p">,)</span>
 </pre></div>
 </div>
 </div>
-<p>And network graph of query regulon can be plotted and saved:</p>
+<p>And graph of query network can be plotted and saved:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -416,14 +416,14 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <p>Now, we should be able to get a network graph looks like: <img alt="this one" src="../_images/test.png" /></p>
-<p>Also, we can visualize GRPs by correlation strength calculated with group 1 samples or group 2 samples.</p>
+<p>Also, we can visualize GRPs by correlation strength calculated with class 1 samples or class 2 samples.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Plot_Regulon</span><span class="p">(</span>
-    <span class="n">regulon</span> <span class="o">=</span> <span class="n">regulon</span><span class="p">,</span>
-    <span class="n">plot_group</span> <span class="o">=</span> <span class="s1">&#39;group2&#39;</span><span class="p">,</span>  <span class="c1"># using mef data here. &#39;group1&#39; will be ipsc data</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Plot</span><span class="p">(</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">network</span><span class="p">,</span>
+    <span class="n">plot_class</span> <span class="o">=</span> <span class="s1">&#39;class2&#39;</span><span class="p">,</span>  <span class="c1"># using mef data here. &#39;class1&#39; will be ipsc data</span>
     <span class="n">hide_bridge</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>    <span class="c1"># unhide GRPs linking regulatory sources</span>
 <span class="p">)</span>
 <span class="n">plotter</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span>
@@ -434,14 +434,14 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p>Output should looks like: <img alt="next one" src="../_images/group2_plot.png" /></p>
+<p>Output should looks like: <img alt="next one" src="../_images/class2_plot.png" /></p>
 <p>Surely, we can only visualize GRPs related to one specific gene of interest in order to avoid over-crowded graph.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Plot_Regulon</span><span class="p">(</span>
-    <span class="n">regulon</span> <span class="o">=</span> <span class="n">regulon</span><span class="p">,</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plotter</span> <span class="o">=</span> <span class="n">ageas</span><span class="o">.</span><span class="n">Plot</span><span class="p">(</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">network</span><span class="p">,</span>
     <span class="n">hide_bridge</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>    <span class="c1"># unhide GRPs linking regulatory sources</span>
     <span class="n">root_gene</span> <span class="o">=</span> <span class="s1">&#39;Klf4&#39;</span><span class="p">,</span>     <span class="c1"># Klf4 is our gene of interest</span>
     <span class="n">depth</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>              <span class="c1"># and we are visualizing all GRPs directly linked with Klf4</span>

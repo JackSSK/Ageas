@@ -1,0 +1,137 @@
+\begin{thebibliography}{10}
+\urlstyle{rm}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname doiprefix\endcsname\relax\def\doiprefix{DOI: }\fi
+\providecommand{\bibinfo}[2]{#2}
+\providecommand{\eprint}[2][]{\url{#2}}
+
+\bibitem{2020SciPy-NMeth}
+\bibinfo{author}{Virtanen, P.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{{{SciPy} 1.0: Fundamental
+  Algorithms for Scientific Computing in Python}}}.
+\newblock {\emph{\JournalTitle{Nature Methods}}} \textbf{\bibinfo{volume}{17}},
+  \bibinfo{pages}{261--272}, \doiprefix\url{10.1038/s41592-019-0686-2}
+  (\bibinfo{year}{2020}).
+
+\bibitem{transfac}
+\bibinfo{author}{Matys, V.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Transfac(r) and its module
+  transcompel(r): Transcriptional gene regulation in eukaryotes}}.
+\newblock {\emph{\JournalTitle{Nucleic Acids Research}}}
+  \textbf{\bibinfo{volume}{34}}, \doiprefix\url{10.1093/nar/gkj143}
+  (\bibinfo{year}{2006}).
+
+\bibitem{gkaa1057}
+\bibinfo{author}{Kolmykov, S.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{{GTRD: an integrated view of
+  transcription regulation}}}.
+\newblock {\emph{\JournalTitle{Nucleic Acids Research}}}
+  \textbf{\bibinfo{volume}{49}}, \bibinfo{pages}{D104--D111},
+  \doiprefix\url{10.1093/nar/gkaa1057} (\bibinfo{year}{2020}).
+\newblock
+  \eprint{https://academic.oup.com/nar/article-pdf/49/D1/D104/35364856/gkaa1057.pdf}.
+
+\bibitem{biogrid}
+\bibinfo{author}{Stark, C.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Biogrid: A general repository for
+  interaction datasets}}.
+\newblock {\emph{\JournalTitle{Nucleic Acids Research}}}
+  \textbf{\bibinfo{volume}{34}}, \doiprefix\url{10.1093/nar/gkj109}
+  (\bibinfo{year}{2006}).
+
+\bibitem{grnboost2}
+\bibinfo{author}{Moerman, T.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Grnboost2 and arboreto: Efficient
+  and scalable inference of gene regulatory networks}}.
+\newblock {\emph{\JournalTitle{Bioinformatics (Oxford, England)}}}
+  \textbf{\bibinfo{volume}{35}}, \doiprefix\url{10.1093/bioinformatics/bty916}
+  (\bibinfo{year}{2018}).
+
+\bibitem{pcc_2012}
+\bibinfo{author}{Song, L.}, \bibinfo{author}{Langfelder, P.} \&
+  \bibinfo{author}{Horvath, S.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Comparison of co-expression
+  measures: Mutual information, correlation, and model based indices}}.
+\newblock {\emph{\JournalTitle{BMC Bioinformatics}}}
+  \textbf{\bibinfo{volume}{13}}, \doiprefix\url{10.1186/1471-2105-13-328}
+  (\bibinfo{year}{2012}).
+
+\bibitem{cid_2019}
+\bibinfo{author}{Liu, L.-y.~D.}, \bibinfo{author}{Hsiao, Y.-C.},
+  \bibinfo{author}{Chen, H.-C.}, \bibinfo{author}{Yang, Y.-W.} \&
+  \bibinfo{author}{Chang, M.-C.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Construction of gene causal
+  regulatory networks using microarray data with the coefficient of intrinsic
+  dependence}}.
+\newblock {\emph{\JournalTitle{Botanical Studies}}}
+  \textbf{\bibinfo{volume}{60}}, \doiprefix\url{10.1186/s40529-019-0268-8}
+  (\bibinfo{year}{2019}).
+
+\bibitem{hyperband}
+\bibinfo{author}{Li, L.}, \bibinfo{author}{Jamieson, K.},
+  \bibinfo{author}{DeSalvo, G.}, \bibinfo{author}{Rostamizadeh, A.} \&
+  \bibinfo{author}{Talwalkar, A.}
+\newblock \bibinfo{title}{Hyperband: A novel bandit-based approach to
+  hyperparameter optimization} (\bibinfo{year}{2018}).
+
+\bibitem{hanley_mcneil_1982}
+\bibinfo{author}{Hanley, J.~A.} \& \bibinfo{author}{McNeil, B.~J.}
+\newblock \bibinfo{journal}{\bibinfo{title}{The meaning and use of the area
+  under a receiver operating characteristic (roc) curve.}}
+\newblock {\emph{\JournalTitle{Radiology}}} \textbf{\bibinfo{volume}{143}},
+  \bibinfo{pages}{29–36}, \doiprefix\url{10.1148/radiology.143.1.7063747}
+  (\bibinfo{year}{1982}).
+
+\bibitem{NEURIPS2019_9015}
+\bibinfo{author}{Paszke, A.} \emph{et~al.}
+\newblock \bibinfo{title}{Pytorch: An imperative style, high-performance deep
+  learning library}.
+\newblock In \bibinfo{editor}{Wallach, H.} \emph{et~al.} (eds.)
+  \emph{\bibinfo{booktitle}{Advances in Neural Information Processing Systems
+  32}}, \bibinfo{pages}{8024--8035} (\bibinfo{publisher}{Curran Associates,
+  Inc.}, \bibinfo{year}{2019}).
+
+\bibitem{chen2016xgboost}
+\bibinfo{author}{Chen, T.} \& \bibinfo{author}{Guestrin, C.}
+\newblock \bibinfo{title}{Xgboost: A scalable tree boosting system}.
+\newblock In \emph{\bibinfo{booktitle}{Proceedings of the 22nd acm sigkdd
+  international conference on knowledge discovery and data mining}},
+  \bibinfo{pages}{785--794} (\bibinfo{year}{2016}).
+
+\bibitem{scikit-learn}
+\bibinfo{author}{Pedregosa, F.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Scikit-learn: Machine learning in
+  {P}ython}}.
+\newblock {\emph{\JournalTitle{Journal of Machine Learning Research}}}
+  \textbf{\bibinfo{volume}{12}}, \bibinfo{pages}{2825--2830}
+  (\bibinfo{year}{2011}).
+
+\bibitem{mostavi_chiu_huang_chen_2020}
+\bibinfo{author}{Mostavi, M.}, \bibinfo{author}{Chiu, Y.-C.},
+  \bibinfo{author}{Huang, Y.} \& \bibinfo{author}{Chen, Y.}
+\newblock \bibinfo{title}{Convolutional neural network models for cancer type
+  prediction based on gene expression - bmc medical genomics}
+  (\bibinfo{year}{2020}).
+
+\bibitem{transformer}
+\bibinfo{author}{Vaswani, A.} \emph{et~al.}
+\newblock \bibinfo{title}{Attention is all you need} (\bibinfo{year}{2017}).
+
+\bibitem{roth_1988}
+\bibinfo{author}{Roth, A.~E.} \& \bibinfo{author}{Shapley, L.~S.}
+\newblock \bibinfo{journal}{\bibinfo{title}{The shapley value : essays in honor
+  of lloyd s. shapley}}.
+\newblock {\emph{\JournalTitle{Economica}}} \textbf{\bibinfo{volume}{101}},
+  \bibinfo{pages}{123} (\bibinfo{year}{1991}).
+
+\bibitem{lundberg2017unified}
+\bibinfo{author}{Lundberg, S.~M.} \& \bibinfo{author}{Lee, S.-I.}
+\newblock \bibinfo{title}{A unified approach to interpreting model
+  predictions}.
+\newblock In \emph{\bibinfo{booktitle}{Proceedings of the 31st international
+  conference on neural information processing systems}},
+  \bibinfo{pages}{4768--4777} (\bibinfo{year}{2017}).
+
+\end{thebibliography}

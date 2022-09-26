@@ -1,7 +1,7 @@
 # AGEAS
 [![python 3.8](https://img.shields.io/badge/python-3.8-brightgreen)](https://www.python.org/)
 
-**AGEAS (AutoML-based Genomics fEatrue extrAction System)** is to find key genomics factors, including genes and regulatory pathways, in determining cellular phenotype.
+**AGEAS (AutoML-based Genetics fEatrue extrAction System)** is to find key genetics factors, including genes and regulatory pathways, in determining cellular phenotype.
 
 # Workflow Summary
 ![Workflow](docs/images/summary.png)

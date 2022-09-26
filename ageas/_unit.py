@@ -106,7 +106,7 @@ class Unit(object):
 
         :param regulatory_trace_depth: <int Default = 1>
             Trace regulatory upstream of regulatory sources included in key
-            regulons extracted.
+            networks extracted.
 
         :param stabilize_patient: <int Default = 3>
             If stabilize iterations continuously having consistent
@@ -207,9 +207,9 @@ class Unit(object):
                 start = time.time()
                 prev_grps = self.atlas.top_grps.index
                 rm = self.__get_grp_remove_list(
-                            grp_importances.result,
-                            self.feature_dropout_ratio,
-                            self.outlier_thread
+                    grp_importances.result,
+                    self.feature_dropout_ratio,
+                    self.outlier_thread
                 )
 
                 self.pseudo_grns.update_with_remove_list(rm)
@@ -272,21 +272,21 @@ class Unit(object):
 
             print('Time to stabilize key GRPs : ', time.time() - start)
 
-    # Construct Regulons with Extracted GRPs and Access Them
+    # Construct networks with Extracted GRPs and Access Them
     def generate_atlas(self,):
         """
-        Function to build regulon networks with extracted GRPs.
+        Function to build networks with extracted GRPs.
         """
-        print('\nBuilding Regulons with key GRPs')
+        print('\nBuilding networks with key GRPs')
         start = time.time()
-        self.atlas.build_regulon(meta_grn = self.meta.grn,)
+        self.atlas.build_network(meta_grn = self.meta.grn,)
 
-        # Trace regulatory sources of regulons in atlas extracted
+        # Trace regulatory sources of networks in atlas extracted
         for i in range(self.regulatory_trace_depth):
             self.atlas.add_reg_sources(meta_grn = self.meta.grn,)
 
         self.atlas.find_bridges(meta_grn = self.meta.grn)
-        print('Time to build key regulons : ', time.time() - start)
+        print('Time to build key networks : ', time.time() - start)
         return self.atlas
 
     # take out some GRPs based on feature dropout ratio

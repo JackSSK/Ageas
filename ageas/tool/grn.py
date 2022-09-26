@@ -37,42 +37,42 @@ class GRN(object):
 			return
 
 		# Test out global scale correlation
-		cor_group1 = None
-		cor_group2 = None
+		cor_class1 = None
+		cor_class2 = None
 		passed = False
 
-		# check cor_group1
+		# check cor_class1
 		if source in gem1.data.index and target in gem1.data.index:
-			cor_group1 = tool.Get_Pearson(
+			cor_class1 = tool.Get_Pearson(
 				gem1.data.loc[[source]].values[0],
 				gem1.data.loc[[target]].values[0]
 			)
 
-		# check cor_group2
+		# check cor_class2
 		if source in gem2.data.index and target in gem2.data.index:
-			cor_group2 = tool.Get_Pearson(
+			cor_class2 = tool.Get_Pearson(
 				gem2.data.loc[[source]].values[0],
 				gem2.data.loc[[target]].values[0]
 			)
 
-		# Go through abs(correlation) threshod check
-		if cor_group1 is None and cor_group2 is None:
+		# Go through abs(correlation) threshold check
+		if cor_class1 is None and cor_class2 is None:
 			return
-		if cor_group1 is None and abs(cor_group2) > correlation_thread:
+		if cor_class1 is None and abs(cor_class2) > correlation_thread:
 			passed = True
-			cor_group1 = 0
-		elif cor_group2 is None and abs(cor_group1) > correlation_thread:
+			cor_class1 = 0
+		elif cor_class2 is None and abs(cor_class1) > correlation_thread:
 			passed = True
-			cor_group2 = 0
-		elif cor_group1 is not None and cor_group2 is not None:
-			if abs(cor_group1 - cor_group2) > correlation_thread:
+			cor_class2 = 0
+		elif cor_class1 is not None and cor_class2 is not None:
+			if abs(cor_class1 - cor_class2) > correlation_thread:
 				passed = True
 
 		# update GRN if passed correlation filter
 		if passed:
 			correlations = {
-				'group1':float(cor_group1),
-				'group2':float(cor_group2)
+				'class1':float(cor_class1),
+				'class2':float(cor_class2)
 			}
 			self.add_grp(grp_id, source, target, correlations)
 			if source not in self.genes:
@@ -94,18 +94,18 @@ class GRN(object):
 	def add_gene(self, id, gem1, gem2):
 		assert id not in self.genes
 		# get expression sum values
-		group1_exp = 0
-		group2_exp = 0
+		class1_exp = 0
+		class2_exp = 0
 		if id in gem1.data.index:
-			group1_exp = sum(gem1.data.loc[[id]].values[0])
+			class1_exp = sum(gem1.data.loc[[id]].values[0])
 		if id in gem2.data.index:
-			group2_exp = sum(gem2.data.loc[[id]].values[0])
+			class2_exp = sum(gem2.data.loc[[id]].values[0])
 		# may change it to a class later
 		self.genes[id] = Gene(
 			id = id,
 			expression_sum = {
-				'group1': float(group1_exp),
-				'group2': float(group2_exp)
+				'class1': float(class1_exp),
+				'class2': float(class2_exp)
 			}
 		)
 		return
@@ -172,8 +172,8 @@ class GRN(object):
 				self.genes[rec.regulatory_target].symbol,
 				rec.reversable,
 				rec.type,
-				rec.correlations['group1'],
-				rec.correlations['group2'],
+				rec.correlations['class1'],
+				rec.correlations['class2'],
 				rec.score,
 			])
 		answer = pd.DataFrame(sorted(answer, key=lambda x:x[-1], reverse=True))
@@ -184,8 +184,8 @@ class GRN(object):
 			'Regulatory target Gene Symbol',
 			'Reversable',
 			'Type',
-			'Correlation in Group 1',
-			'Correlation in Group 2',
+			'Correlation in Class 1',
+			'Correlation in Class 2',
 			'Score'
 		]
 		return answer
@@ -378,9 +378,9 @@ class GRP(object):
 # 		return {
 # 			'id':content[0],
 # 			'regulatory_source':content[1],
-# 			'sourceGroup':content[2],
+# 			'sourceClass':content[2],
 # 			'regulatory_target':content[3],
-# 			'targetGroup':content[4],
+# 			'targetClass':content[4],
 # 			'correlation':float(content[5]),
 # 			'attribute':content[6],
 # 		}

@@ -17,20 +17,26 @@
       ],
       "nhead":[
         8,
-        4
+        16
       ],
-      "nhid":[
-        200
+      "dim_feedforward":[
+        256
       ],
-      "nlayers":[
-        2,
-        4
+      "num_encoder_layers":[
+        6
+      ],
+      "num_decoder_layers":[
+        6
+      ],
+      "layer_norm_eps":[
+        1e-05
       ],
       "learning_rate":[
           0.01
       ],
       "dropout":[
-          0.2
+          0.2,
+          0.1
       ]
   },
   "RFC": {
@@ -181,6 +187,15 @@
       ],
       "dropout":[
           0.2
+      ],
+      "nonlinearity":[
+          "tanh"
+      ],
+      "bias":[
+          true
+      ],
+      "bidirectional":[
+          false
       ]
   },
   "LSTM": {
@@ -203,6 +218,15 @@
       ],
       "dropout":[
           0.2
+      ],
+      "bias":[
+          true
+      ],
+      "bidirectional":[
+          false
+      ],
+      "proj_size":[
+          0
       ]
   },
   "GRU": {
@@ -225,6 +249,12 @@
       ],
       "dropout":[
           0.2
+      ],
+      "bias":[
+          true
+      ],
+      "bidirectional":[
+          false
       ]
   }
 }

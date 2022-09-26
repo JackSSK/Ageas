@@ -24,17 +24,17 @@ TYPES = ['Standard', 'Outer', 'Bridge', 'Mix']
 
 
 
-class Plot_Regulon(object):
+class Plot(object):
     """
-    Visualize full or partial Regulon extracted with AGEAS.
+    Visualize GRN or Regulon extracted with AGEAS.
 
     """
 
     def __init__(self,
                  depth:int = 1,
                  hide_bridge:bool = True,
-                 plot_group:str = 'all',
-                 regulon = None,
+                 plot_class:str = 'all',
+                 network = None,
                  root_gene:str = None,
                  weight_thread:float = 0.0,
                 ):
@@ -49,21 +49,21 @@ class Plot_Regulon(object):
             Whether hide non-AGEAS-extracted GRPs which can link key genes or
             not.
 
-        :param plot_group: <str Default = 'all'>
+        :param plot_class: <str Default = 'all'>
             What kind of information to show for GRPs on plot.
 
             Supporting:
 
-                'all': Which group of samples a GRP has higher correlation.
+                'all': In which sample class a GRP has higher correlation.
 
-                'group1': GRP's correlation value calculated with samples in
-                group1
+                'class1': GRP's correlation value calculated with samples in
+                class1
 
-                'group2': GRP's correlation value calculated with samples in
-                group2
+                'class2': GRP's correlation value calculated with samples in
+                class2
 
-        :param regulon: <ageas.tool.grn.GRN Default = None>
-            Which regulon to plot out.
+        :param network: <ageas.tool.grn.GRN Default = None>
+            Which network to plot out.
 
         :param root_gene: <str Default = None>
             Specific gene of interest. Only GRPs being capable to link with this
@@ -73,13 +73,13 @@ class Plot_Regulon(object):
         :param weight_thread: <float Default = 0.0>
             Minimun weight for a GRP to be kept on plot.
         """
-        super(Plot_Regulon, self).__init__()
-        self.plot_group = str(plot_group)
+        super(Plot, self).__init__()
+        self.plot_class = str(plot_class)
 
         if root_gene is not None:
-            grps_to_plot = regulon.get_grps_from_gene(root_gene, depth)
+            grps_to_plot = network.get_grps_from_gene(root_gene, depth)
         else:
-            grps_to_plot = regulon.grps
+            grps_to_plot = network.grps
 
         grps_to_plot = {
             k:None for k,v in grps_to_plot.items() if self.__check(
@@ -89,7 +89,7 @@ class Plot_Regulon(object):
         assert len(grps_to_plot) > 0
 
         # now we make the graph
-        self.graph = regulon.as_digraph(grp_ids = grps_to_plot.keys())
+        self.graph = network.as_digraph(grp_ids = grps_to_plot.keys())
 
     def draw(self,
              colorbar_shrink:float = 0.25,
@@ -106,7 +106,7 @@ class Plot_Regulon(object):
              seed:int = 1936,
             ):
         """
-        Draw the plot for selected regulon.
+        Draw the plot for selected GRN.
 
         :param colorbar_shrink:<float> Default = 0.25
             From the size having equal length with graph plot, what ratio
@@ -405,21 +405,21 @@ class Plot_Regulon(object):
 
     # just as named
     def _get_weight(self, correlations):
-        if self.plot_group == 'group1' or self.plot_group == '1':
-            weight = correlations['group1']
-        elif self.plot_group == 'group2' or self.plot_group == '2':
-            weight = correlations['group2']
-        elif self.plot_group == 'all':
-            weight = abs(correlations['group1']) - abs(correlations['group2'])
+        if self.plot_class == 'class1' or self.plot_class == '1':
+            weight = correlations['class1']
+        elif self.plot_class == 'class2' or self.plot_class == '2':
+            weight = correlations['class2']
+        elif self.plot_class == 'all':
+            weight = abs(correlations['class1']) - abs(correlations['class2'])
         return weight
 
     # Set up a color bar with fixed scale from -1.0 to 1.0
     def _set_color_bar(self, ax, shrink = 1, font_size = 10):
         cbar = plt.colorbar(self.edge_scalar_map, ax = ax, shrink = shrink)
-        if self.plot_group == 'all':
+        if self.plot_class == 'all':
             cbar.set_ticks([-1,0,1])
             cbar.set_ticklabels(
-                ['Stronger in group2', 'No Difference', 'Stronger in group1']
+                ['Stronger in class2', 'No Difference', 'Stronger in class1']
             )
             cbar.ax.tick_params(labelsize = font_size)
         cbar.ax.set_ylabel(
@@ -486,7 +486,7 @@ class Plot_Regulon(object):
 
 # if __name__ == '__main__':
 #     i = 0
-#     regulon = grn.GRN()
+#     grn = grn.GRN()
 #
 #     header = 'liverCCl4/hsc_pf_a6w/'
 #     # header = 'mef_esc/'
@@ -495,15 +495,15 @@ class Plot_Regulon(object):
 #     folder_path = header + 'run_' + str(i) + '/'
 #
 #     # atlas_path = folder_path + 'key_atlas.js'
-#     # regulon.load_dict(json.decode(atlas_path))
+#     # grn.load_dict(json.decode(atlas_path))
 #
 #     atlas_path = folder_path + 'full_atlas.js'
-#     regulon.load_dict(json.decode(atlas_path)['regulon_0'])
+#     grn.load_dict(json.decode(atlas_path)['network_0'])
 #
-#     a = Plot_Regulon(
-#         regulon = regulon,
+#     a = Plot(
+#         network = grn,
 #         hide_bridge = False,
-#         # plot_group = 'group2',
+#         # plot_class = 'class2',
 #         root_gene = 'ENSMUSG00000000247',
 #         depth = 1,
 #     )

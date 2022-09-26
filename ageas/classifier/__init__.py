@@ -121,13 +121,10 @@ class Make_Template:
 	# common func to evaluate both torch based and sklearn based API models
 	def _evaluate(self, output, label):
 		assert len(output) == len(label)
-		correct_predictions = []
-		for i in range(len(output)):
-			if output[i][0] > output[i][1] and label[i] == 0:
-				correct_predictions.append(i)
-			elif output[i][0] < output[i][1] and label[i] == 1:
-				correct_predictions.append(i)
-
+		correct_predictions = [
+			i for i in range(len(output)) if list(
+				output[i]).index(max(output[i])) == label[i]
+		]
 		auroc = roc_auc_score(label, output[:, 1], average = None)
 		loss = torch.nn.CrossEntropyLoss()(
 			torch.tensor(output, dtype = torch.float),

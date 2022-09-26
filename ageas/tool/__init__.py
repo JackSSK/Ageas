@@ -41,7 +41,7 @@ def STD_Filter(df = None, std_value_thread = None, std_ratio_thread = None):
     data = df.transpose()
     sd_list = data[data.columns].std().sort_values(ascending = False)
 
-    # filter by stdev threshod value
+    # filter by stdev threshold value
     if std_value_thread is not None:
         for i in range(len(sd_list)):
             if sd_list[i] < std_value_thread: break

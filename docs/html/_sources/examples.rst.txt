@@ -14,4 +14,4 @@ The source notebooks are `available on GitHub <https://github.com/JackSSK/Ageas/
     :maxdepth: 1
 
     notebooks/launch.ipynb
-    notebooks/plot_regulon.ipynb
+    notebooks/plot.ipynb

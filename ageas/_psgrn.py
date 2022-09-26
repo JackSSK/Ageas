@@ -27,8 +27,8 @@ import ageas.database_setup.binary_class as binary_db
 def Data_Preprocess(correlation_thread:float = 0.2,
 					database_path:str = None,
 					database_type:str = 'gem_files',
-					group1_path:str = None,
-					group2_path:str = None,
+					class1_path:str = None,
+					class2_path:str = None,
 					interaction_database:str = 'gtrd',
 					log2fc_thread:float = None,
 					meta_load_path:str = None,
@@ -54,10 +54,10 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 	:param database_path: <str Default = None>
 		Database header.
 
-		If specified, group1_path and group2_path will be rooted here.
+		If specified, class1_path and class2_path will be rooted here.
 
 	:param database_type: <str Default = 'gem_files'>
-		Type of data group1_path and group1_path are directing to
+		Type of data class1_path and class1_path are directing to
 		Supporting:
 
 			'gem_files': Each path is directing to a GEM file.
@@ -72,11 +72,11 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 
 		Pseudo-sample GRNs will be generated with sliding window method.
 
-	:param group1_path: <str Default = None>
-		Path to file or folder being considered as sample group 1 data
+	:param class1_path: <str Default = None>
+		Path to file or folder of class 1 samples data
 
-	:param group2_path: <str Default = None>
-		Path to file or folder being considered as sample group 2 data
+	:param class2_path: <str Default = None>
+		Path to file or folder of class 2 samples data
 
 	:param interaction_database: <str Default = 'gtrd'>
 		Which interaction database to use for confirming a GRP has a
@@ -155,12 +155,11 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 
 	:param std_value_thread: <float Default = 1.0>
 		Set up gene expression standard deviation thread by value.
-		To filter genes having relatively constant expression in each
-		group.
+		To filter genes having relatively constant expression.
 
 	:param std_ratio_thread: <float Default = None>
 		Set up gene expression standard deviation thread by portion.
-		Only genes reaching top portion will be kept in each group.
+		Only genes reaching top portion will be kept.
 
 	"""
 
@@ -168,8 +167,8 @@ def Data_Preprocess(correlation_thread:float = 0.2,
 	database_info = binary_db.Setup(
 		database_path,
 		database_type,
-		group1_path,
-		group2_path,
+		class1_path,
+		class2_path,
 		specie,
 		interaction_database,
 		sliding_window_size,
@@ -253,11 +252,11 @@ class Make:
 
 		# load in
 		if load_path is not None:
-			self.group1_psGRNs,self.group2_psGRNs= self.__load_psGRNs(load_path)
+			self.class1_psGRNs,self.class2_psGRNs= self.__load_psGRNs(load_path)
 
 		# Make GRNs
 		else:
-			self.group1_psGRNs, self.group2_psGRNs = self.__make_psGRNs(
+			self.class1_psGRNs, self.class2_psGRNs = self.__make_psGRNs(
 				gem_data = gem_data,
 				meta_grn = meta_grn
 			)
@@ -265,42 +264,42 @@ class Make:
 	# main controller to cast pseudo cell GRNs (psGRNs)
 	def __make_psGRNs(self, gem_data, meta_grn):
 		if gem_data is not None:
-			group1_psGRNs = self.__loaded_gem_method(
-				class_type = 'group1',
-				gem = gem_data.group1.data,
+			class1_psGRNs = self.__loaded_gem_method(
+				class_type = 'class1',
+				gem = gem_data.class1.data,
 				meta_grn = meta_grn
 			)
-			group2_psGRNs = self.__loaded_gem_method(
-				class_type = 'group2',
-				gem = gem_data.group2.data,
+			class2_psGRNs = self.__loaded_gem_method(
+				class_type = 'class2',
+				gem = gem_data.class2.data,
 				meta_grn = meta_grn
 			)
 		elif self.database_info.type == 'gem_folders':
-			group1_psGRNs = self.__folder_method(
-				'group1',
-				self.database_info.group1_path,
+			class1_psGRNs = self.__folder_method(
+				'class1',
+				self.database_info.class1_path,
 				meta_grn
 			)
-			group2_psGRNs = self.__folder_method(
-				'group2',
-				self.database_info.group2_path,
+			class2_psGRNs = self.__folder_method(
+				'class2',
+				self.database_info.class2_path,
 				meta_grn
 			)
 		elif self.database_info.type == 'gem_files':
 			# need to revise here!
-			group1_psGRNs = self.__file_method(
-				'group1',
-				self.database_info.group1_path,
+			class1_psGRNs = self.__file_method(
+				'class1',
+				self.database_info.class1_path,
 				meta_grn
 			)
-			group2_psGRNs = self.__file_method(
-				'group2',
-				self.database_info.group2_path,
+			class2_psGRNs = self.__file_method(
+				'class2',
+				self.database_info.class2_path,
 				meta_grn
 			)
 		else:
 			raise tool.Error('psGRN Caster Error: Unsupported database type')
-		return group1_psGRNs, group2_psGRNs
+		return class1_psGRNs, class2_psGRNs
 
 	# as named
 	def __file_method(self, class_type, path, meta_grn):
@@ -471,14 +470,14 @@ class Make:
 
 	# as named
 	def update_with_remove_list(self, remove_list):
-		for sample in self.group1_psGRNs:
+		for sample in self.class1_psGRNs:
 			for id in remove_list:
-				if id in self.group1_psGRNs[sample].grps:
-					del self.group1_psGRNs[sample].grps[id]
-		for sample in self.group2_psGRNs:
+				if id in self.class1_psGRNs[sample].grps:
+					del self.class1_psGRNs[sample].grps[id]
+		for sample in self.class2_psGRNs:
 			for id in remove_list:
-				if id in self.group2_psGRNs[sample].grps:
-					del self.group2_psGRNs[sample].grps[id]
+				if id in self.class2_psGRNs[sample].grps:
+					del self.class2_psGRNs[sample].grps[id]
 		return
 
 	# temporal psGRN saving method
@@ -486,8 +485,8 @@ class Make:
 	def save(self, save_path):
 		json.encode(
 			{
-				'group1':{k:v.as_dict() for k,v in self.group1_psGRNs.items()},
-				'group2':{k:v.as_dict() for k,v in self.group2_psGRNs.items()}
+				'class1':{k:v.as_dict() for k,v in self.class1_psGRNs.items()},
+				'class2':{k:v.as_dict() for k,v in self.class2_psGRNs.items()}
 			},
 			save_path
 		)
@@ -497,17 +496,17 @@ class Make:
 	""" need to be revised later with save_psGRNs"""
 	def __load_psGRNs(self, load_path):
 		data = json.decode(load_path)
-		group1_psGRNs = dict()
-		group2_psGRNs = dict()
-		for k,v in data['group1'].items():
+		class1_psGRNs = dict()
+		class2_psGRNs = dict()
+		for k,v in data['class1'].items():
 			temp = grn.GRN(id = k)
 			temp.load_dict(dict = v)
-			group1_psGRNs[k] = temp
-		for k,v in data['group2'].items():
+			class1_psGRNs[k] = temp
+		for k,v in data['class2'].items():
 			temp = grn.GRN(id = k)
 			temp.load_dict(dict = v)
-			group2_psGRNs[k] = temp
-		return group1_psGRNs, group2_psGRNs
+			class2_psGRNs[k] = temp
+		return class1_psGRNs, class2_psGRNs
 
 
 	# OLD: Save GRN files as js.gz in new folder

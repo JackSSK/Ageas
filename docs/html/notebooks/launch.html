@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="ageas.Plot_Regulon()" href="plot_regulon.html" />
+    <link rel="next" title="ageas.Plot()" href="plot.html" />
     <link rel="prev" title="Examples" href="../examples.html" /> 
 </head>
 
@@ -53,7 +53,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#And-then…">And then…</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="plot_regulon.html">ageas.Plot_Regulon()</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plot.html">ageas.Plot()</a></li>
 </ul>
 </li>
 </ul>
@@ -363,7 +363,7 @@ div.rendered_html tbody tr:hover {
 </style>
 <div class="section" id="ageas.Launch()">
 <h1>ageas.Launch()<a class="headerlink" href="#ageas.Launch()" title="Permalink to this heading"></a></h1>
-<p>This notebook demonstrate how to use ageas.Launch() to launch AGEAS in extracting key genomics features from Gene Expression Matrices(GEMs) containing RNA-seq based gene counts data of different sample groups.</p>
+<p>This notebook demonstrate how to use ageas.Launch() to launch AGEAS in extracting key genetics features from RNA-seq based Gene Expression Matrices (GEMs) in differentiating sample classes.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -374,7 +374,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>Currently, AGEAS support input data under two different formats:</p>
 <ol class="arabic">
-<li><p><strong>‘gem_files’</strong>: Gene expression of all groups are presented as dataframes under CSV or TXT format with rows representing genes and columns representing samples.</p>
+<li><p><strong>‘gem_files’</strong>: Gene expression of all classes are presented as dataframes under CSV or TXT format with rows representing genes and columns representing samples.</p>
 <p>Example:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -442,12 +442,12 @@ div.rendered_html tbody tr:hover {
 <p>Genes must either be named with official gene symbols or Ensembl gene IDs(ENS***).</p>
 <p>There is no requirement for sample name type. Barcodes, numbers, any artificial names can work.</p>
 </li>
-<li><p><strong>‘mex_folders’</strong>: Each folder containing Market Exchange Format (MEX) files output by <a class="reference external" href="https://github.com/10XGenomics/cellranger">cellranger</a> pipeline representing a group of samples. For more information: <a class="reference external" href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices">https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices</a></p></li>
+<li><p><strong>‘mex_folders’</strong>: Each folder containing Market Exchange Format (MEX) files output by <a class="reference external" href="https://github.com/10XGenomics/cellranger">cellranger</a> pipeline representing samples of same class. For more information: <a class="reference external" href="https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices">https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/output/matrices</a></p></li>
 </ol>
 <div class="section" id="Mouse-Embryonic-Fibroblast(MEF)-vs-Embryonic-Stem-Cells(ESC)-example:">
 <h2>Mouse Embryonic Fibroblast(MEF) vs Embryonic Stem Cells(ESC) example:<a class="headerlink" href="#Mouse-Embryonic-Fibroblast(MEF)-vs-Embryonic-Stem-Cells(ESC)-example:" title="Permalink to this heading"></a></h2>
 <p>This example represent how to use ageas.Launch() with <strong>‘gem_files’</strong>.</p>
-<p>Here, we attempt to extract key genomics factors to perform cell reprogramming from <strong>MEF</strong> into <strong>Induced Pluripotent Stem Cell(iPSC)</strong>, one of the most well known cell reprogramming case, with AGEAS.</p>
+<p>Here, we attempt to extract key genetics factors to perform cell reprogramming from <strong>MEF</strong> into <strong>Induced Pluripotent Stem Cell(iPSC)</strong>, one of the most well known cell reprogramming case, with AGEAS.</p>
 <p>The scRNA-seq based gene expression data for both <strong>MEF</strong> and <strong>ESC</strong> are retrieved from <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE103221">GSE103221</a>.</p>
 <p>Either raw data in <strong>GSE103221_RAW.tar</strong> or normalized counts in <strong>GSE103221_normalized_counts.csv.gz</strong> can be processed with AGEAS.</p>
 <div class="section" id="For-using-raw-data">
@@ -462,8 +462,8 @@ div.rendered_html tbody tr:hover {
     <span class="n">database_type</span> <span class="o">=</span> <span class="s1">&#39;gem_files&#39;</span><span class="p">,</span>
 
     <span class="c1"># ageas.Data_Preprocess() args</span>
-    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">class1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">class2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -479,8 +479,8 @@ div.rendered_html tbody tr:hover {
     <span class="n">unit_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
 
     <span class="c1"># ageas.Data_Preprocess() args</span>
-    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">class1_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629847_10x_osk_mef.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">class2_path</span> <span class="o">=</span> <span class="s1">&#39;GSE103221_RAW/GSM3629848_10x_osk_esc.csv.gz&#39;</span><span class="p">,</span>
     <span class="n">std_value_thread</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
@@ -528,10 +528,10 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <p>Folders <strong>no_1</strong>, <strong>no_2</strong>, <strong>no_3</strong>, <strong>no_4</strong> contain GRP importance scores returned by each extractor unit as <strong>grps_importances.csv</strong> which has GRPs ranked with importance scores and <strong>outlier_grps.js</strong> which has GRPs once removed during feature selection due to extremly high importance score. If these information not needed, keep <strong>save_unit_reports</strong> as <strong>False</strong> by default.</p>
-<p><strong>full_atlas.js</strong>: regulons reconstructed with every important GRP extracted by every extractor unit.</p>
+<p><strong>full_atlas.js</strong>: networks reconstructed with every important GRP extracted by every extractor unit.</p>
 <p><strong>grp_scores.csv</strong>: GRPs with max importance score each can achieve after extracted by every extractor unit.</p>
-<p><strong>key_atlas.js</strong>: pruned regulons reconstructed only with genes being capable to regulate other genes in full atlas.</p>
-<p><strong>meta_GRN.js</strong>: meta-level processed GRN cast with all data in each sample group.</p>
+<p><strong>key_atlas.js</strong>: pruned networks reconstructed only with genes being capable to regulate other genes in full atlas.</p>
+<p><strong>meta_GRN.js</strong>: meta-level processed GRN cast with all samples.</p>
 <p><strong>meta_report.csv</strong>: summary of every gene in meta-processed GRN. By default, records are ranked by <strong>Degree</strong>. Top few rows should look like:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -597,7 +597,7 @@ div.rendered_html tbody tr:hover {
 <ul class="simple">
 <li><p>Type can either be Gene or TF(Transcription Factor).</p></li>
 <li><p>Degree here stands for <a class="reference external" href="https://en.wikipedia.org/wiki/Degree_(graph_theory)">degree in graph theory</a>.</p></li>
-<li><p>Log2FC is calcualted with all expression values in two given sample groups.</p></li>
+<li><p>Log2FC is calcualted with all expression values in sample classes.</p></li>
 </ul>
 <p><strong>pseudo_sample_GRNs.js</strong>: GRNs cast for each pseudo-sample generated with <a class="reference external" href="https://stackoverflow.com/questions/8269916/what-is-sliding-window-algorithm-examples">Sliding Window Algorithm</a>.</p>
 <p><strong>report.csv</strong>: information about key regulatory-source genes in <strong>full_atlas.js</strong>. By default, records are ranked by <strong>Log2FC</strong>. Top few rows should look like:</p>
@@ -615,7 +615,7 @@ div.rendered_html tbody tr:hover {
 <thead>
 <tr class="row-odd"><th class="head"><p>ID</p></th>
 <th class="head"><p>Gene Symbol</p></th>
-<th class="head"><p>Regulon</p></th>
+<th class="head"><p>Network</p></th>
 <th class="head"><p>Type</p></th>
 <th class="head"><p>Source_Num</p></th>
 <th class="head"><p>Target_Num</p></th>
@@ -626,7 +626,7 @@ div.rendered_html tbody tr:hover {
 <tbody>
 <tr class="row-even"><td><p>Pou5f1</p></td>
 <td><p>Pou5f1</p></td>
-<td><p>regulon_0</p></td>
+<td><p>network_0</p></td>
 <td><p>TF</p></td>
 <td><p>5</p></td>
 <td><p>68</p></td>
@@ -635,7 +635,7 @@ div.rendered_html tbody tr:hover {
 </tr>
 <tr class="row-odd"><td><p>Klf2</p></td>
 <td><p>Klf2</p></td>
-<td><p>regulon_0</p></td>
+<td><p>network_0</p></td>
 <td><p>TF</p></td>
 <td><p>0</p></td>
 <td><p>71</p></td>
@@ -644,7 +644,7 @@ div.rendered_html tbody tr:hover {
 </tr>
 <tr class="row-even"><td><p>Trim28</p></td>
 <td><p>Trim28</p></td>
-<td><p>regulon_0</p></td>
+<td><p>network_0</p></td>
 <td><p>TF</p></td>
 <td><p>8</p></td>
 <td><p>136</p></td>
@@ -653,7 +653,7 @@ div.rendered_html tbody tr:hover {
 </tr>
 <tr class="row-odd"><td><p>Trp53</p></td>
 <td><p>Trp53</p></td>
-<td><p>regulon_0</p></td>
+<td><p>network_0</p></td>
 <td><p>TF</p></td>
 <td><p>7</p></td>
 <td><p>133</p></td>
@@ -662,7 +662,7 @@ div.rendered_html tbody tr:hover {
 </tr>
 <tr class="row-even"><td><p>Sox2</p></td>
 <td><p>Sox2</p></td>
-<td><p>regulon_0</p></td>
+<td><p>network_0</p></td>
 <td><p>TF</p></td>
 <td><p>3</p></td>
 <td><p>83</p></td>
@@ -671,7 +671,7 @@ div.rendered_html tbody tr:hover {
 </tr>
 <tr class="row-odd"><td><p>Nanog</p></td>
 <td><p>Nanog</p></td>
-<td><p>regulon_0</p></td>
+<td><p>network_0</p></td>
 <td><p>TF</p></td>
 <td><p>4</p></td>
 <td><p>81</p></td>
@@ -680,7 +680,7 @@ div.rendered_html tbody tr:hover {
 </tr>
 <tr class="row-even"><td><p>Klf4</p></td>
 <td><p>Klf4</p></td>
-<td><p>regulon_0</p></td>
+<td><p>network_0</p></td>
 <td><p>TF</p></td>
 <td><p>3</p></td>
 <td><p>62</p></td>
@@ -715,7 +715,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p>Considering the sample size of raw data for each group is few thousands, generating pseudo-samples, which abstracts gene expressions from several distinct samples as continuous expression data in order to calculate gene expression correlations, with every distinct 100 samples by default setting should be acceptable.</p>
+<p>Considering the sample size of raw data for each class no less than few thousands, generating pseudo-samples, which abstracts gene expressions from several distinct samples as continuous expression data in order to calculate gene expression correlations, with every distinct 100 samples by default setting should be acceptable.</p>
 <p>However, in this normalized data, only dozens of samples clearly labeled as MEF or ESC. To make at least dozens of pseudo-samples, we can adjust few arguments for Sliding Window Algorithm.</p>
 <p>Furthermore, with normalized expression value, GRP filters shall also be adjusted to keep total amount of GRP after meta-processing reasonable. <strong>log2fc_thread</strong> can rule out genes and corresponding GRPs based on expression difference.</p>
 <div class="nbinput nblast docutils container">
@@ -726,8 +726,8 @@ div.rendered_html tbody tr:hover {
     <span class="n">unit_num</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
 
     <span class="c1"># ageas.Data_Preprocess() args</span>
-    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;mef.csv.gz&#39;</span><span class="p">,</span>
-    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;esc.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">class1_path</span> <span class="o">=</span> <span class="s1">&#39;mef.csv.gz&#39;</span><span class="p">,</span>
+    <span class="n">class2_path</span> <span class="o">=</span> <span class="s1">&#39;esc.csv.gz&#39;</span><span class="p">,</span>
     <span class="n">log2fc_thread</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">std_value_thread</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
     <span class="n">sliding_window_size</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
@@ -746,7 +746,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Carbon-Tetrachloride(CCl4)-induced-liver-fibrosis-example:">
 <h2>Carbon Tetrachloride(CCl4) induced liver fibrosis example:<a class="headerlink" href="#Carbon-Tetrachloride(CCl4)-induced-liver-fibrosis-example:" title="Permalink to this heading"></a></h2>
 <p>This example represent how to use ageas.Launch() with <strong>‘mex_folders’</strong>.</p>
-<p>Stimulating portal fibroblasts(PFs) as activated hepatic stellate cells(HSCs), we can try to find key genomics factors in liver fibrosis through extracting key genomic differences among HSCs and PFs.</p>
+<p>Stimulating portal fibroblasts(PFs) as activated hepatic stellate cells(HSCs), we can try to find key genetics factors in liver fibrosis through extracting key genetic differences among HSCs and PFs.</p>
 <p>The scRNA-seq based gene expression data for PF is retrieved from <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM4085627">GSM4085627</a> and data for HSC is retrieved from <a class="reference external" href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM4085625">GSM4085625</a>.</p>
 <p>Files retrieved are managed as:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>a6w_pf/
@@ -770,8 +770,8 @@ a6w_hsc/
 
     <span class="c1"># ageas.Data_Preprocess() args</span>
     <span class="n">database_type</span> <span class="o">=</span> <span class="s1">&#39;mex_folders&#39;</span><span class="p">,</span>
-    <span class="n">group1_path</span> <span class="o">=</span> <span class="s1">&#39;a6w_hsc/&#39;</span><span class="p">,</span>
-    <span class="n">group2_path</span> <span class="o">=</span> <span class="s1">&#39;a6w_pf/&#39;</span><span class="p">,</span>
+    <span class="n">class1_path</span> <span class="o">=</span> <span class="s1">&#39;a6w_hsc/&#39;</span><span class="p">,</span>
+    <span class="n">class2_path</span> <span class="o">=</span> <span class="s1">&#39;a6w_pf/&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="n">test_normalized</span><span class="o">.</span><span class="n">save_reports</span><span class="p">(</span>
@@ -784,7 +784,7 @@ a6w_hsc/
 </div>
 <div class="section" id="And-then…">
 <h2>And then…<a class="headerlink" href="#And-then…" title="Permalink to this heading"></a></h2>
-<p>We can visualize each regulon as a network graph with <a class="reference external" href="https://JackSSK.github.io/Ageas/html/generated/ageas.Plot_Regulon.html">ageas.Plot_Regulon()</a></p>
+<p>We can visualize each network as a graph with <a class="reference external" href="https://JackSSK.github.io/Ageas/html/generated/ageas.Plot.html">ageas.Plot()</a></p>
 </div>
 </div>
 
@@ -793,7 +793,7 @@ a6w_hsc/
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../examples.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="plot_regulon.html" class="btn btn-neutral float-right" title="ageas.Plot_Regulon()" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="plot.html" class="btn btn-neutral float-right" title="ageas.Plot()" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

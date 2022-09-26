@@ -11,7 +11,10 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as func
-from torch.nn import TransformerEncoder, TransformerEncoderLayer
+from torch.nn import TransformerEncoder
+from torch.nn import TransformerEncoderLayer
+from torch.nn import TransformerDecoder
+from torch.nn import TransformerDecoderLayer
 import ageas.classifier as classifier
 
 
@@ -70,51 +73,67 @@ class Transformer(nn.Module):
                  has_mask = True, # whether using mask or not
                  emsize = 512, # size after encoder
                  nhead = 8, # number of heads in the multiheadattention models
-                 nhid = 200, # number of hidden units per layer
-                 nlayers = 2, # number of layers
+                 num_encoder_layers = 6,
+                 num_decoder_layers = 6,
+                 dim_feedforward = 512, # number of hidden units per layer
                  dropout = 0.5, # dropout ratio
+                 activation = 'relu',
+                 layer_norm_eps = 1e-05,
                  learning_rate = 0.1,
                  n_class = 2, # number of class for classification
                 ):
         super(Transformer, self).__init__()
         self.id = id
-        self.has_mask = has_mask
         self.model_type = 'Transformer'
         self.emsize = emsize
-        self.mask = None
-        self.encoder = nn.Linear(num_features, emsize)
-        self.pos_encoder = Positional_Encoding(emsize, dropout)
-        encoder_layers = TransformerEncoderLayer(emsize, nhead, nhid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
-        self.decoder = nn.Linear(emsize, n_class)
-        #self.optimizer = torch.optim.AdamW(self.parameters(), lr=learning_rate)
-        self.optimizer = None
+        self.has_mask = has_mask
+        self.embed = nn.Linear(num_features, emsize)
+        # self.pos_encoder = Positional_Encoding(emsize, dropout)
+
+        encoder_layer = TransformerEncoderLayer(
+            emsize, nhead, dim_feedforward, dropout, activation, layer_norm_eps
+        )
+        self.encoder = TransformerEncoder(encoder_layer, num_encoder_layers)
+
+        decoder_layer = TransformerDecoderLayer(
+            emsize, nhead, dim_feedforward, dropout, activation, layer_norm_eps
+        )
+        self.decoder = TransformerDecoder(decoder_layer, num_decoder_layers)
+
+        self.decision = nn.Linear(emsize, n_class)
+        # original optimizer is Adam
+        self.optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate)
         self.loss_func = nn.CrossEntropyLoss()
         # init_weights
         initrange = 0.1
-        nn.init.zeros_(self.decoder.bias)
-        nn.init.uniform_(self.decoder.weight, -initrange, initrange)
+        nn.init.zeros_(self.decision.bias)
+        nn.init.uniform_(self.decision.weight, -initrange, initrange)
 
-    def _make_square_subsequent_mask(self, size):
+    def _triangular_subsequent_mask(self, sz, diagonal = -1):
+        return torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=diagonal)
+
+    def _square_subsequent_mask(self, size):
         mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
-        return mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(
-                                                                    mask == 1,
-                                                                    float(0.0)
-                                                                )
+        return mask.float(
+            ).masked_fill(mask==0,float('-inf')).masked_fill(mask==1,float(0.0))
+
+    def _reverse_square_subsequent_mask(self, size):
+        mask = (torch.triu(torch.ones(size, size)) == 1).transpose(0, 1)
+        return mask.float(
+            ).masked_fill(mask==0,float(0.0)).masked_fill(mask==1,float('-inf'))
 
     def forward(self, input):
         if self.has_mask:
-            if self.mask is None or self.mask.size(0) != len(input):
-                self.mask = self._make_square_subsequent_mask(len(input))
+            mask = self._square_subsequent_mask(len(input))
         else:
-            self.mask = None
-        input = self.encoder(input)
-        input = self.pos_encoder(input)
-        output = self.transformer_encoder(input, self.mask)
+            mask = None
+        input = self.embed(input)
+        # input = self.pos_encoder(input)
+        output = self.encoder(input, mask)
+        output = self.decoder(input, output)
         output = torch.flatten(output, start_dim = 1)
-        output = func.softmax(self.decoder(output), dim = -1)
+        output = func.softmax(self.decision(output), dim = -1)
         return output
-
 
 
 class Make(classifier.Make_Template):
