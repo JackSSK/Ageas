@@ -6,7 +6,7 @@
 Welcome to AGEAS's documentation!
 =================================
 
-**AGEAS (AutoML-based Genetics fEatrue extrAction System)** is to find key genetics factors,
+**AGEAS (AutoML-based Genetic fEatrue extrAction System)** is to find key genetic factors,
 including genes and regulatory pathways, in determining cellular phenotype.
 
 .. note::

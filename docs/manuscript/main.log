@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  26 SEP 2022 05:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  1 OCT 2022 08:40
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -819,10 +819,10 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <6> not available
 <../images/summary_trans.png, id=9, 2484.28125pt x 2789.42125pt>
 File: ../images/summary_trans.png Graphic file (type png)
 <use ../images/summary_trans.png>
-Package pdftex.def Info: ../images/summary_trans.png  used on input line 56.
+Package pdftex.def Info: ../images/summary_trans.png  used on input line 73.
 (pdftex.def)             Requested size: 400.38872pt x 449.55132pt.
 LaTeX Font Info:    Font shape `T1/phv/b/it' in size <9> not available
-(Font)              Font shape `T1/phv/b/sl' tried instead on input line 77.
+(Font)              Font shape `T1/phv/b/sl' tried instead on input line 94.
  [1
 
 {d:/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
@@ -830,10 +830,10 @@ LaTeX Font Info:    Font shape `T1/phv/b/it' in size <9> not available
 File: ../images/data_preprocess_trans.png Graphic file (type png)
 <use ../images/data_preprocess_trans.png>
 Package pdftex.def Info: ../images/data_preprocess_trans.png  used on input lin
-e 125.
+e 144.
 (pdftex.def)             Requested size: 400.38872pt x 363.3756pt.
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 1
-90.
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 2
+09.
 
 (d:/texlive/2021/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
@@ -841,21 +841,21 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 <../images/nn.png, id=47, 2271.48625pt x 1011.78pt>
 File: ../images/nn.png Graphic file (type png)
 <use ../images/nn.png>
-Package pdftex.def Info: ../images/nn.png  used on input line 243.
+Package pdftex.def Info: ../images/nn.png  used on input line 262.
 (pdftex.def)             Requested size: 400.38872pt x 178.33011pt.
- [2] [3] [4] (./main.bbl) 
+ [2] [3] [4] (./main.bbl [5]) 
 AED: lastpage setting LastPage
-[5] [6] [7 <../images/summary_trans.png>] [8 <../images/data_preprocess_trans.p
+[6] [7] [8 <../images/summary_trans.png>] [9 <../images/data_preprocess_trans.p
 ng> <../images/nn.png>] (./main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 470C7C2EA85AB2B8C18A430A4C8698A1;99.
  ) 
 Here is how much of TeX's memory you used:
- 26301 strings out of 478287
- 492438 string characters out of 5850749
- 854750 words of memory out of 5000000
- 43757 multiletter control sequences out of 15000+600000
- 560905 words of font info for 350 fonts, out of 8000000 for 9000
+ 26366 strings out of 478287
+ 493673 string characters out of 5850749
+ 853989 words of memory out of 5000000
+ 43802 multiletter control sequences out of 15000+600000
+ 561579 words of font info for 358 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,16n,91p,1001b,565s stack positions out of 5000i,500n,10000p,200000b,80000s
 {d:/texlive/2021/texmf-dist/fonts/enc/dvips/base/8r.enc}<d:/texlive/2021/texm
@@ -870,10 +870,10 @@ w/symbol/usyr.pfb><d:/texlive/2021/texmf-dist/fonts/type1/urw/times/utmb8a.pfb>
 <d:/texlive/2021/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><d:/texlive/2021/
 texmf-dist/fonts/type1/urw/times/utmr8a.pfb><d:/texlive/2021/texmf-dist/fonts/t
 ype1/urw/times/utmri8a.pfb>
-Output written on main.pdf (8 pages, 845565 bytes).
+Output written on main.pdf (9 pages, 850355 bytes).
 PDF statistics:
- 207 PDF objects out of 1000 (max. 8388607)
- 160 compressed objects within 2 object streams
- 34 named destinations out of 1000 (max. 500000)
+ 235 PDF objects out of 1000 (max. 8388607)
+ 187 compressed objects within 2 object streams
+ 42 named destinations out of 1000 (max. 500000)
  103448 words of extra memory for PDF output out of 106986 (max. 10000000)
 

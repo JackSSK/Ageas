@@ -4,7 +4,7 @@
 \usepackage{listings}
 \usepackage{algorithm2e}
 
-\title{AGEAS: Automated Machine Learning based Genetics Featrue Extraction System}
+\title{AGEAS: Automated Machine Learning based Genetic Featrue Extraction System}
 
 \author[1,2,*1,+]{Jack Yu}
 % \author[1,2,*1]{Jack Yu}
@@ -22,7 +22,7 @@
 \keywords{Machine Learning, Gene Regulatory Network, RNA-Seq, Chip-Seq}
 
 \begin{abstract}
-  Abstract goes here
+  TBD
 \end{abstract}
 
 \begin{document}
@@ -33,15 +33,32 @@
 % \noindent Please note: Abbreviations should be introduced at the first mention in the main text – no abbreviations lists. Suggested structure of main text (not enforced) is provided below.
 
 \section*{Introduction}
-
+  \label{introduction}
+  TBD
+  % If analoging regulon with the graph concept in discrete mathematics, one of the most common methods to analyze influence of a vertex, which is equivalent to a gene, is assessing correspond degree of the vertex.
+  % Although the regulatory source and target of GRP can be determined by utilizing interaction database, such as \emph{GTRD}\cite{gkaa1057} which shows regulatory relationship of interactors, numerous computational prediction methods like \emph{GRNBoost2}\cite{grnboost2} and comprehensive interaction database, \emph{BioGRID}\cite{biogrid} for example, could not provide faithful indication on regulatory directions.
+  % Consequently, based on choice of interaction database, the regulon reconstructed with \emph{AGEAS} cannot be guaranteed to be a directed graph but an undirected graph.
+  % Therefore, in this step, \emph{odysseia} primarily extracts genes with high regulatory degrees in the regulon, regardless of they act as source or target in GRPs.
+  % To limit total amount of output key genes, the default setting of \emph{AGEAS} reconstructs regulon for top 100 GRPs, and genes with regulatory degree higher than two in the regulon will be considered influential.
+  % If regulatory directions can be clarifed, the regulatory sources capable of regulating multiple key genes and the regulatory targets influenced by multiple key genes can also be extracted according to GRN reconstruction guidance.
+  %
+  % In the circumstance of finding genes potentially inducing CS conversion, referred as \emph{Mogrify}\cite{mogrify_2016}, both CS deterministic genes and common regulators of these genes shall gain attention.
+  % Herein, \emph{AGEAS} analogized key genes extracted from top GRPs as CS deterministic genes and TFs capable of regulating more than 2 listed key genes as significant common regulator.
+  %
+  % Both non-convergence issue and feature lost issue reflect on one of the key problems for $AutoML$: "No single machine learning method performs best on all datasets".\cite{NIPS2015_11d0e628}
+  % Even though this problem can be solved while viewing $AutoML$ as a $CASH$ problem \cite{thornton2013auto}, such approach may not be directly deployable in our scenario considering comprehensive CS deterministic GFs or GRPs could be hardly labeled out.
+  % Hence, in contrast with directly automating key features finding process, we decide to partially automate CS classification process and export candidate components of joint algorithm to feature importance analysis.
+  % Compared with applying a particular $ML$ model, $CASH$ solving process during automation have higher potential to utilize comprehensive key features instead limited set of them.
+  % Furthermore, due to the network-based essence of \emph{AGEAS}, some CS deterministic features failed to be detected after classification model analysis, if having close regulatory relationships with multiple confirmed GFs, can still be traced down during regulon-based analysis at post stage analysis.
 
 \section*{Method}
   \label{method}
-  The basic principle of \emph{AGEAS} is to find key genetic features regulating phenotype of interest through analyzing how well-performing classification models distinguish gene regulatory networks (GRNs) of sample with the phenotype from GRNs of samples.
-  To reconstruct sufficient GRNs for each class, RNA-seq based expression data is segmented into subsets while each one is analogized as a pseudo-sample having discrete expression data.
+  The basic principle of \emph{AGEAS} is to find key genetic features regulating phenotype of interest through analyzing how well-performing classification models distinguish gene regulatory networks (GRNs) of sample with the phenotype from GRNs of samples without.
+  To reconstruct sufficient GRNs for each class, RNA-Seq based expression data is segmented into subsets while each one is analogized as a pseudo-sample having discrete expression data.
   The pseudo-sample GRNs (psGRNs) are reconstructed accordingly; thus, classification models can be trained, evaluated, and interpreted having gene regulatory pathways (GRPs) as input factors.
-  With heavily weighted GRPs and associated genes repeatedly obtained from interpretations of success sample class predictions, regulons could be formed and inferred as genetic feature complexes playing important role in differentiating the studying sample classes.
+  With heavily weighted GRPs and associated genes repeatedly obtained from interpretations of success sample class predictions, GRNs could be formed and inferred as genetic feature complexes playing important role in differentiating the studying sample classes.
   The overall workflow can be summarized as Figure \ref{workflow}.
+  By default setting, four seperate extractor units in workflow run parallelly after data preprocessing part, and all extracted genetic features are used to form GRNs later combined into one atlas.
   Following sections describe each step of \emph{AGEAS} in more depth.
   % \begin{itemize}
   %   \item \hyperref[step1]{\textbf{\emph{Step 1}}}: Data preprocessing
@@ -61,7 +78,7 @@
     \textbf{\emph{(3)}} Select best performing classifiers in predicting class labels of pseudo-sample GRNs (psGRNs).
     \textbf{\emph{(4)}} Interpret how top models make classifications and gradually exclude GRPs with low weights or outlier-level high weights.
     \textbf{\emph{(5)}} Repeatedly train classifiers with differnt set of psGRNs as training data to extract GRPs frequently ranked as top important features for decision.
-    \textbf{\emph{(6)}} Reconstruct regulons with extracted GRPs and GRPs excluded as significant outliers.
+    \textbf{\emph{(6)}} Reconstruct GRNs with extracted GRPs and GRPs excluded as significant outliers.
   }
   \label{workflow}
   \end{figure}
@@ -83,14 +100,14 @@
       However, enabling the log2FC filter is not encouraged considering upstream transcription factors (TFs) indirectly regulating key genes associated with feature of interest may not always have significant expression level difference between sample classes.
       The lof2FC filter shall mostly be used in order to decrease meta-GRN's GRP total amount in a compromising position caused by limited computational resources.
       After differential expression based filters, a standard deviation ($\sigma$) filter is applied to exclude genes either having low expression value or merely affected by dynamic expression status of other genes.
-      By default, the $\sigma$ threshold is set to 1.0 consisting with the lowest expression level in raw gene count matrix gained from RNA-Seq data.
+      By default, the $\sigma$ threshold is set to 1.0, the lowest expression level in raw gene count matrix gained from RNA-Seq data.
       The threshold value should be adjusted corresponding to prior knowledge of input GEMs, for example of what normalization method was applied to the GEMs.
 
       With candidate genes passed filters above, some gene pairs are formed and assessed potential of representing GRPs.
       To reduce overall computational complexity, a gene pair shall be formed with at least one TF which could be the regulatory source of GRP.
       If not further specified, TF list will be retrieved from integrated \emph{TRANSFAC}\cite{transfac} datasets according to the provided species information.
       Utilizing genetic interaction database like \emph{GTRD}\cite{gkaa1057} and \emph{BioGRID}\cite{biogrid}, \emph{AGEAS} checks whether the binding ability of gene pair is confirmed or not.
-      By default, if TF being recorded to have binding site within target gene's promoter range (-1000 to +100) by Chip-Seq dataset retrieved from \emph{GTRD}\cite{gkaa1057}, the potential GRP gene pair will be passed to expression correlation assessment.
+      By default, if TF being recorded to have binding site within target gene's promoter range (-1000 to +100) by Chromatin Immunoprecipitation Sequencing (ChIP-Seq) dataset retrieved from \emph{GTRD}\cite{gkaa1057}, the potential GRP gene pair will be passed to expression correlation assessment.
       For TFs not covered by interaction database, \emph{GRNBoost2}\cite{grnboost2}-like algorithm is initiated to predict potential regulatory target genes.
       The prediction importance threshold can either be set manually or automatically based on recorded interactions as:
 
@@ -117,7 +134,9 @@
       If sample amount is considerably low or imbalanced, customized window size and padding stride can be applied to generate sufficient amount of pseudo-samples for later classifier training and assessment processes.
       Utilizing meta-GRN, psGRNs are reconstructed with GEMs of pseudo-sample.
       Each GRP gene pair in meta-GRN is formed with expression data in pseudo-sample and filtered by same PCC filter in meta-GRN reconstruction process.
-      After all pseudo-samples have been used to reconstruct psGRN, every psGRN will have GRP rearranged by unified order.
+
+      After all pseudo-samples have been used to reconstruct psGRN, every psGRN can be represented as matrix comprising GRPs' PCC values and corresponding genes' expression values.
+      The order of GRPs in each psGRN is also unified through adding GRPs included in other psGRNs with 0.0 PCC value.
 
     \begin{figure}[ht]
       \centering
@@ -200,7 +219,7 @@
       \specialrule{.2em}{.1em}{.1em}
       \textbf{Algorithm} & \textbf{$\# \lambda$} & \textbf{Categorical} & \textbf{Continuous} & \textbf{$\#$ Configs}\\
       \specialrule{.2em}{.1em}{.1em}
-      \multicolumn{5}{|l|}{\emph{Implemented with Pytorch}\cite{NEURIPS2019_9015}} \\
+      \multicolumn{5}{|l|}{\emph{Implemented with Pytorch}\cite{pytorch}} \\
       \hline
       Transformer & \textbf{14} & 4 & 10 & 32 \\
       \hline
@@ -332,11 +351,11 @@
 
   \subsection*{Step 4: Top GRP extraction}
     \label{step4}
-    To extract GRPs can effectively define sample class differences, \emph{AGEAS} iteratively initializes classification models with configurations gained from \hyperref[step2]{Step 2}, trains them with varying $\alpha_{max}$ portion of psGRNs scaled after \hyperref[step3]{Step 3}, and interpret every models' correct predictions as mentioned in \hyperref[features_importances]{subsection} above.
+    To extract GRPs can effectively define sample class differences, \emph{AGEAS} iteratively initializes classification models with configurations gained from \hyperref[step2]{Step 2}, trains them with randomly selected $\alpha_{max}$ portion of psGRNs scaled after \hyperref[step3]{Step 3}, and interpret every models' correct predictions as mentioned in \hyperref[features_importances]{subsection} above.
     At each iteration, \emph{AGEAS} receives a z-score scaled feature importance matrix $A$ and add up each GRP's score accordingly from matrix $A'$ kept from previous iteration if there is one.
     Then, top $a$ (default set as 100) ranked GRPs having z-score greater than $0.0$ extracted from $A$ are compared with GRPs extracted from $A'$ by same setting.
-    If less than $d$ (default set as 0.05) portion of GRPs are distinct for GRP sets stratified from $A$ and $A'$, \emph{AGEAS} will consider the GRP extration result from this iteration consists with previous one.
-    Extraction iteration will terminate if either encountering $n$ (default set as 3) continuous consisting result or running out of preset iteration number (default set as 10).
+    If less than $d$ (default set as 0.05) portion of GRPs are distinct for GRP sets stratified from $A$ and $A'$, \emph{AGEAS} will consider the GRP extration result from this iteration being consistent with previous one.
+    Extraction iteration will terminate if either encountering $n$ (default set as 3) continuous consistent result or running out of preset iteration number (default set as 10).
     All feature importance scores in matrix $A$ from last iteration are divided by total extraction iteration number processed, and top $a$ ranked GRPs are considered as key GRPs for sample class differentiation and passed to next step.
 
   \subsection*{Step 5: Key network reconstruction}
@@ -350,28 +369,174 @@
     The network graph after expansion above represents the key genetic regulatory differences \emph{AGEAS} extracted from input sample classes.
 
 
-  % With feature list ranked according to importance values, \emph{AGEAS} reconstructs regulon for top-ranked GRPs and extracts influential genes among the regulon.
-  % If analoging regulon with the graph concept in discrete mathematics, one of the most common methods to analyze influence of a vertex, which is equivalent to a gene, is assessing correspond degree of the vertex.
-  % Although the regulatory source and target of GRP can be determined by utilizing interaction database, such as \emph{GTRD}\cite{gkaa1057} which shows regulatory relationship of interactors, numerous computational prediction methods like \emph{GRNBoost2}\cite{grnboost2} and comprehensive interaction database, \emph{BioGRID}\cite{biogrid} for example, could not provide faithful indication on regulatory directions.
-  % Consequently, based on choice of interaction database, the regulon reconstructed with \emph{AGEAS} cannot be guaranteed to be a directed graph but an undirected graph.
-  % Therefore, in this step, \emph{odysseia} primarily extracts genes with high regulatory degrees in the regulon, regardless of they act as source or target in GRPs.
-  % To limit total amount of output key genes, the default setting of \emph{AGEAS} reconstructs regulon for top 100 GRPs, and genes with regulatory degree higher than two in the regulon will be considered influential.
-  % If regulatory directions can be clarifed, the regulatory sources capable of regulating multiple key genes and the regulatory targets influenced by multiple key genes can also be extracted according to GRN reconstruction guidance.
-  %
-  % In the circumstance of finding genes potentially inducing CS conversion, referred as \emph{Mogrify}\cite{mogrify_2016}, both CS deterministic genes and common regulators of these genes shall gain attention.
-  % Herein, \emph{AGEAS} analogized key genes extracted from top GRPs as CS deterministic genes and TFs capable of regulating more than 2 listed key genes as significant common regulator.
-  %
-  % Both non-convergence issue and feature lost issue reflect on one of the key problems for $AutoML$: "No single machine learning method performs best on all datasets".\cite{NIPS2015_11d0e628}
-  % Even though this problem can be solved while viewing $AutoML$ as a $CASH$ problem \cite{thornton2013auto}, such approach may not be directly deployable in our scenario considering comprehensive CS deterministic GFs or GRPs could be hardly labeled out.
-  % Hence, in contrast with directly automating key features finding process, we decide to partially automate CS classification process and export candidate components of joint algorithm to feature importance analysis.
-  % Compared with applying a particular $ML$ model, $CASH$ solving process during automation have higher potential to utilize comprehensive key features instead limited set of them.
-  % Furthermore, due to the network-based essence of \emph{AGEAS}, some CS deterministic features failed to be detected after classification model analysis, if having close regulatory relationships with multiple confirmed GFs, can still be traced down during regulon-based analysis at post stage analysis.
-
-
 \section*{Results}
   \label{res}
+  To assess \emph{AGEAS}'s predictive power, we first applied \emph{AGEAS} to study somatic reprogramming to induced pluripotent stem cells (iPSC) achieved in mice by
+  the year 2006 \cite{yamanaka_2006}, milestone discovery of cell plasticity \cite{cell_repro_review}.
+  With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, single-cell RNA sequencing (scRNA-Seq) based gene expression matrices (GEMs) of embryonic stem cell (ESC) and mouse embryonic fibroblast (MEF) were used as input.
+  The extraction result is summarized as TF regulons, collections of a TF and corresponding direct regulatory targets, in ... % fig ../images/mef_esc.png
+  Since Pou5f1 (Oct4), Nanog, and Sox2 not only are forming sizeable regulons with extracted GRPs but also have most significant expression changes between MEF and ESC, we can infer them as important factors closely related with cell type differences.
+  Multiple previous studies have confirmed that all of Oct4, Nanog, and Sox2 are playing important role in maintaing pluripotency \cite{niwa_2007} and inducing cell conversion \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}.
+
+  To further address \emph{AGEAS}'s applicability and limitation,
+
+  radial glial coculture to dopaminergic neurons...
+  
+  Postnatal p7-p28 cardiomyocyte mature
+
+  HSC activation in CCl4 injury model
+
+  To demonstrate empirically the predictive capabilities...
 
 
+  % \begin{table}[ht]
+  %     \centering
+  %     \begin{tabular}{|l|l|l|l|}
+  %       \hline
+  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
+  %       \hline
+  %
+  %       Pou5f1 (Oct4) & ESC & 13.36 & The Yamanaka factor\cite{yamanaka_2006} \\
+  %       \hline
+  %       Cebpb & MEF & 2.24 & part of the AP-1 complex network \\
+  %       \hline
+  %       Nanog & ESC & 10.46 & Can reprogram MEF into iPSC with other GFs\cite{ips7f, oct4_nanog_sox2_lin28, oct4_nanog_sox2} \\
+  %       \hline
+  %       Sox2 & ESC & 9.64 & The Yamanaka factor\cite{yamanaka_2006} \\
+  %       \hline
+  %       Junb & MEF & 0.17 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
+  %       \hline
+  %       Jun & MEF & 0.45 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
+  %       \hline
+  %       Jund & ESC & 1.38 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
+  %       \hline
+  %       Hdca2 & ESC & 1.01 & Knockdown of Hdac2 improves OSKM-mediated iPS cell generation \\
+  %       \hline
+  %       Twist2 & MEF & 3.64 & fibroblastic master gene\\
+  %       \hline
+  %       Fos & MEF & 0.58 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
+  %       \hline
+  %       Klf4+39 & ESC & 2.71 & The Yamanaka factor\cite{yamanaka_2006} \\
+  %
+  %       \hline
+  %     \end{tabular}
+  %     \caption{
+  %       \label{mef_esc_result}
+  %       In total of 47 Genes
+  %     }
+  % \end{table}
+  %
+  % \begin{table}[ht]
+  %     \centering
+  %     \begin{tabular}{|l|l|l|l|}
+  %       \hline
+  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
+  %       \hline
+  %
+  %       EBF1 & 1 & 2.91 & sth \\
+  %       \hline
+  %       PBX3 & 2 & 3.02 & sss \\
+  %       \hline
+  %       NR3C1 & 3 & 0.40 & sss \\
+  %       \hline
+  %       SOX2 & 4 & 2.94 & sss \\
+  %       \hline
+  %       ELF3 & 5 & 5.91 & sss \\
+  %       \hline
+  %       ISL1 & 6 & 9.13 & sss \\
+  %       \hline
+  %       CEBPD & 7 & 3.20 & sss \\
+  %       \hline
+  %       MAZ & 8 & 1.00 & sss \\
+  %       \hline
+  %       PHOX2B & 9 & 7.38 & sss\\
+  %       \hline
+  %       FOXP1 & 10 & 0.12 & sss \\
+  %       \hline
+  %       ASCL1 & 12 & 0.30 & sss \\
+  %       \hline
+  %       NEUROD1 & 59 & 1.26 & sss \\
+  %
+  %       \hline
+  %     \end{tabular}
+  %     \caption{
+  %       \label{neuron_result}
+  %       In total of 68 Genes
+  %     }
+  % \end{table}
+  %
+  % \begin{table}[ht]
+  %     \centering
+  %     \begin{tabular}{|l|l|l|l|}
+  %       \hline
+  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
+  %       \hline
+  %
+  %       Sp1 & 1 & 4.68 & sth \\
+  %       \hline
+  %       Esr1 & 2 & 4.63 & sss \\
+  %       \hline
+  %       Srf & 3 & 0.02 & sss \\
+  %       \hline
+  %       Cebpb & 4 & 2.53 & sss \\
+  %       \hline
+  %       Nfe2l2 & 5 & 0.38 & sss \\
+  %       \hline
+  %       Nfib & 6 & 1.87 & sss \\
+  %       \hline
+  %       Cbfb & 7 & 0.16 & sss \\
+  %       \hline
+  %       Fosl2 & 8 & 0.64 & sss \\
+  %       \hline
+  %       Nkx2-5 & 9 & 0.06 & cardiac-specific structural genes\\
+  %       \hline
+  %       Rest & 10 & 1.67 & sss \\
+  %
+  %
+  %       \hline
+  %     \end{tabular}
+  %     \caption{
+  %       \label{CMp7p28_result}
+  %       In total of 119 Genes
+  %     }
+  % \end{table}
+  %
+  %
+  % \begin{table}[ht]
+  %     \centering
+  %     \begin{tabular}{|l|l|l|l|}
+  %       \hline
+  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
+  %       \hline
+  %
+  %       Mef2c & 1 & 1.82 & sth \\
+  %       \hline
+  %       Jun & 2 & 0.55 & sss \\
+  %       \hline
+  %       Jund & 3 & 0.37 & sss \\
+  %       \hline
+  %       Klf4 & 4 & 0.23 & sss \\
+  %       \hline
+  %       Ebf1 & 5 & 6.33 & sss \\
+  %       \hline
+  %       Fos & 6 & 0.32 & sss \\
+  %       \hline
+  %       Hand2 & 7 & 2.59 & sss \\
+  %       \hline
+  %       Lhx2 & 8 & 7.02 & sss \\
+  %       \hline
+  %       Nfib & 9 & 0.65 & sss\\
+  %       \hline
+  %       Nr4a1 & 10 & 0.07 & sss \\
+  %
+  %
+  %       \hline
+  %     \end{tabular}
+  %     \caption{
+  %       \label{ccl4liver_result}
+  %       In total of 35 Genes
+  %     }
+  % \end{table}
 
 \section*{Discussion}
   \label{disc}
@@ -391,7 +556,7 @@
 \textbf{J.T.}: Writing - Review \& Editing, Project administration
 
 \section*{Additional information}
-All scRNA-seq datasets are retrieved from Gene Expression Omnibus(GEO) as described in the Table below.
+All scRNA-Seq datasets are retrieved from Gene Expression Omnibus(GEO) as described in the Table below.
 
 \begin{table}[ht]
   \centering

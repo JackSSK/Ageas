@@ -84,7 +84,7 @@
   \bibinfo{pages}{29–36}, \doiprefix\url{10.1148/radiology.143.1.7063747}
   (\bibinfo{year}{1982}).
 
-\bibitem{NEURIPS2019_9015}
+\bibitem{pytorch}
 \bibinfo{author}{Paszke, A.} \emph{et~al.}
 \newblock \bibinfo{title}{Pytorch: An imperative style, high-performance deep
   learning library}.
@@ -133,5 +133,63 @@
 \newblock In \emph{\bibinfo{booktitle}{Proceedings of the 31st international
   conference on neural information processing systems}},
   \bibinfo{pages}{4768--4777} (\bibinfo{year}{2017}).
+
+\bibitem{yamanaka_2006}
+\bibinfo{author}{Takahashi, K.} \& \bibinfo{author}{Yamanaka, S.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Induction of pluripotent stem cells
+  from mouse embryonic and adult fibroblast cultures by defined factors}}.
+\newblock {\emph{\JournalTitle{Cell}}} \textbf{\bibinfo{volume}{126}},
+  \bibinfo{pages}{663–676}, \doiprefix\url{10.1016/j.cell.2006.07.024}
+  (\bibinfo{year}{2006}).
+
+\bibitem{cell_repro_review}
+\bibinfo{author}{Wang, H.}, \bibinfo{author}{Yang, Y.}, \bibinfo{author}{Liu,
+  J.} \& \bibinfo{author}{Qian, L.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Direct cell reprogramming:
+  Approaches, mechanisms and progress}}.
+\newblock {\emph{\JournalTitle{Nature Reviews Molecular Cell Biology}}}
+  \textbf{\bibinfo{volume}{22}}, \bibinfo{pages}{410–424},
+  \doiprefix\url{10.1038/s41580-021-00335-z} (\bibinfo{year}{2021}).
+
+\bibitem{niwa_2007}
+\bibinfo{author}{Niwa, H.}
+\newblock \bibinfo{journal}{\bibinfo{title}{How is pluripotency determined and
+  maintained?}}
+\newblock {\emph{\JournalTitle{Development}}} \textbf{\bibinfo{volume}{134}},
+  \bibinfo{pages}{635–646}, \doiprefix\url{10.1242/dev.02787}
+  (\bibinfo{year}{2007}).
+
+\bibitem{ips7f}
+\bibinfo{author}{Wang, B.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Induction of pluripotent stem cells
+  from mouse embryonic fibroblasts by
+  jdp2-jhdm1b-mkk6-glis1-nanog-essrb-sall4}}.
+\newblock {\emph{\JournalTitle{Cell Reports}}} \textbf{\bibinfo{volume}{27}},
+  \doiprefix\url{10.1016/j.celrep.2019.05.068} (\bibinfo{year}{2019}).
+
+\bibitem{ipsOK}
+\bibinfo{author}{Shi, Y.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Induction of pluripotent stem cells
+  from mouse embryonic fibroblasts by oct4 and klf4 with small-molecule
+  compounds}}.
+\newblock {\emph{\JournalTitle{Cell Stem Cell}}} \textbf{\bibinfo{volume}{3}},
+  \bibinfo{pages}{568–574}, \doiprefix\url{10.1016/j.stem.2008.10.004}
+  (\bibinfo{year}{2008}).
+
+\bibitem{oct4_nanog_sox2_lin28}
+\bibinfo{author}{Yu, J.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Induced pluripotent stem cell lines
+  derived from human somatic cells}}.
+\newblock {\emph{\JournalTitle{Science}}} \textbf{\bibinfo{volume}{318}},
+  \bibinfo{pages}{1917–1920}, \doiprefix\url{10.1126/science.1151526}
+  (\bibinfo{year}{2007}).
+
+\bibitem{oct4_nanog_sox2}
+\bibinfo{author}{Wang, Y.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Reprogramming of mouse and human
+  somatic cells by high‐performance engineered factors}}.
+\newblock {\emph{\JournalTitle{EMBO reports}}} \textbf{\bibinfo{volume}{12}},
+  \bibinfo{pages}{373–378}, \doiprefix\url{10.1038/embor.2011.11}
+  (\bibinfo{year}{2011}).
 
 \end{thebibliography}

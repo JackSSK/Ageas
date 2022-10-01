@@ -27,6 +27,7 @@
 \citation{grnboost2}
 \providecommand \oddpage@label [2]{}
 \babel@aux{english}{}
+\newlabel{introduction}{{}{1}{}{Doc-Start}{}}
 \newlabel{method}{{}{1}{}{Doc-Start}{}}
 \newlabel{step1}{{}{1}{}{figure.caption.1}{}}
 \citation{grnboost2}
@@ -36,12 +37,12 @@
 \citation{grnboost2}
 \citation{hyperband}
 \citation{hanley_mcneil_1982}
-\citation{NEURIPS2019_9015}
+\citation{pytorch}
 \citation{chen2016xgboost}
 \citation{scikit-learn}
 \citation{mostavi_chiu_huang_chen_2020}
-\citation{transformer}
 \newlabel{step2}{{}{2}{}{figure.caption.2}{}}
+\citation{transformer}
 \citation{roth_1988}
 \citation{lundberg2017unified}
 \@writefile{loa}{\contentsline {algocf}{\numberline {1}{\ignorespaces Model selection algorithm\relax }}{3}{algocf.1}\protected@file@percent }
@@ -58,6 +59,10 @@
 \@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces   Classifier algorithms with applicable Shapley value approximating methods. Algorithms marked with \textbf  {*} have internalized feature importance estimating methods which will be applied with higher priority than Shapley value based methods. GBDT implemented with \emph  {XGBoost}\cite  {chen2016xgboost} can have feature importance approximated with average weight gain at each split involving the feature. Linear SVM implemented with \emph  {scikit-learn}\cite  {scikit-learn} can have the importance estimated with feature coefficient or using Linear Explainer. However, for SVM with kernel function, the feature coefficient estimation would be inappropriate, and feature importances should be approximated with Kernel Explainer. \relax }}{4}{table.caption.6}\protected@file@percent }
 \newlabel{shap}{{2}{4}{Classifier algorithms with applicable Shapley value approximating methods. Algorithms marked with \textbf {*} have internalized feature importance estimating methods which will be applied with higher priority than Shapley value based methods. GBDT implemented with \emph {XGBoost}\cite {chen2016xgboost} can have feature importance approximated with average weight gain at each split involving the feature. Linear SVM implemented with \emph {scikit-learn}\cite {scikit-learn} can have the importance estimated with feature coefficient or using Linear Explainer. However, for SVM with kernel function, the feature coefficient estimation would be inappropriate, and feature importances should be approximated with Kernel Explainer. \relax }{table.caption.6}{}}
 \newlabel{step4}{{}{4}{}{table.caption.6}{}}
+\citation{yamanaka_2006}
+\citation{cell_repro_review}
+\citation{niwa_2007}
+\citation{yamanaka_2006,ips7f,ipsOK,oct4_nanog_sox2_lin28,oct4_nanog_sox2}
 \bibdata{reference}
 \bibcite{2020SciPy-NMeth}{1}
 \bibcite{transfac}{2}
@@ -68,28 +73,35 @@
 \bibcite{cid_2019}{7}
 \bibcite{hyperband}{8}
 \bibcite{hanley_mcneil_1982}{9}
-\bibcite{NEURIPS2019_9015}{10}
+\newlabel{step5}{{}{5}{}{table.caption.6}{}}
+\newlabel{res}{{}{5}{}{table.caption.6}{}}
+\newlabel{disc}{{}{5}{}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {section}{\hspace  *{-\tocsep }References}{5}{table.caption.6}\protected@file@percent }
+\bibcite{pytorch}{10}
 \bibcite{chen2016xgboost}{11}
 \bibcite{scikit-learn}{12}
 \bibcite{mostavi_chiu_huang_chen_2020}{13}
 \bibcite{transformer}{14}
 \bibcite{roth_1988}{15}
 \bibcite{lundberg2017unified}{16}
-\newlabel{step5}{{}{5}{}{table.caption.6}{}}
-\newlabel{res}{{}{5}{}{table.caption.6}{}}
-\newlabel{disc}{{}{5}{}{table.caption.6}{}}
-\@writefile{toc}{\contentsline {section}{\hspace  *{-\tocsep }References}{5}{table.caption.6}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces   GEO data source table. \relax }}{6}{table.caption.7}\protected@file@percent }
-\newlabel{geo_table}{{3}{6}{GEO data source table. \relax }{table.caption.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces  The overall workflow of \emph  {AGEAS}: \textbf  {\emph  {(1)}} Reconstruct meta-level GRN (meta-GRN) with expression data of all samples. \textbf  {\emph  {(2)}} Build pseudo-samples with sliding window algorithm and reconstruct GRNs with GRPs identified in meta-GRN accordingly. \textbf  {\emph  {(3)}} Select best performing classifiers in predicting class labels of pseudo-sample GRNs (psGRNs). \textbf  {\emph  {(4)}} Interpret how top models make classifications and gradually exclude GRPs with low weights or outlier-level high weights. \textbf  {\emph  {(5)}} Repeatedly train classifiers with differnt set of psGRNs as training data to extract GRPs frequently ranked as top important features for decision. \textbf  {\emph  {(6)}} Reconstruct regulons with extracted GRPs and GRPs excluded as significant outliers. \relax }}{7}{figure.caption.1}\protected@file@percent }
+\bibcite{yamanaka_2006}{17}
+\bibcite{cell_repro_review}{18}
+\bibcite{niwa_2007}{19}
+\bibcite{ips7f}{20}
+\bibcite{ipsOK}{21}
+\bibcite{oct4_nanog_sox2_lin28}{22}
+\bibcite{oct4_nanog_sox2}{23}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces   GEO data source table. \relax }}{7}{table.caption.7}\protected@file@percent }
+\newlabel{geo_table}{{3}{7}{GEO data source table. \relax }{table.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces  The overall workflow of \emph  {AGEAS}: \textbf  {\emph  {(1)}} Reconstruct meta-level GRN (meta-GRN) with expression data of all samples. \textbf  {\emph  {(2)}} Build pseudo-samples with sliding window algorithm and reconstruct GRNs with GRPs identified in meta-GRN accordingly. \textbf  {\emph  {(3)}} Select best performing classifiers in predicting class labels of pseudo-sample GRNs (psGRNs). \textbf  {\emph  {(4)}} Interpret how top models make classifications and gradually exclude GRPs with low weights or outlier-level high weights. \textbf  {\emph  {(5)}} Repeatedly train classifiers with differnt set of psGRNs as training data to extract GRPs frequently ranked as top important features for decision. \textbf  {\emph  {(6)}} Reconstruct GRNs with extracted GRPs and GRPs excluded as significant outliers. \relax }}{8}{figure.caption.1}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{workflow}{{1}{7}{The overall workflow of \emph {AGEAS}: \textbf {\emph {(1)}} Reconstruct meta-level GRN (meta-GRN) with expression data of all samples. \textbf {\emph {(2)}} Build pseudo-samples with sliding window algorithm and reconstruct GRNs with GRPs identified in meta-GRN accordingly. \textbf {\emph {(3)}} Select best performing classifiers in predicting class labels of pseudo-sample GRNs (psGRNs). \textbf {\emph {(4)}} Interpret how top models make classifications and gradually exclude GRPs with low weights or outlier-level high weights. \textbf {\emph {(5)}} Repeatedly train classifiers with differnt set of psGRNs as training data to extract GRPs frequently ranked as top important features for decision. \textbf {\emph {(6)}} Reconstruct regulons with extracted GRPs and GRPs excluded as significant outliers. \relax }{figure.caption.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces  Workflow to reconstruct meta-GRN and psGRNs. \textbf  {\emph  {(1)}} Filter genes from GEMs with log2FC filter(optional), MWW filter, and $\sigma $ filter. \textbf  {\emph  {(2)}} Find candidate GRP gene pairs from either interaction database or predictions made by \emph  {GRNBoost2}\cite  {grnboost2}-like algorithm. \textbf  {\emph  {(3)}} Filter candidate GRP gene pairs with PCC filter and reconstruct meta-GRN with validated GRPs. \textbf  {\emph  {(4)}} Generate pseudo-samples with SWA. \textbf  {\emph  {(5)}} Utilize GRPs in meta-GRN as generic guidance to form candidate GRPs for pseudo-samples. \textbf  {\emph  {(6)}} Filter every candidate GRP for all pseudo-samples with PCC filter and reconstruct psGRNs with validated GRPs. \relax }}{8}{figure.caption.2}\protected@file@percent }
-\newlabel{data_preprocess}{{2}{8}{Workflow to reconstruct meta-GRN and psGRNs. \textbf {\emph {(1)}} Filter genes from GEMs with log2FC filter(optional), MWW filter, and $\sigma $ filter. \textbf {\emph {(2)}} Find candidate GRP gene pairs from either interaction database or predictions made by \emph {GRNBoost2}\cite {grnboost2}-like algorithm. \textbf {\emph {(3)}} Filter candidate GRP gene pairs with PCC filter and reconstruct meta-GRN with validated GRPs. \textbf {\emph {(4)}} Generate pseudo-samples with SWA. \textbf {\emph {(5)}} Utilize GRPs in meta-GRN as generic guidance to form candidate GRPs for pseudo-samples. \textbf {\emph {(6)}} Filter every candidate GRP for all pseudo-samples with PCC filter and reconstruct psGRNs with validated GRPs. \relax }{figure.caption.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces 1D-CNN with 2 convolution layer set.\relax }}{8}{figure.caption.5}\protected@file@percent }
-\newlabel{1dCNN}{{3}{8}{1D-CNN with 2 convolution layer set.\relax }{figure.caption.5}{}}
-\newlabel{LastPage}{{}{8}{}{page.8}{}}
-\xdef\lastpage@lastpage{8}
-\xdef\lastpage@lastpageHy{8}
+\newlabel{workflow}{{1}{8}{The overall workflow of \emph {AGEAS}: \textbf {\emph {(1)}} Reconstruct meta-level GRN (meta-GRN) with expression data of all samples. \textbf {\emph {(2)}} Build pseudo-samples with sliding window algorithm and reconstruct GRNs with GRPs identified in meta-GRN accordingly. \textbf {\emph {(3)}} Select best performing classifiers in predicting class labels of pseudo-sample GRNs (psGRNs). \textbf {\emph {(4)}} Interpret how top models make classifications and gradually exclude GRPs with low weights or outlier-level high weights. \textbf {\emph {(5)}} Repeatedly train classifiers with differnt set of psGRNs as training data to extract GRPs frequently ranked as top important features for decision. \textbf {\emph {(6)}} Reconstruct GRNs with extracted GRPs and GRPs excluded as significant outliers. \relax }{figure.caption.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces  Workflow to reconstruct meta-GRN and psGRNs. \textbf  {\emph  {(1)}} Filter genes from GEMs with log2FC filter(optional), MWW filter, and $\sigma $ filter. \textbf  {\emph  {(2)}} Find candidate GRP gene pairs from either interaction database or predictions made by \emph  {GRNBoost2}\cite  {grnboost2}-like algorithm. \textbf  {\emph  {(3)}} Filter candidate GRP gene pairs with PCC filter and reconstruct meta-GRN with validated GRPs. \textbf  {\emph  {(4)}} Generate pseudo-samples with SWA. \textbf  {\emph  {(5)}} Utilize GRPs in meta-GRN as generic guidance to form candidate GRPs for pseudo-samples. \textbf  {\emph  {(6)}} Filter every candidate GRP for all pseudo-samples with PCC filter and reconstruct psGRNs with validated GRPs. \relax }}{9}{figure.caption.2}\protected@file@percent }
+\newlabel{data_preprocess}{{2}{9}{Workflow to reconstruct meta-GRN and psGRNs. \textbf {\emph {(1)}} Filter genes from GEMs with log2FC filter(optional), MWW filter, and $\sigma $ filter. \textbf {\emph {(2)}} Find candidate GRP gene pairs from either interaction database or predictions made by \emph {GRNBoost2}\cite {grnboost2}-like algorithm. \textbf {\emph {(3)}} Filter candidate GRP gene pairs with PCC filter and reconstruct meta-GRN with validated GRPs. \textbf {\emph {(4)}} Generate pseudo-samples with SWA. \textbf {\emph {(5)}} Utilize GRPs in meta-GRN as generic guidance to form candidate GRPs for pseudo-samples. \textbf {\emph {(6)}} Filter every candidate GRP for all pseudo-samples with PCC filter and reconstruct psGRNs with validated GRPs. \relax }{figure.caption.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces 1D-CNN with 2 convolution layer set.\relax }}{9}{figure.caption.5}\protected@file@percent }
+\newlabel{1dCNN}{{3}{9}{1D-CNN with 2 convolution layer set.\relax }{figure.caption.5}{}}
+\newlabel{LastPage}{{}{9}{}{page.9}{}}
+\xdef\lastpage@lastpage{9}
+\xdef\lastpage@lastpageHy{9}
 \ttl@finishall
-\gdef \@abspage@last{8}
+\gdef \@abspage@last{9}
