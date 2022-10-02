@@ -3,6 +3,9 @@
 \usepackage[T1]{fontenc}
 \usepackage{listings}
 \usepackage{algorithm2e}
+\usepackage{subcaption}
+\usepackage[labelformat=parens,labelsep=quad,skip=3pt]{caption}
+\usepackage{graphicx}
 
 \title{AGEAS: Automated Machine Learning based Genetic Featrue Extraction System}
 
@@ -374,57 +377,80 @@
   To assess \emph{AGEAS}'s predictive power, we first applied \emph{AGEAS} to study somatic reprogramming to induced pluripotent stem cells (iPSC) achieved in mice by
   the year 2006 \cite{yamanaka_2006}, milestone discovery of cell plasticity \cite{cell_repro_review}.
   With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, single-cell RNA sequencing (scRNA-Seq) based gene expression matrices (GEMs) of embryonic stem cell (ESC) and mouse embryonic fibroblast (MEF) were used as input.
-  The extraction result is summarized as TF regulons, collections of a TF and corresponding direct regulatory targets, in ... % fig ../images/mef_esc.png
-  Since Pou5f1 (Oct4), Nanog, and Sox2 not only are forming sizeable regulons with extracted GRPs but also have most significant expression changes between MEF and ESC, we can infer them as important factors closely related with cell type differences.
-  Multiple previous studies have confirmed that all of Oct4, Nanog, and Sox2 are playing important role in maintaing pluripotency \cite{niwa_2007} and inducing cell conversion \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}.
+  The extraction result can be summarized as TF regulons, collections of a TF and corresponding direct regulatory targets, and TFs forming largest regulons with extracted GRPs are shown in Figure \ref{result_figs}(a).
+  Among TFs with sizeable regulons, Pou5f1 (Oct4), Nanog, and Sox2 also have most significant expression changes between MEF and ESC.
+  Thus, we can infer these TFs as import factors closely related with cell type differences.
+  Multiple previous studies have confirmed that all of Oct4, Nanog, and Sox2 are playing important role in maintaing pluripotency \cite{niwa_2007} and inducing conversion from somatic cell to iPSC \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}.
 
-  To further address \emph{AGEAS}'s applicability and limitation,
+  To further address \emph{AGEAS}'s applicability and limitation, we applied \emph{AGEAS} to three other scRNA-Seq based studies in distinct research areas.
+  With all default settings and analytical procedure applied above, we can assess \emph{AGEAS}'s performance in following scenarios:
 
-  radial glial coculture to dopaminergic neurons...
-  
-  Postnatal p7-p28 cardiomyocyte mature
+  \subsection*{Dopaminergic neuron generation}
+  (Cell subtype differentiation)
+  iPSC-derived radial glial/neuronal co-culture to dopaminergic (DA) neurons...
+  ISL1: essential functions of Isl1 in prethalamic dopaminergic neuron development
+  % doi:10.1016/j.ydbio.2012.06.010
+  PHOX2B: Phox2b Influences Dopaminergic Development
+  % https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3522650/pdf/pone.0052118.pdf
+  ELF3: ELF3 was found to be associated with mouse neural stem cell development
+  % (Tang, Y.; Katuri, V.; Iqbal, S.; Narayan, T.; Wang, Z.; Lu, R.S.; Mishra, L.; Mishra, B. ELF a β-spectrin is a neuronal precursor cell marker in developing mammalian brain; structure and organization of the elf/β-G spectrin gene. Oncogene 2002, 21, 5255–5267.)
+  (ASCL1 also extracted as 12th but not having significant exp change -> how to better analysis result)
 
-  HSC activation in CCl4 injury model
+  \subsection*{Postnatal cardiomyocyte maturation}
+  (Physiological development)
+  Postnatal CM p7 to p28
+  Esr1: estrogenic regulation for normal myocardial development was primarily via ER-alpha(Esr1)
+  % (10.1016/j.mce.2013.11.011)
+  % (http://dx.doi.org/10.1016/j.mce.2013.11.011)
+  Cebpb: The Transcription Factor CEBP-beta Serves as a Master Regulator of physiologic Cardiac Hypertrophy
+  % (Cell. 2010;143:1072–1083)
+  % (Originally published4 Feb 2011https://doi.org/10.1161/RES.0b013e31820ff484Circulation Research. 2011;108:277–278)
+  Sp1:
 
-  To demonstrate empirically the predictive capabilities...
+  \subsection*{Hepatic stellate cell activation in $CCl_4$ acute liver model}
+  (Pathological development)
+  HSCs p6w vs PFs p6w analoging activated HSCs
+  Lhx2
+  Osr1
+  Ebf1
 
+  \begin{figure}
+    \begin{subfigure}{0.49\linewidth}
+      \centering
+      \includegraphics[width=\linewidth, keepaspectratio,]{../images/MEF_ESC_top.png}
+      \caption{}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+      \centering
+      \includegraphics[width=\linewidth, keepaspectratio,]{../images/N_cocul_top.png}
+      \caption{}
+    \end{subfigure}
 
-  % \begin{table}[ht]
-  %     \centering
-  %     \begin{tabular}{|l|l|l|l|}
-  %       \hline
-  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
-  %       \hline
-  %
-  %       Pou5f1 (Oct4) & ESC & 13.36 & The Yamanaka factor\cite{yamanaka_2006} \\
-  %       \hline
-  %       Cebpb & MEF & 2.24 & part of the AP-1 complex network \\
-  %       \hline
-  %       Nanog & ESC & 10.46 & Can reprogram MEF into iPSC with other GFs\cite{ips7f, oct4_nanog_sox2_lin28, oct4_nanog_sox2} \\
-  %       \hline
-  %       Sox2 & ESC & 9.64 & The Yamanaka factor\cite{yamanaka_2006} \\
-  %       \hline
-  %       Junb & MEF & 0.17 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
-  %       \hline
-  %       Jun & MEF & 0.45 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
-  %       \hline
-  %       Jund & ESC & 1.38 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
-  %       \hline
-  %       Hdca2 & ESC & 1.01 & Knockdown of Hdac2 improves OSKM-mediated iPS cell generation \\
-  %       \hline
-  %       Twist2 & MEF & 3.64 & fibroblastic master gene\\
-  %       \hline
-  %       Fos & MEF & 0.58 & Subunit of AP-1 which can prohibit iPSC reprogramming\cite{ips7f, ipsAP1} \\
-  %       \hline
-  %       Klf4+39 & ESC & 2.71 & The Yamanaka factor\cite{yamanaka_2006} \\
-  %
-  %       \hline
-  %     \end{tabular}
-  %     \caption{
-  %       \label{mef_esc_result}
-  %       In total of 47 Genes
-  %     }
-  % \end{table}
+    \begin{subfigure}{0.49\linewidth}
+      \centering
+      \includegraphics[width=\linewidth, keepaspectratio,]{../images/CMp7d_CMp28d_top.png}
+      \caption{}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+      \centering
+      \includegraphics[width=\linewidth, keepaspectratio,]{../images/HSCp6w_PFp6w_top.png}
+      \caption{}
+    \end{subfigure}
+
+    \caption{
+      TFs forming largest regulons with GRPs extracted by \emph{AGEAS}.
+      Each TF has regulon size indicating amount of direct regulatory genes and $log_2$ gene expression levels in binary sample classes.
+      \textbf{\emph{(a)}} Mouse embryonic fibroblast vs. Embryonic stem cell
+      \textbf{\emph{(b)}} Purified dopaminergic neuron vs. Radial glial/neuronal co-culture
+      \textbf{\emph{(c)}} 7 days postnatal cardiomyocyte vs. 28 days postnatal cardiomyocyte
+      \textbf{\emph{(d)}} Hepatic stellate cell vs. Portal fibroblast (both after 6 weeks of CCl4 administration)
+    }
+    \label{result_figs}
+  \end{figure}
+
+  \vspace{\baselineskip}
+  \noindent To demonstrate empirically the predictive capabilities...
+
   %
   % \begin{table}[ht]
   %     \centering
@@ -540,6 +566,7 @@
 
 \section*{Discussion}
   \label{disc}
+  TBD
 
 
 % \section*{Conclusion}
