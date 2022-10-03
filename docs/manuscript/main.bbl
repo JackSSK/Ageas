@@ -230,11 +230,111 @@
 
 \bibitem{ELF3_precursor_marker}
 \bibinfo{author}{Tang, Y.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Elf a beta-spectrin is a neuronal
-  precursor cell marker in developing mammalian brain; structure and
-  organization of the elf/beta-g spectrin gene}}.
+\newblock \bibinfo{journal}{\bibinfo{title}{Elf a $\beta$-spectrin is a
+  neuronal precursor cell marker in developing mammalian brain; structure and
+  organization of the elf/$\beta$-g spectrin gene}}.
 \newblock {\emph{\JournalTitle{Oncogene}}} \textbf{\bibinfo{volume}{21}},
   \bibinfo{pages}{5255–5267}, \doiprefix\url{10.1038/sj.onc.1205548}
   (\bibinfo{year}{2002}).
+
+\bibitem{ebf1_striatum}
+\bibinfo{author}{Garel, S.}, \bibinfo{author}{Marin, F.},
+  \bibinfo{author}{Grosschedl, R.} \& \bibinfo{author}{Charnay, P.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Ebf1 controls early cell
+  differentiation in the embryonic striatum}}.
+\newblock {\emph{\JournalTitle{Development}}} \textbf{\bibinfo{volume}{126}},
+  \bibinfo{pages}{5285–5294}, \doiprefix\url{10.1242/dev.126.23.5285}
+  (\bibinfo{year}{1999}).
+
+\bibitem{ebf1_cell_diff}
+\bibinfo{author}{Faedo, A.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Differentiation of human
+  telencephalic progenitor cells into msns by inducible expression of gsx2 and
+  ebf1}}.
+\newblock {\emph{\JournalTitle{Proceedings of the National Academy of
+  Sciences}}} \textbf{\bibinfo{volume}{114}},
+  \doiprefix\url{10.1073/pnas.1611473114} (\bibinfo{year}{2017}).
+
+\bibitem{ebf1_migration}
+\bibinfo{author}{Yin, M.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Ventral mesencephalon-enriched
+  genes that regulate the development of dopaminergic neurons in vivo}}.
+\newblock {\emph{\JournalTitle{Journal of Neuroscience}}}
+  \textbf{\bibinfo{volume}{29}}, \bibinfo{pages}{5170–5182},
+  \doiprefix\url{10.1523/jneurosci.5569-08.2009} (\bibinfo{year}{2009}).
+
+\bibitem{sp1_hypertrophy}
+\bibinfo{author}{Sun, S.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Dendropanax morbifera prevents
+  cardiomyocyte hypertrophy by inhibiting the sp1/gata4 pathway}}.
+\newblock {\emph{\JournalTitle{The American Journal of Chinese Medicine}}}
+  \textbf{\bibinfo{volume}{46}}, \bibinfo{pages}{1021–1044},
+  \doiprefix\url{10.1142/s0192415x18500532} (\bibinfo{year}{2018}).
+
+\bibitem{Sp1_electrophysiologt}
+\bibinfo{author}{Brady, M.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Sp1 and sp3 transcription factors
+  are required for trans-activation of the human serca2 promoter in
+  cardiomyocytes}}.
+\newblock {\emph{\JournalTitle{Cardiovascular Research}}}
+  \textbf{\bibinfo{volume}{60}}, \bibinfo{pages}{347–354},
+  \doiprefix\url{10.1016/s0008-6363(03)00529-7} (\bibinfo{year}{2003}).
+
+\bibitem{CM_mature}
+\bibinfo{author}{Guo, Y.} \& \bibinfo{author}{Pu, W.~T.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Cardiomyocyte maturation}}.
+\newblock {\emph{\JournalTitle{Circulation Research}}}
+  \textbf{\bibinfo{volume}{126}}, \bibinfo{pages}{1086–1106},
+  \doiprefix\url{10.1161/circresaha.119.315862} (\bibinfo{year}{2020}).
+
+\bibitem{esr1_cm}
+\bibinfo{author}{Luo, T.} \& \bibinfo{author}{Kim, J.~K.}
+\newblock \bibinfo{journal}{\bibinfo{title}{The role of estrogen and estrogen
+  receptors on cardiomyocytes: An overview}}.
+\newblock {\emph{\JournalTitle{Canadian Journal of Cardiology}}}
+  \textbf{\bibinfo{volume}{32}}, \bibinfo{pages}{1017–1025},
+  \doiprefix\url{10.1016/j.cjca.2015.10.021} (\bibinfo{year}{2016}).
+
+\bibitem{esr1_cm_growth}
+\bibinfo{author}{Kararigas, G.}, \bibinfo{author}{Nguyen, B.~T.} \&
+  \bibinfo{author}{Jarry, H.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Estrogen modulates cardiac growth
+  through an estrogen receptor $\alpha$-dependent mechanism in healthy
+  ovariectomized mice}}.
+\newblock {\emph{\JournalTitle{Molecular and Cellular Endocrinology}}}
+  \textbf{\bibinfo{volume}{382}}, \bibinfo{pages}{909–914},
+  \doiprefix\url{10.1016/j.mce.2013.11.011} (\bibinfo{year}{2014}).
+
+\bibitem{cebpb_1}
+\bibinfo{author}{Boström, P.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{C/ebpb controls exercise-induced
+  cardiac growth and protects against pathological cardiac remodeling}}.
+\newblock {\emph{\JournalTitle{Cell}}} \textbf{\bibinfo{volume}{143}},
+  \bibinfo{pages}{1072–1083}, \doiprefix\url{10.1016/j.cell.2010.11.036}
+  (\bibinfo{year}{2010}).
+
+\bibitem{cebpb_2}
+\bibinfo{author}{Zou, J.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{C/ebpb knockdown protects
+  cardiomyocytes from hypertrophy via inhibition of p65-nfkb}}.
+\newblock {\emph{\JournalTitle{Molecular and Cellular Endocrinology}}}
+  \textbf{\bibinfo{volume}{390}}, \bibinfo{pages}{18–25},
+  \doiprefix\url{10.1016/j.mce.2014.03.007} (\bibinfo{year}{2014}).
+
+\bibitem{nkx25}
+\bibinfo{author}{Serpooshan, V.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Nkx2.5+ cardiomyoblasts contribute
+  to cardiomyogenesis in the neonatal heart}}.
+\newblock {\emph{\JournalTitle{Scientific Reports}}}
+  \textbf{\bibinfo{volume}{7}}, \doiprefix\url{10.1038/s41598-017-12869-4}
+  (\bibinfo{year}{2017}).
+
+\bibitem{yap1}
+\bibinfo{author}{Hou, N.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Activation of yap1/taz signaling in
+  ischemic heart disease and dilated cardiomyopathy}}.
+\newblock {\emph{\JournalTitle{Experimental and Molecular Pathology}}}
+  \textbf{\bibinfo{volume}{103}}, \bibinfo{pages}{267–275},
+  \doiprefix\url{10.1016/j.yexmp.2017.11.006} (\bibinfo{year}{2017}).
 
 \end{thebibliography}

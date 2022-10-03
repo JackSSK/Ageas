@@ -138,7 +138,7 @@
       Utilizing meta-GRN, psGRNs are reconstructed with GEMs of pseudo-sample.
       Each GRP gene pair in meta-GRN is formed with expression data in pseudo-sample and filtered by same PCC filter in meta-GRN reconstruction process.
 
-      After all pseudo-samples have been used to reconstruct psGRN, every psGRN can be represented as matrix comprising GRPs' PCC values and corresponding genes' expression values.
+      After all pseudo-samples have been used to reconstruct psGRN, every psGRN can be represented as matrix comprising GRPs' PCC values.
       The order of GRPs in each psGRN is also unified through adding GRPs included in other psGRNs with 0.0 PCC value.
 
     \begin{figure}[ht]
@@ -388,36 +388,39 @@
   \subsection*{Dopaminergic neuron generation}
   Analyzing difference between human iPSC-derived radial glial / neuronal co-culture, as neural progenitors\cite{ASCL1_dopaminergic_neuron_2021}, and tyrosine hydroxylase (TH) expressing purified dopaminergic (DA) neurons, we address the applicability of \emph{AGEAS} on cell subtype differentiation problems.
 
-  From extracted TFs shown in Figure \ref{result_figs}(a), we hypothesize ISL1, PHOX2B, and ELF3 are regulating essential functions differentiating DA neurons from neural progenitors.
+  From extracted TFs shown in Figure \ref{result_figs}(b), we hypothesize ISL1, PHOX2B, and ELF3, referring to their correspond regulon sizes and expression changes, are regulating essential functions differentiating DA neurons from neural progenitors.
   Both ISL1 and PHOX2B were found related with DA phenotype in previous studies:
   ISL1 is essential for differentiation of prethalamic DA neurons\cite{isl1_da},
   and PHOX2B is connected with TH expression influencing DA neuron development and improving DA activity \cite{phox2_caudal_da, phox2_rat_da}
   Moreover, ELF3 was found to be neuronal precursor cell marker associated with neural stem cell development \cite{ELF3_precursor_marker}, consistent with it's high expression level in neuronal co-culture class.
 
-  ASCL1, found as necessary factor regulating DA neurotransmitter selection by original research where we retrieved scRNA-Seq data\cite{ASCL1_dopaminergic_neuron_2021}, is also forming substantial regulon with extracted GRPs.
-
+  EBF1, which forms the largest regulon with extracted GRPs, was determined as key neuronal differentiation regulator in the ventral telencephalon, nature source of neuronal and glial cells \cite{ebf1_striatum, ebf1_cell_diff}.
+  Furthermore, EBF1 plays important role in mesodiencephalic DA neuron migration. \cite{ebf1_migration}
+  ASCL1, found as necessary factor regulating DA neurotransmitter selection by original research where we retrieved scRNA-Seq data\cite{ASCL1_dopaminergic_neuron_2021}, is also forming substantial regulon.
+  % SOX2 and NR3C1 also have reports in neuronal differentiation...
 
   \subsection*{Postnatal cardiomyocyte maturation}
   To address the performance of \emph{AGEAS} while analyzing cell physiological development, scRNA-Seq data of cardiomyocytes (CMs) in postnatal day 7 mice (P7) and day 28 mice (P28) are used as input for extracting key genetic features in postnatal cardiomyocyte maturation.
 
-  Esr1: estrogenic regulation for normal myocardial development was primarily via ER-alpha(Esr1)
-  % (10.1016/j.mce.2013.11.011)
-  % (http://dx.doi.org/10.1016/j.mce.2013.11.011)
-  Cebpb: The Transcription Factor CEBP-beta Serves as a Master Regulator of physiologic Cardiac Hypertrophy
-  % (Cell. 2010;143:1072–1083)
-  % (Originally published4 Feb 2011https://doi.org/10.1161/RES.0b013e31820ff484Circulation Research. 2011;108:277–278)
-  % https://doi.org/10.1016/j.mce.2014.03.007
-  Sp1: upregulates the expression of GATA4 and atrial natriuretic peptide (ANP) in cardiomyoblast cells promote hypertrophy
-  % https://doi.org/10.1142/S0192415X18500532 (2018).
-  % Sp1 and Sp3 transcription factors are required for trans-activation of the human SERCA2 promoter in cardiomyocytes: Electrophysiology and Ca2+ handling
-  % https://doi.org/10.1016/S0008-6363(03)00529-7, 10.1161/CIRCRESAHA.119.315862
+  Following same regulon size and expression change based analytical procedure, we primarily investigated three TFs shown in Figure \ref{result_figs}(c): Sp1, Esr1 ($ER\alpha$), and Cebpb.
+  Previous studies demonstrated that Sp1 promotes CM hypertrophy \cite{sp1_hypertrophy} and maturation of electrophysiology and $Ca^{2+}$ handling \cite{Sp1_electrophysiologt, CM_mature}.
+  % trans-activation of the SERCA2 promoter
+  Esr1 was found modulating myocardial development for postnatal cardiac growth\cite{esr1_cm, esr1_cm_growth}, and Cebpb's role as repressor of CM growth and proliferation while preventing pathological CM hypertrophy also demonstrated by several studeis\cite{cebpb_1, cebpb_2}.
+
+  Other TFs known playing important roles in CM maturation, such as Srf\cite{CM_mature, cebpb_1}, Nkx2-5\cite{cebpb_1, nkx25}, and Yap1\cite{CM_mature, yap1}, are also forming sizeable regulons in GRN atlas returned by \emph{AGEAS} .
 
   \subsection*{Hepatic stellate cell activation in $CCl_4$ induced liver fibrosis}
   Here we address \emph{AGEAS}'s applicability on cell pathological development studies through analyzing hepatic stellate cells (HSCs) in mice liver administrated with chronic carbon tetrachloride ($CCl_4$) for 6 weeks and according portal fibroblasts (PF) simulating activated HSCs.
 
-  Lhx2
-  Osr1
-  Ebf1
+  Within TFs shown in Figure \ref{result_figs}(d), we suppose Lhx2, Osr1, and Ebf1 are regulating phenotypes clearly differentiating HSCs from PFs considering their correspond TF regulon sizes and expression changes.
+
+  Osr1 fibrogenic regulation
+
+  Ebf1 ...
+
+  Lhx2 halt quiescent HSCs
+
+  Furthermore, Mef2c forming top TF regulon is main regulator of collagen expression...
 
   \begin{figure}
     \begin{subfigure}{0.49\linewidth}
@@ -454,7 +457,10 @@
   \end{figure}
 
   \vspace{\baselineskip}
-  \noindent To demonstrate empirically the predictive capabilities... in vitro experiment Lhx2 repressing HSC activation...
+  \noindent To demonstrate empirically the predictive capabilities...
+  Since Lhx2 has largest expression change while favoring in HSCs...
+  but not directly regulating fibrogenic genes as Mef2c does...
+  in vitro experiment overexpression of Lhx2 repressing HSC activation...
 
   % \begin{table}[ht]
   %     \centering
