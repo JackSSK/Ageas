@@ -192,4 +192,49 @@
   \bibinfo{pages}{373–378}, \doiprefix\url{10.1038/embor.2011.11}
   (\bibinfo{year}{2011}).
 
+\bibitem{ASCL1_dopaminergic_neuron_2021}
+\bibinfo{author}{Earley, A.~M.}, \bibinfo{author}{Burbulla, L.~F.},
+  \bibinfo{author}{Krainc, D.} \& \bibinfo{author}{Awatramani, R.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Identification of ascl1 as a
+  determinant for human ipsc-derived dopaminergic neurons}}.
+\newblock {\emph{\JournalTitle{Scientific Reports}}}
+  \textbf{\bibinfo{volume}{11}}, \doiprefix\url{10.1038/s41598-021-01366-4}
+  (\bibinfo{year}{2021}).
+
+\bibitem{isl1_da}
+\bibinfo{author}{Filippi, A.}, \bibinfo{author}{Jainok, C.} \&
+  \bibinfo{author}{Driever, W.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Analysis of transcriptional codes
+  for zebrafish dopaminergic neurons reveals essential functions of arx and
+  isl1 in prethalamic dopaminergic neuron development}}.
+\newblock {\emph{\JournalTitle{Developmental Biology}}}
+  \textbf{\bibinfo{volume}{369}}, \bibinfo{pages}{133–149},
+  \doiprefix\url{10.1016/j.ydbio.2012.06.010} (\bibinfo{year}{2012}).
+
+\bibitem{phox2_caudal_da}
+\bibinfo{author}{Hoekstra, E.~J.}, \bibinfo{author}{von Oerthel, L.},
+  \bibinfo{author}{van~der Linden, A.~J.} \& \bibinfo{author}{Smidt, M.~P.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Phox2b influences the development
+  of a caudal dopaminergic subset}}.
+\newblock {\emph{\JournalTitle{PLoS ONE}}} \textbf{\bibinfo{volume}{7}},
+  \doiprefix\url{10.1371/journal.pone.0052118} (\bibinfo{year}{2012}).
+
+\bibitem{phox2_rat_da}
+\bibinfo{author}{Fan, Y.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Transcription factors phox2a/2b
+  upregulate expression of noradrenergic and dopaminergic phenotypes in aged
+  rat brains}}.
+\newblock {\emph{\JournalTitle{Neurotoxicity Research}}}
+  \textbf{\bibinfo{volume}{38}}, \bibinfo{pages}{793–807},
+  \doiprefix\url{10.1007/s12640-020-00250-9} (\bibinfo{year}{2020}).
+
+\bibitem{ELF3_precursor_marker}
+\bibinfo{author}{Tang, Y.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Elf a beta-spectrin is a neuronal
+  precursor cell marker in developing mammalian brain; structure and
+  organization of the elf/beta-g spectrin gene}}.
+\newblock {\emph{\JournalTitle{Oncogene}}} \textbf{\bibinfo{volume}{21}},
+  \bibinfo{pages}{5255–5267}, \doiprefix\url{10.1038/sj.onc.1205548}
+  (\bibinfo{year}{2002}).
+
 \end{thebibliography}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  2 OCT 2022 08:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  3 OCT 2022 09:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -848,44 +848,45 @@ File: ../images/nn.png Graphic file (type png)
 <use ../images/nn.png>
 Package pdftex.def Info: ../images/nn.png  used on input line 265.
 (pdftex.def)             Requested size: 400.38872pt x 178.33011pt.
- [2] [3] [4]
-<../images/MEF_ESC_top.png, id=115, 505.89pt x 433.62pt>
+ [2] [3] [4] [5]
+<../images/MEF_ESC_top.png, id=137, 505.89pt x 433.62pt>
 File: ../images/MEF_ESC_top.png Graphic file (type png)
 <use ../images/MEF_ESC_top.png>
-Package pdftex.def Info: ../images/MEF_ESC_top.png  used on input line 420.
+Package pdftex.def Info: ../images/MEF_ESC_top.png  used on input line 425.
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
-<../images/N_cocul_top.png, id=116, 505.89pt x 433.62pt>
+<../images/N_cocul_top.png, id=138, 505.89pt x 433.62pt>
 File: ../images/N_cocul_top.png Graphic file (type png)
 <use ../images/N_cocul_top.png>
-Package pdftex.def Info: ../images/N_cocul_top.png  used on input line 425.
+Package pdftex.def Info: ../images/N_cocul_top.png  used on input line 430.
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
-<../images/CMp7d_CMp28d_top.png, id=117, 505.89pt x 433.62pt>
+<../images/CMp7d_CMp28d_top.png, id=139, 505.89pt x 433.62pt>
 File: ../images/CMp7d_CMp28d_top.png Graphic file (type png)
 <use ../images/CMp7d_CMp28d_top.png>
-Package pdftex.def Info: ../images/CMp7d_CMp28d_top.png  used on input line 431
+Package pdftex.def Info: ../images/CMp7d_CMp28d_top.png  used on input line 436
 .
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
-<../images/HSCp6w_PFp6w_top.png, id=118, 505.89pt x 433.62pt>
+<../images/HSCp6w_PFp6w_top.png, id=140, 505.89pt x 433.62pt>
 File: ../images/HSCp6w_PFp6w_top.png Graphic file (type png)
 <use ../images/HSCp6w_PFp6w_top.png>
-Package pdftex.def Info: ../images/HSCp6w_PFp6w_top.png  used on input line 436
+Package pdftex.def Info: ../images/HSCp6w_PFp6w_top.png  used on input line 441
 .
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
- (./main.bbl [5]) 
+
+(./main.bbl [6]) 
 AED: lastpage setting LastPage
-[6] [7] [8 <../images/summary_trans.png>] [9 <../images/data_preprocess_trans.p
-ng> <../images/nn.png>] [10 <../images/MEF_ESC_top.png> <../images/N_cocul_top.
-png> <../images/CMp7d_CMp28d_top.png> <../images/HSCp6w_PFp6w_top.png>]
-(./main.aux)
+[7] [8 <../images/summary_trans.png>] [9 <../images/data_preprocess_trans.png> 
+<../images/nn.png>] [10 <../images/MEF_ESC_top.png> <../images/N_cocul_top.png>
+ <../images/CMp7d_CMp28d_top.png> <../images/HSCp6w_PFp6w_top.png>] (./main.aux
+)
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 9BC3C03CDCF47E3D13A0AF23252B8F14;100.
  ) 
 Here is how much of TeX's memory you used:
- 26461 strings out of 478287
- 496056 string characters out of 5850749
- 857035 words of memory out of 5000000
- 43909 multiletter control sequences out of 15000+600000
- 562115 words of font info for 345 fonts, out of 8000000 for 9000
+ 26498 strings out of 478287
+ 496891 string characters out of 5850749
+ 856235 words of memory out of 5000000
+ 43935 multiletter control sequences out of 15000+600000
+ 562470 words of font info for 349 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,16n,91p,1001b,595s stack positions out of 5000i,500n,10000p,200000b,80000s
 {d:/texlive/2021/texmf-dist/fonts/enc/dvips/base/8r.enc}<d:/texlive/2021/texm
@@ -900,10 +901,10 @@ w/symbol/usyr.pfb><d:/texlive/2021/texmf-dist/fonts/type1/urw/times/utmb8a.pfb>
 <d:/texlive/2021/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><d:/texlive/2021/
 texmf-dist/fonts/type1/urw/times/utmr8a.pfb><d:/texlive/2021/texmf-dist/fonts/t
 ype1/urw/times/utmri8a.pfb>
-Output written on main.pdf (10 pages, 941643 bytes).
+Output written on main.pdf (10 pages, 944993 bytes).
 PDF statistics:
- 251 PDF objects out of 1000 (max. 8388607)
- 194 compressed objects within 2 object streams
- 44 named destinations out of 1000 (max. 500000)
+ 270 PDF objects out of 1000 (max. 8388607)
+ 212 compressed objects within 3 object streams
+ 49 named destinations out of 1000 (max. 500000)
  105516 words of extra memory for PDF output out of 106986 (max. 10000000)
 

@@ -376,9 +376,9 @@
   \label{res}
   To assess \emph{AGEAS}'s predictive power, we first applied \emph{AGEAS} to study somatic reprogramming to induced pluripotent stem cells (iPSC) achieved in mice by
   the year 2006 \cite{yamanaka_2006}, milestone discovery of cell plasticity \cite{cell_repro_review}.
-  With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, single-cell RNA sequencing (scRNA-Seq) based gene expression matrices (GEMs) of embryonic stem cell (ESC) and mouse embryonic fibroblast (MEF) were used as input.
+  With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, single-cell RNA sequencing (scRNA-Seq) based gene expression matrices (GEMs) of embryonic stem cells (ESCs) and mouse embryonic fibroblasts (MEFs) were used as input.
   The extraction result can be summarized as TF regulons, collections of a TF and corresponding direct regulatory targets, and TFs forming largest regulons with extracted GRPs are shown in Figure \ref{result_figs}(a).
-  Among TFs with sizeable regulons, Pou5f1 (Oct4), Nanog, and Sox2 also have most significant expression changes between MEF and ESC.
+  Among TFs with sizeable regulons, Pou5f1 (Oct4), Nanog, and Sox2 also have most significant expression difference between MEF and ESC samples.
   Thus, we can infer these TFs as import factors closely related with cell type differences.
   Multiple previous studies have confirmed that all of Oct4, Nanog, and Sox2 are playing important role in maintaing pluripotency \cite{niwa_2007} and inducing conversion from somatic cell to iPSC \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}.
 
@@ -386,30 +386,35 @@
   With all default settings and analytical procedure applied above, we can assess \emph{AGEAS}'s performance in following scenarios:
 
   \subsection*{Dopaminergic neuron generation}
-  (Cell subtype differentiation)
-  iPSC-derived radial glial/neuronal co-culture to dopaminergic (DA) neurons...
-  ISL1: essential functions of Isl1 in prethalamic dopaminergic neuron development
-  % doi:10.1016/j.ydbio.2012.06.010
-  PHOX2B: Phox2b Influences Dopaminergic Development
-  % https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3522650/pdf/pone.0052118.pdf
-  ELF3: ELF3 was found to be associated with mouse neural stem cell development
-  % (Tang, Y.; Katuri, V.; Iqbal, S.; Narayan, T.; Wang, Z.; Lu, R.S.; Mishra, L.; Mishra, B. ELF a β-spectrin is a neuronal precursor cell marker in developing mammalian brain; structure and organization of the elf/β-G spectrin gene. Oncogene 2002, 21, 5255–5267.)
-  (ASCL1 also extracted as 12th but not having significant exp change -> how to better analysis result)
+  Analyzing difference between human iPSC-derived radial glial / neuronal co-culture, as neural progenitors\cite{ASCL1_dopaminergic_neuron_2021}, and tyrosine hydroxylase (TH) expressing purified dopaminergic (DA) neurons, we address the applicability of \emph{AGEAS} on cell subtype differentiation problems.
+
+  From extracted TFs shown in Figure \ref{result_figs}(a), we hypothesize ISL1, PHOX2B, and ELF3 are regulating essential functions differentiating DA neurons from neural progenitors.
+  Both ISL1 and PHOX2B were found related with DA phenotype in previous studies:
+  ISL1 is essential for differentiation of prethalamic DA neurons\cite{isl1_da},
+  and PHOX2B is connected with TH expression influencing DA neuron development and improving DA activity \cite{phox2_caudal_da, phox2_rat_da}
+  Moreover, ELF3 was found to be neuronal precursor cell marker associated with neural stem cell development \cite{ELF3_precursor_marker}, consistent with it's high expression level in neuronal co-culture class.
+
+  ASCL1, found as necessary factor regulating DA neurotransmitter selection by original research where we retrieved scRNA-Seq data\cite{ASCL1_dopaminergic_neuron_2021}, is also forming substantial regulon with extracted GRPs.
+
 
   \subsection*{Postnatal cardiomyocyte maturation}
-  (Physiological development)
-  Postnatal CM p7 to p28
+  To address the performance of \emph{AGEAS} while analyzing cell physiological development, scRNA-Seq data of cardiomyocytes (CMs) in postnatal day 7 mice (P7) and day 28 mice (P28) are used as input for extracting key genetic features in postnatal cardiomyocyte maturation.
+
   Esr1: estrogenic regulation for normal myocardial development was primarily via ER-alpha(Esr1)
   % (10.1016/j.mce.2013.11.011)
   % (http://dx.doi.org/10.1016/j.mce.2013.11.011)
   Cebpb: The Transcription Factor CEBP-beta Serves as a Master Regulator of physiologic Cardiac Hypertrophy
   % (Cell. 2010;143:1072–1083)
   % (Originally published4 Feb 2011https://doi.org/10.1161/RES.0b013e31820ff484Circulation Research. 2011;108:277–278)
-  Sp1:
+  % https://doi.org/10.1016/j.mce.2014.03.007
+  Sp1: upregulates the expression of GATA4 and atrial natriuretic peptide (ANP) in cardiomyoblast cells promote hypertrophy
+  % https://doi.org/10.1142/S0192415X18500532 (2018).
+  % Sp1 and Sp3 transcription factors are required for trans-activation of the human SERCA2 promoter in cardiomyocytes: Electrophysiology and Ca2+ handling
+  % https://doi.org/10.1016/S0008-6363(03)00529-7, 10.1161/CIRCRESAHA.119.315862
 
-  \subsection*{Hepatic stellate cell activation in $CCl_4$ acute liver model}
-  (Pathological development)
-  HSCs p6w vs PFs p6w analoging activated HSCs
+  \subsection*{Hepatic stellate cell activation in $CCl_4$ induced liver fibrosis}
+  Here we address \emph{AGEAS}'s applicability on cell pathological development studies through analyzing hepatic stellate cells (HSCs) in mice liver administrated with chronic carbon tetrachloride ($CCl_4$) for 6 weeks and according portal fibroblasts (PF) simulating activated HSCs.
+
   Lhx2
   Osr1
   Ebf1
@@ -449,113 +454,15 @@
   \end{figure}
 
   \vspace{\baselineskip}
-  \noindent To demonstrate empirically the predictive capabilities...
+  \noindent To demonstrate empirically the predictive capabilities... in vitro experiment Lhx2 repressing HSC activation...
 
-  %
   % \begin{table}[ht]
   %     \centering
   %     \begin{tabular}{|l|l|l|l|}
   %       \hline
   %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
   %       \hline
-  %
-  %       EBF1 & 1 & 2.91 & sth \\
-  %       \hline
-  %       PBX3 & 2 & 3.02 & sss \\
-  %       \hline
-  %       NR3C1 & 3 & 0.40 & sss \\
-  %       \hline
-  %       SOX2 & 4 & 2.94 & sss \\
-  %       \hline
-  %       ELF3 & 5 & 5.91 & sss \\
-  %       \hline
-  %       ISL1 & 6 & 9.13 & sss \\
-  %       \hline
-  %       CEBPD & 7 & 3.20 & sss \\
-  %       \hline
-  %       MAZ & 8 & 1.00 & sss \\
-  %       \hline
-  %       PHOX2B & 9 & 7.38 & sss\\
-  %       \hline
-  %       FOXP1 & 10 & 0.12 & sss \\
-  %       \hline
-  %       ASCL1 & 12 & 0.30 & sss \\
-  %       \hline
-  %       NEUROD1 & 59 & 1.26 & sss \\
-  %
-  %       \hline
-  %     \end{tabular}
-  %     \caption{
-  %       \label{neuron_result}
-  %       In total of 68 Genes
-  %     }
-  % \end{table}
-  %
-  % \begin{table}[ht]
-  %     \centering
-  %     \begin{tabular}{|l|l|l|l|}
-  %       \hline
-  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
-  %       \hline
-  %
-  %       Sp1 & 1 & 4.68 & sth \\
-  %       \hline
-  %       Esr1 & 2 & 4.63 & sss \\
-  %       \hline
-  %       Srf & 3 & 0.02 & sss \\
-  %       \hline
-  %       Cebpb & 4 & 2.53 & sss \\
-  %       \hline
-  %       Nfe2l2 & 5 & 0.38 & sss \\
-  %       \hline
-  %       Nfib & 6 & 1.87 & sss \\
-  %       \hline
-  %       Cbfb & 7 & 0.16 & sss \\
-  %       \hline
-  %       Fosl2 & 8 & 0.64 & sss \\
-  %       \hline
-  %       Nkx2-5 & 9 & 0.06 & cardiac-specific structural genes\\
-  %       \hline
-  %       Rest & 10 & 1.67 & sss \\
-  %
-  %
-  %       \hline
-  %     \end{tabular}
-  %     \caption{
-  %       \label{CMp7p28_result}
-  %       In total of 119 Genes
-  %     }
-  % \end{table}
-  %
-  %
-  % \begin{table}[ht]
-  %     \centering
-  %     \begin{tabular}{|l|l|l|l|}
-  %       \hline
-  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
-  %       \hline
-  %
   %       Mef2c & 1 & 1.82 & sth \\
-  %       \hline
-  %       Jun & 2 & 0.55 & sss \\
-  %       \hline
-  %       Jund & 3 & 0.37 & sss \\
-  %       \hline
-  %       Klf4 & 4 & 0.23 & sss \\
-  %       \hline
-  %       Ebf1 & 5 & 6.33 & sss \\
-  %       \hline
-  %       Fos & 6 & 0.32 & sss \\
-  %       \hline
-  %       Hand2 & 7 & 2.59 & sss \\
-  %       \hline
-  %       Lhx2 & 8 & 7.02 & sss \\
-  %       \hline
-  %       Nfib & 9 & 0.65 & sss\\
-  %       \hline
-  %       Nr4a1 & 10 & 0.07 & sss \\
-  %
-  %
   %       \hline
   %     \end{tabular}
   %     \caption{
