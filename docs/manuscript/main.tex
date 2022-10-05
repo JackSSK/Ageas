@@ -27,7 +27,7 @@
 \begin{abstract}
   As rapid progress in sequencing technology since last decade, numerous mechanisms underlying cell functions and developmental processes have been revealed as complex regulations of gene expressions.
   While single-cell RNA sequencing (scRNA-Seq) made high-resolution transcriptomic view increasingly accessible, precise identification of gene regulatory network (GRN) describing cell states became achievable.
-  However, extracting key regulatory elements, including gene regulatory pathways (GRPs), transcription factors (TFs), and downstream genes, accurately reflecting main functionality changes remain challenging.
+  However, extracting key regulatory elements, including gene regulatory pathways (GRPs), transcription factors (TFs), and downstream genes, accurately and comprehensively reflecting main functionality changes remains challenging.
   Herein, we describe AGEAS, an automated machine learning (AutoML) based genetic regulatory element extraction system that assesses importances of GRPs in differentiating sample classes, such as cell types and developmental stages.
   With several case studies in divergent research areas, we show that AGEAS can indeed extract informative regulatory elements and reconstruct networks referring phenotype or biological process of interest.
   Furthermore, wet lab experiment validations...
@@ -105,11 +105,11 @@
 
     \subsubsection*{Reconstruct meta-GRN}
       Firstly, genes included in the comprehensive GEMs are assessed and determined whether having potential to form informative GRPs with other genes.
-      Commonly, differentially expressed genes (DEGs) would be considered as important factors of studying feature.
+      Commonly, differentially expressed genes (DEGs) would be considered as important factors of studying phenotype.
       Here we apply the Mann-Whitney U rank test (MWW) implemented by \emph{SciPy}\cite{2020SciPy-NMeth} to exclude genes having indistinguishable expression level distribution across GEMs of different classes.
       The p-value for rejecting null hypothesis, that expression distribution underlying class 1 samples is the same as the expression distribution underlying class 2 samples, is set to 0.05 by default.
       Furthermore, a $\log_2$ fold change (log2FC) filter is also implemented in AGEAS.
-      However, enabling the log2FC filter is not encouraged considering upstream TFs indirectly regulating key genes associated with feature of interest may not always have significant expression level difference between sample classes.
+      However, enabling the log2FC filter is not encouraged considering upstream TFs indirectly regulating key genes associated with phenotype of interest may not always have significant expression level difference between sample classes.
       The lof2FC filter shall mostly be used in order to decrease meta-GRN's GRP total amount in a compromising position caused by limited computational resources.
       After differential expression based filters, a standard deviation ($\sigma$) filter is applied to exclude genes either having low expression value or merely affected by dynamic expression status of other genes.
       By default, the $\sigma$ threshold is set to 1.0, the lowest expression level in raw gene count matrix gained from RNA-Seq data.
