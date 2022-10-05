@@ -329,6 +329,15 @@
   \textbf{\bibinfo{volume}{7}}, \doiprefix\url{10.1038/s41598-017-12869-4}
   (\bibinfo{year}{2017}).
 
+\bibitem{CM_posnatal_mature}
+\bibinfo{author}{Padula, S.~L.}, \bibinfo{author}{Velayutham, N.} \&
+  \bibinfo{author}{Yutzey, K.~E.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Transcriptional regulation of
+  postnatal cardiomyocyte maturation and regeneration}}.
+\newblock {\emph{\JournalTitle{International Journal of Molecular Sciences}}}
+  \textbf{\bibinfo{volume}{22}}, \bibinfo{pages}{3288},
+  \doiprefix\url{10.3390/ijms22063288} (\bibinfo{year}{2021}).
+
 \bibitem{yap1}
 \bibinfo{author}{Hou, N.} \emph{et~al.}
 \newblock \bibinfo{journal}{\bibinfo{title}{Activation of yap1/taz signaling in
@@ -336,5 +345,102 @@
 \newblock {\emph{\JournalTitle{Experimental and Molecular Pathology}}}
   \textbf{\bibinfo{volume}{103}}, \bibinfo{pages}{267–275},
   \doiprefix\url{10.1016/j.yexmp.2017.11.006} (\bibinfo{year}{2017}).
+
+\bibitem{lhx2_fibro}
+\bibinfo{author}{Wandzioch, E.}, \bibinfo{author}{Kolterud, A.},
+  \bibinfo{author}{Jacobsson, M.}, \bibinfo{author}{Friedman, S.~L.} \&
+  \bibinfo{author}{Carlsson, L.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Lhx2–/– mice develop liver
+  fibrosis}}.
+\newblock {\emph{\JournalTitle{Proceedings of the National Academy of
+  Sciences}}} \textbf{\bibinfo{volume}{101}}, \bibinfo{pages}{16549–16554},
+  \doiprefix\url{10.1073/pnas.0404678101} (\bibinfo{year}{2004}).
+
+\bibitem{Lhx2_hsc_1}
+\bibinfo{author}{Kolterud, A.}, \bibinfo{author}{Wandzioch, E.} \&
+  \bibinfo{author}{Carlsson, L.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Lhx2 is expressed in the septum
+  transversum mesenchyme that becomes an integral part of the liver and the
+  formation of these cells is independent of functional lhx2}}.
+\newblock {\emph{\JournalTitle{Gene Expression Patterns}}}
+  \textbf{\bibinfo{volume}{4}}, \bibinfo{pages}{521–528},
+  \doiprefix\url{10.1016/j.modgep.2004.03.001} (\bibinfo{year}{2004}).
+
+\bibitem{osr1_1}
+\bibinfo{author}{Zhou, Y.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Osr1 regulates hepatic inflammation
+  and cell survival in the progression of non-alcoholic fatty liver disease}}.
+\newblock {\emph{\JournalTitle{Laboratory Investigation}}}
+  \textbf{\bibinfo{volume}{101}}, \bibinfo{pages}{477–489},
+  \doiprefix\url{10.1038/s41374-020-00493-2} (\bibinfo{year}{2020}).
+
+\bibitem{osr1_2}
+\bibinfo{author}{Gupta, V.}, \bibinfo{author}{Gupta, I.},
+  \bibinfo{author}{Park, J.}, \bibinfo{author}{Bram, Y.} \&
+  \bibinfo{author}{Schwartz, R.~E.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Hedgehog signaling demarcates a
+  niche of fibrogenic peribiliary mesenchymal cells}}.
+\newblock {\emph{\JournalTitle{Gastroenterology}}}
+  \textbf{\bibinfo{volume}{159}}, \doiprefix\url{10.1053/j.gastro.2020.03.075}
+  (\bibinfo{year}{2020}).
+
+\bibitem{osr1_3}
+\bibinfo{author}{Matsuda, M.} \& \bibinfo{author}{Seki, E.}
+\newblock \bibinfo{journal}{\bibinfo{title}{The liver fibrosis niche: Novel
+  insights into the interplay between fibrosis-composing mesenchymal cells,
+  immune cells, endothelial cells, and extracellular matrix}}.
+\newblock {\emph{\JournalTitle{Food and Chemical Toxicology}}}
+  \textbf{\bibinfo{volume}{143}}, \bibinfo{pages}{111556},
+  \doiprefix\url{10.1016/j.fct.2020.111556} (\bibinfo{year}{2020}).
+
+\bibitem{acta2_myofb_marker}
+\bibinfo{author}{Nagamoto, T.}, \bibinfo{author}{Eguchi, G.} \&
+  \bibinfo{author}{Beebe, D.~C.}
+\newblock \bibinfo{title}{Alpha-smooth muscle actin expression in cultured lens
+  epithelial cells} (\bibinfo{year}{2000}).
+
+\bibitem{ebf1_fibroblast}
+\bibinfo{author}{Guerrero-Juarez, C.~F.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Single-cell analysis reveals
+  fibroblast heterogeneity and myeloid-derived adipocyte progenitors in murine
+  skin wounds}}.
+\newblock {\emph{\JournalTitle{Nature Communications}}}
+  \textbf{\bibinfo{volume}{10}}, \doiprefix\url{10.1038/s41467-018-08247-x}
+  (\bibinfo{year}{2019}).
+
+\bibitem{ebf1_lung}
+\bibinfo{author}{Liu, X.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Categorization of lung mesenchymal
+  cells in development and fibrosis}}.
+\newblock {\emph{\JournalTitle{iScience}}} \textbf{\bibinfo{volume}{24}},
+  \bibinfo{pages}{102551}, \doiprefix\url{10.1016/j.isci.2021.102551}
+  (\bibinfo{year}{2021}).
+
+\bibitem{mef2c_1}
+\bibinfo{author}{Wang, X.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Regulation of hepatic stellate cell
+  activation and growth by transcription factor myocyte enhancer factor 2}}.
+\newblock {\emph{\JournalTitle{Gastroenterology}}}
+  \textbf{\bibinfo{volume}{127}}, \bibinfo{pages}{1174–1188},
+  \doiprefix\url{10.1053/j.gastro.2004.07.007} (\bibinfo{year}{2004}).
+
+\bibitem{mef2c_2}
+\bibinfo{author}{Zhang, W.}, \bibinfo{author}{Ping, J.}, \bibinfo{author}{Zhou,
+  Y.}, \bibinfo{author}{Chen, G.} \& \bibinfo{author}{Xu, L.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Salvianolic acid b inhibits
+  activation of human primary hepatic stellate cells through downregulation of
+  the myocyte enhancer factor 2 signaling pathway}}.
+\newblock {\emph{\JournalTitle{Frontiers in Pharmacology}}}
+  \textbf{\bibinfo{volume}{10}}, \doiprefix\url{10.3389/fphar.2019.00322}
+  (\bibinfo{year}{2019}).
+
+\bibitem{mef2c_3}
+\bibinfo{author}{Zhang, Y.-B.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Hydroxysafflor yellow a attenuates
+  carbon tetrachloride-induced hepatic fibrosis in rats by inhibiting erk5
+  signaling}}.
+\newblock {\emph{\JournalTitle{The American Journal of Chinese Medicine}}}
+  \textbf{\bibinfo{volume}{40}}, \bibinfo{pages}{481–494},
+  \doiprefix\url{10.1142/s0192415x12500371} (\bibinfo{year}{2012}).
 
 \end{thebibliography}

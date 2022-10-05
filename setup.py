@@ -8,7 +8,7 @@ setuptools.setup(
     version = "v0.0.1-alpha7",
     author = "nkmtmsys and JackSSK",
     author_email = "gyu17@alumni.jh.edu",
-    description = "AutoML-based Genetic fEatrue extrAction System",
+    description = "AutoML-based Genetic regulatory Element extrAction System",
     long_description = long_description,
     long_description_content_type = "text/markdown",
     url = "https://github.com/JackSSK/Ageas",
