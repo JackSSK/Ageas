@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  9 OCT 2022 10:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  9 OCT 2022 10:23
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -998,7 +998,7 @@ b><d:/texlive/2021/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><d:/texlive/2021
 /texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><d:/texlive/2021/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb><d:/texlive/2021/texmf-dist/fonts/type1/urw/times/u
 tmri8a.pfb>
-Output written on main.pdf (18 pages, 19528066 bytes).
+Output written on main.pdf (18 pages, 19528070 bytes).
 PDF statistics:
  479 PDF objects out of 1000 (max. 8388607)
  386 compressed objects within 4 object streams
