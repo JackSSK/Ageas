@@ -22,18 +22,17 @@
 \affil[*2]{Correspondence: tao\_jiawang@gibh.ac.cn}
 
 \affil[+]{these authors contributed equally to this work}
-\keywords{Machine Learning, Gene Regulatory Network, RNA-Seq, Chip-Seq}
+\keywords{Machine Learning, Gene Regulatory Network, RNA-seq, Chip-seq}
 
 \begin{abstract}
   As rapid progress in sequencing technology since last decade, numerous mechanisms underlying cell functions and developmental processes have been revealed as complex regulations of gene expressions.
-  While single-cell RNA sequencing (scRNA-Seq) made high-resolution transcriptomic view increasingly accessible, precise identification of gene regulatory network (GRN) describing cell states became achievable.
-  However, extracting key regulatory elements, including gene regulatory pathways (GRPs), transcription factors (TFs), and downstream genes, accurately and comprehensively reflecting main functionality changes remains challenging.
-  Herein, we describe AGEAS, an automated machine learning (AutoML) based genetic regulatory element extraction system that assesses importances of GRPs in differentiating sample classes, such as cell types and developmental stages.
-  With several case studies in divergent research areas, we show that AGEAS can indeed extract informative regulatory elements and reconstruct networks referring phenotype or biological process of interest.
-  Furthermore, wet lab experiment validations...
-  Overall, AGEAS provides an ...
+  While single-cell RNA sequencing (scRNA-seq) made high-resolution transcriptomic view increasingly accessible, precise identification of gene regulatory network (GRN) describing cell types and cell states became achievable.
+  However, extracting key regulatory elements, including gene regulatory pathways (GRPs), transcription factors (TFs), and targetomes, accurately and completely reflecting functionality changes in biological phenomena remains challenging.
+  Herein, we describe AGEAS, an semi-supervised automated machine learning (AutoML) based genetic regulatory element extraction system that assesses importances of GRPs in resulting biological phenomena, such as cell type differentiation, physiological and pathological development, and reconstruct GRNs with extracted important GRPs for comprehensive inference.
+  With several case studies in divergent research areas, we show that AGEAS can indeed extract informative regulatory elements and reconstruct networks referring biological phenomena of interest.
+  Furthermore, we validated applicability of AGEAS with empirical evidence that LIM homeobox 2 (Lhx2), key quiescent hepatic stellate cell (HSC) factor AGEAS extracted through analyzing chronic carbon tetrachloride ($CCl_4$) induced liver fibrosis data, can indeed halt HSC activation to prevent fibrogenic process.
 
-  \subsection*{Availabilityand implementation}
+  \subsection*{Availability and implementation}
   The AGEAS code is available at \url{https://github.com/JackSSK/Ageas}.
 \end{abstract}
 
@@ -46,31 +45,36 @@
 
 \section*{Introduction}
   \label{introduction}
-  TBD
-  % If analoging regulon with the graph concept in discrete mathematics, one of the most common methods to analyze influence of a vertex, which is equivalent to a gene, is assessing correspond degree of the vertex.
-  % Although the regulatory source and target of GRP can be determined by utilizing interaction database, such as \emph{GTRD}\cite{gkaa1057} which shows regulatory relationship of interactors, numerous computational prediction methods like \emph{GRNBoost2}\cite{grnboost2} and comprehensive interaction database, \emph{BioGRID}\cite{biogrid} for example, could not provide faithful indication on regulatory directions.
-  % Consequently, based on choice of interaction database, the regulon reconstructed with AGEAS cannot be guaranteed to be a directed graph but an undirected graph.
-  % Therefore, in this step, \emph{odysseia} primarily extracts genes with high regulatory degrees in the regulon, regardless of they act as source or target in GRPs.
-  % To limit total amount of output key genes, the default setting of AGEAS reconstructs regulon for top 100 GRPs, and genes with regulatory degree higher than two in the regulon will be considered influential.
-  % If regulatory directions can be clarifed, the regulatory sources capable of regulating multiple key genes and the regulatory targets influenced by multiple key genes can also be extracted according to GRN reconstruction guidance.
-  %
-  % In the circumstance of finding genes potentially inducing CS conversion, referred as \emph{Mogrify}\cite{mogrify_2016}, both CS deterministic genes and common regulators of these genes shall gain attention.
-  % Herein, AGEAS analogized key genes extracted from top GRPs as CS deterministic genes and TFs capable of regulating more than 2 listed key genes as significant common regulator.
-  %
-  % Both non-convergence issue and feature lost issue reflect on one of the key problems for $AutoML$: "No single machine learning method performs best on all datasets".\cite{NIPS2015_11d0e628}
-  % Even though this problem can be solved while viewing $AutoML$ as a $CASH$ problem \cite{thornton2013auto}, such approach may not be directly deployable in our scenario considering comprehensive CS deterministic GFs or GRPs could be hardly labeled out.
-  % Hence, in contrast with directly automating key features finding process, we decide to partially automate CS classification process and export candidate components of joint algorithm to feature importance analysis.
-  % Compared with applying a particular $ML$ model, $CASH$ solving process during automation have higher potential to utilize comprehensive key features instead limited set of them.
-  % Furthermore, due to the network-based essence of AGEAS, some CS deterministic features failed to be detected after classification model analysis, if having close regulatory relationships with multiple confirmed GFs, can still be traced down during regulon-based analysis at post stage analysis.
+  As high-resolution sequencing technologies become increasingly applicable and accessible, an efficient and robost analytical system capable of extracting key genetic features responsible for cell types and cell states difference with limited prior biological knowledge also become highly demanded.
+  Several methodologies like SCENIC \cite{Scenic} already demonstrated informativeness and robustness in studying cellular phenotypes with GRN analysis.
+  Regulons, collections of a TF and corresponding targetomes, can successfully address cell identities with more comprehensive information compared with differential expressing genes (DEGs). \cite{Scenic, pySCENIC}
+  Even though limited computational methods are capable to completely and precisly extract key genetic regulatory elements in biological process of interest, Mogrify\cite{mogrify_2016} and CellNet\cite{cellnet_2014} have demonstrated GRN based methods can help to analysis cell type differentiation and implement cell reprogramming.
+  However, either method may require large scale of additional background data to be applicable in other studies such as analyzing physiological or pathological development of selected cell type.
+  The scREMOTE \cite{scREMOTE} published in 2022 shows great potential as generalized regulatory element extraction method since limited background data is required with sequencing data representing sample classes.
+  But prior knowledge on key TFs and marker genes is still indispensable.
+  Indeed, a regulation trajectory of DEGs or regulons showing significant activity difference after GRN reconstruction would be able to reveal the developmental pathways as generalized approach, but numerous noisy signals are expected due to general gene regulatory nature of TFs.
+  Therefore, here we present AGEAS with feasibility in extracting key regulatory elements for biological phenomena of interest even with scarce prior knowledge and potentially promote further experiments.
+
+  Several reasons motivated us to develop semi-supervised AutoML based method.
+  Firstly, accurate labeling of regulatory elements' relativeness in biological phenomena would require extensive prior knowledge in according research area that may hardly available.
+  While unsupervised clustering can potentially extract factos playing important roles, this approach would result in lossing comprehensiveness through focusing on specific aspects with regulatory elements showing similar patterns.
+  As a result, we chose to apply biological phenomena reflecting sample classes, such as cell types and cell states which should be easily retrievable, as labels for classification models to predict with masked GRN as input and then interpret success predictions to extract key regulatory elements.
+  Secondly, developing a generalized classificaton model in differentiating GRNs is still hard to guarantee comprehensiveness considering that capturing few significant differences would be sufficient for the model to reach outstanding accuracy.
+  Hence, a extraction system with multiple independent classification models implemented with various algorithms should be helpful to recover from potential comprehensiveness loss.
+  Thirdly, the process of interpreting all success prediction made by every classificaion model and integrating corresponding interpretation results is expected to be extremely computational expensive.
+  Thus, applying AutoML-based model and feature selection procedure that can effectively decreas interpretation cost would be necessary to increase feasibility of the method.
+
+  To evaluate performance of AGEAS, we primarily applied AGEAS in studying somatic cell reprogramming process and then further addressed performance in analyzing 3 other biological process in cell subtype differentiation, physiological and pathological development.
+  Later, we also addressed the applicability of AGEAS extraction result in guiding further studies about biological phenomena with $in$ $vitro$ experiments in determining Lhx2, key TF regulating liver fibrosis extracted with AGEAS, can indeed inhibit HSC activation.
 
 \section*{Method}
   \label{method}
-  The basic principle of AGEAS is to find key regulatory elements associated with phenotype of interest through analyzing how well-performing classification models distinguish GRNs of sample with the phenotype from GRNs of samples without.
-  To reconstruct sufficient GRNs for each class, RNA-Seq based expression data is segmented into subsets while each one is analogized as a pseudo-sample having discrete expression data.
+  The basic principle of AGEAS is to find key regulatory elements associated with biological phenomena of interest through analyzing how well-performing classification models distinguish GRNs of sample with the phenomena from GRNs of samples without.
+  To reconstruct sufficient GRNs for each class, RNA-seq based expression data is segmented into subsets while each one is analogized as a pseudo-sample having discrete expression data.
   The pseudo-sample GRNs (psGRNs) are reconstructed accordingly; thus, classification models can be trained, evaluated, and interpreted having GRPs as input factors.
-  With heavily weighted GRPs and associated genes repeatedly obtained from interpretations of success sample class predictions, GRNs could be formed and inferred playing important role in differentiating the studying sample classes.
+  With heavily weighted GRPs and correspond genes repeatedly obtained from interpretations of success sample class predictions, GRNs could be formed and potentially playing important role in differentiating the studying sample classes.
   The overall workflow can be summarized as Figure \ref{workflow}.
-  By default setting, four seperate extractor units in workflow run parallelly after data preprocessing part, and all extracted regulatory elements are used to form GRNs later combined into one atlas.
+  By default setting, four seperate extractor units in workflow run parallelly after data preprocessing part in order to increase output stability considering stochastic nature of AGEAS, and all extracted regulatory elements are used to form GRNs later combined into one atlas.
   Following sections describe each step of AGEAS in more depth.
   % \begin{itemize}
   %   \item \hyperref[step1]{\textbf{\emph{Step 1}}}: Data preprocessing
@@ -79,47 +83,32 @@
   %   \item \hyperref[step4]{\textbf{\emph{Step 4}}}: Top GRP extraction.
   %   \item \hyperref[step5]{\textbf{\emph{Step 5}}}: Key network reconstruction.
   % \end{itemize}
-  \begin{figure}[ht]
-  \centering
-  % \includegraphics[width=0.8\linewidth, height=18cm, keepaspectratio,]{../images/summary_trans.png}
-  \includegraphics[width=0.8\linewidth, keepaspectratio,]{../images/summary_trans.png}
-  \caption{
-    The overall workflow of AGEAS:
-    \textbf{\emph{(1)}} Reconstruct meta-level GRN (meta-GRN) with expression data of all samples.
-    \textbf{\emph{(2)}} Build pseudo-samples with sliding window algorithm and reconstruct GRNs with GRPs identified in meta-GRN accordingly.
-    \textbf{\emph{(3)}} Select best performing classifiers in predicting class labels of pseudo-sample GRNs (psGRNs).
-    \textbf{\emph{(4)}} Interpret how top models make classifications and gradually exclude GRPs with low weights or outlier-level high weights.
-    \textbf{\emph{(5)}} Repeatedly train classifiers with differnt set of psGRNs as training data to extract GRPs frequently ranked as top important features for decision.
-    \textbf{\emph{(6)}} Reconstruct GRNs with extracted GRPs and GRPs excluded as significant outliers.
-  }
-  \label{workflow}
-  \end{figure}
+
 
   \subsection*{Step 1:Data preprocessing}
     \label{step1}
     The main purpose of this step is to build pseudo-samples and reconstruct corresponding pseudo-sample GRNs (psGRNs).
-    % Instead of finding genes being important to differentiate sample classes and infer gene regulatory networks (GRNs) with the genes,
     For each sample class, gene expression matrices (GEMs) labeled with same class label are concatenated as one comprehensive expression matrix.
     With comprehensive GEMs, a meta-level GRN (meta-GRN) is reconstructed in advance of psGRNs to provide generic guidance on reconstruction.
     In general, the workflow of this step can be represented as Figure \ref{data_preprocess}.
 
     \subsubsection*{Reconstruct meta-GRN}
       Firstly, genes included in the comprehensive GEMs are assessed and determined whether having potential to form informative GRPs with other genes.
-      Commonly, differentially expressed genes (DEGs) would be considered as important factors of studying phenotype.
+      Commonly, differentially expressed genes (DEGs) would be considered as important factors of studying  phenomena.
       Here we apply the Mann-Whitney U rank test (MWW) implemented by \emph{SciPy}\cite{2020SciPy-NMeth} to exclude genes having indistinguishable expression level distribution across GEMs of different classes.
-      The p-value for rejecting null hypothesis, that expression distribution underlying class 1 samples is the same as the expression distribution underlying class 2 samples, is set to 0.05 by default.
+      The p-value for rejecting null hypothesis, that expression profile underlying class 1 samples is the same as the expression profile underlying class 2 samples, is set to 0.05 by default.
       Furthermore, a $\log_2$ fold change (log2FC) filter is also implemented in AGEAS.
-      However, enabling the log2FC filter is not encouraged considering upstream TFs indirectly regulating key genes associated with phenotype of interest may not always have significant expression level difference between sample classes.
+      However, enabling the log2FC filter is not encouraged considering upstream TFs indirectly regulating key genes associated with phenomena of interest may not always have significant differential expression profiles.
       The lof2FC filter shall mostly be used in order to decrease meta-GRN's GRP total amount in a compromising position caused by limited computational resources.
-      After differential expression based filters, a standard deviation ($\sigma$) filter is applied to exclude genes either having low expression value or merely affected by dynamic expression status of other genes.
-      By default, the $\sigma$ threshold is set to 1.0, the lowest expression level in raw gene count matrix gained from RNA-Seq data.
+      After differential expression based filters, a standard deviation ($\sigma$) filter is applied to exclude genes either having low expression level or merely affected by dynamic expression status of other genes.
+      By default, the $\sigma$ threshold is set to 1.0, the lowest expression level in raw gene count matrix gained from RNA-seq data.
       The threshold value should be adjusted corresponding to prior knowledge of input GEMs, for example of what normalization method was applied to the GEMs.
 
       With candidate genes passed filters above, some gene pairs are formed and assessed potential of representing GRPs.
       To reduce overall computational complexity, a gene pair shall be formed with at least one TF which could be the regulatory source of GRP.
       If not further specified, TF list will be retrieved from integrated \emph{TRANSFAC}\cite{transfac} datasets according to the provided species information.
       Utilizing genetic interaction database like \emph{GTRD}\cite{gkaa1057} and \emph{BioGRID}\cite{biogrid}, AGEAS checks whether the binding ability of gene pair is confirmed or not.
-      By default, if TF being recorded to have binding site within target gene's promoter range (-1000 to +100) by Chromatin Immunoprecipitation Sequencing (ChIP-Seq) dataset retrieved from \emph{GTRD}\cite{gkaa1057}, the potential GRP gene pair will be passed to expression correlation assessment.
+      By default, if TF being recorded to have binding site within target gene's promoter range (-1000 to +100) by Chromatin Immunoprecipitation Sequencing (ChIP-seq) dataset retrieved from \emph{GTRD}\cite{gkaa1057}, the potential GRP gene pair will be passed to expression correlation assessment.
       For TFs not covered by interaction database, \emph{GRNBoost2}\cite{grnboost2}-like algorithm is initiated to predict potential regulatory target genes.
       The prediction importance threshold can either be set manually or automatically based on recorded interactions as:
 
@@ -149,22 +138,6 @@
 
       After all pseudo-samples have been used to reconstruct psGRN, every psGRN can be represented as matrix comprising GRPs' PCC values.
       The order of GRPs in each psGRN is also unified through adding GRPs included in other psGRNs with 0.0 PCC value.
-
-    \begin{figure}[ht]
-      \centering
-      % \includegraphics[width=0.8\linewidth, height=12cm, keepaspectratio,]{../images/data_preprocess_trans.png}
-      \includegraphics[width=0.8\linewidth, keepaspectratio,]{../images/data_preprocess_trans.png}
-      \caption{
-        Workflow to reconstruct meta-GRN and psGRNs.
-        \textbf{\emph{(1)}} Filter genes from GEMs with log2FC filter(optional), MWW filter, and $\sigma$ filter.
-        \textbf{\emph{(2)}} Find candidate GRP gene pairs from either interaction database or predictions made by \emph{GRNBoost2}\cite{grnboost2}-like algorithm.
-        \textbf{\emph{(3)}} Filter candidate GRP gene pairs with PCC filter and reconstruct meta-GRN with validated GRPs.
-        \textbf{\emph{(4)}} Generate pseudo-samples with SWA.
-        \textbf{\emph{(5)}} Utilize GRPs in meta-GRN as generic guidance to form candidate GRPs for pseudo-samples.
-        \textbf{\emph{(6)}} Filter every candidate GRP for all pseudo-samples with PCC filter and reconstruct psGRNs with validated GRPs.
-      }
-      \label{data_preprocess}
-    \end{figure}
 
   \subsection*{Step 2: Classification model selection}
     \label{step2}
@@ -268,13 +241,6 @@
     The general architecture designs of 1D-CNN and Hybrid-CNN are implemented referring to 1D-CNN and 2D-Hybrid-CNN applied in recent cancer type prediction study.\cite{mostavi_chiu_huang_chen_2020}
     However, taking one convolution layer and adjacent max-pooling layer as a layer set, we implemented both CNN models with flexibilities on number of layer set, which is fixed as 1 in original research.
     An example of 1D-CNN with 2 convolution layer sets is illustrated in Figure \ref{1dCNN}.
-
-    \begin{figure}[ht]
-      \centering
-      \includegraphics[width=0.8\linewidth]{../images/nn.png}
-      \caption{1D-CNN with 2 convolution layer set.}
-      \label{1dCNN}
-    \end{figure}
 
     For transformer models, considering psGRNs are already be represented by numerical data matrix while GRPs should barely have positional relationships in the matrix, the embedding layer and positional encoding layer designed for input data tokenization in standard architecture \cite{transformer} are replaced with a single linear layer in AGEAS.
 
@@ -380,201 +346,447 @@
     Next, any GRP in meta-GRN capable to connect two distinct vertices will be added if it is not covered yet.
     The network graph after expansion above represents the key genetic regulatory differences AGEAS extracted from input sample classes.
 
-
 \section*{Results}
   \label{res}
-  To assess AGEAS's predictive power, we first applied AGEAS to study somatic reprogramming to induced pluripotent stem cells (iPSC) achieved in mice by the year 2006, \cite{yamanaka_2006} milestone discovery of cell plasticity. \cite{cell_repro_review}
-  With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, public scRNA-Seq based gene expression matrices (GEMs) of embryonic stem cells (ESCs) and mouse embryonic fibroblasts (MEFs) shown in Table \ref{geo_table} were used as input.
-  The extraction result can be summarized as TF regulons, collections of a TF and corresponding direct regulatory targets, and TFs forming largest regulons with extracted GRPs are shown in Figure \ref{result_figs}(a).
-  Among TFs with sizeable regulons, Pou5f1 (Oct4), Nanog, and Sox2 are also most differentially expressed in MEF and ESC samples.
-  Thus, we can infer these TFs as import factors closely related with cell type differences.
-  Multiple previous studies confirmed that all of Oct4, Nanog, and Sox2 are playing important role in maintaing pluripotency \cite{niwa_2007} and inducing conversion from somatic cell to iPSC. \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}
+  To assess predictive power of utilizing extraction result of AGEAS, we first applied AGEAS to study somatic reprogramming to induced pluripotent stem cells (iPSC) achieved in mice by the year 2006, \cite{yamanaka_2006} milestone discovery of cell plasticity. \cite{cell_repro_review}
+  With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, public scRNA-seq based GEMs of embryonic stem cells (ESCs) and mouse embryonic fibroblasts (MEFs) shown in Table \ref{geo_table} were used as input.
+  The extraction result can be summarized as TF regulons, and TFs having highest regulatory degree in all extracted GRPs are marked as top TFs (Figure \ref{result_figs}a).
 
-  To further address AGEAS's applicability and limitation, we applied AGEAS to three other scRNA-Seq based studies in distinct research areas.
-  With all default settings and analytical procedure applied above, we can assess AGEAS's performance in following scenarios with public data set shown in Table \ref{geo_table}:
+  Among top TFs, Pou5f1 (Oct4) has more association with GRPs extracted as important differential regulatory element between MEF and ESC than any other TFs while forming largest regulon and having expression pattern significantly favoring ESC.
+  Thus, we can infer Pou5f1 is key regulatory element associated with ESC identity.
+  Extensive studies already addressed Pou5f1's important role in maintaing pluripotency. \cite{niwa_2007, oct4_1, oct4_2}
+  Moreover, to implement cell reprogramming to iPSC, Nanog and Sox2 are also noteworthy since they are closely interacting with Pou5f1 in extracted network, having high regulatory degrees, and differentially expressed in ESC.
+  Multiple previous studies confirmed that all of Oct4, Nanog, and Sox2 are playing important role to induce cell conversion from somatic cell to iPSC. \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}
+  Cebpb, Hdac2, and Smc3, extracted as top TFs frequently acting as regulatory source in extracted important GRPs and directly affecting Pou5f1 expression, were also reported with relevant functions. \cite{cebpb_ipsc, hdac2_ipsc, rad21_smc3_esc}
 
-  \begin{itemize}
-    \setlength\itemsep{0em}
-    \item {\textbf{Dopaminergic neuron generation}}:
+  Therefore, we suppose investigating TFs acting as common regulatory sources in extracted important differential GRPs and correspond regulons can effectively study differences between cell types cell states.
 
-      Analyzing difference between human iPSC-derived radial glial / neuronal co-culture, as neural progenitors,\cite{ASCL1_dopaminergic_neuron_2021} and tyrosine hydroxylase (TH) expressing purified dopaminergic (DA) neurons, we address the applicability of AGEAS on cell subtype differentiation problems.
+  \subsection*{In silico evaluations}
+    To further address AGEAS's applicability and limitation, we applied AGEAS to three other scRNA-seq based studies in distinct research areas.
+    With all default settings describe in \hyperref[method]{Method} section above, we can assess AGEAS's performance in following scenarios with public data set (Table \ref{geo_table}):
 
-      From extracted TFs shown in Figure \ref{result_figs}(b), we hypothesize ISL1, PHOX2B, and ELF3, referring to their correspond regulon sizes and differential expression profiles, are regulating essential functions differentiating DA neurons from neural progenitors.
-      Both ISL1 and PHOX2B were found related with DA phenotype in previous studies:
-      ISL1 is essential for differentiation of prethalamic DA neurons,\cite{isl1_da}
-      and PHOX2B is connected with TH expression influencing DA neuron development and improving DA activity. \cite{phox2_caudal_da, phox2_rat_da}
-      Moreover, ELF3 was found to be neuronal precursor cell marker associated with neural stem cell development, \cite{ELF3_precursor_marker} consistent with it's high expression level in neuronal co-culture class.
+    \begin{itemize}
+      \setlength\itemsep{0em}
+      \item {\textbf{Dopaminergic neuron generation}}:
 
-      EBF1, which forms the largest regulon with extracted GRPs, was determined as key neuronal differentiation regulator in the ventral telencephalon, nature source of neuronal and glial cells. \cite{ebf1_striatum, ebf1_cell_diff}
-      Furthermore, EBF1 plays important role in mesodiencephalic DA neuron migration. \cite{ebf1_migration}
-      ASCL1, found as necessary factor regulating DA neurotransmitter selection by original research where we retrieved scRNA-Seq data,\cite{ASCL1_dopaminergic_neuron_2021} is also forming substantial regulon.
-      % SOX2 and NR3C1 also have reports in neuronal differentiation...
-      Remarkably, within extracted network, ASCL1 appears to act as upstream regulator of several large TF regulons, including ISL1 and PHOX2B, in purified DA neurons.
+        Analyzing difference between human iPSC-derived radial glial / neuronal co-culture, as neural progenitors,\cite{ASCL1_dopaminergic_neuron_2021} and tyrosine hydroxylase (TH) expressing purified dopaminergic neurons (DANs), we address the applicability of AGEAS on cell subtype differentiation problems.
 
-    \item {\textbf{Postnatal cardiomyocyte maturation}}:
+        From extracted TFs (Figure \ref{result_figs}b), we hypothesize ISL1, ELF3, and PBX3 playing important role in DAN differentiation due to their high regulatory degree in extracted important GRPs.
+        Previously, ISL1 was determined essential for differentiation of prethalamic DANs, \cite{isl1_da} and ELF3 was found to be neuronal precursor cell marker associated with neural stem cell development, \cite{ELF3_precursor_marker} consistent with it's high expression level in neuronal co-culture samples.
+        Moreover, a DAN development study reported PBX3 being required for correct differentiation of neuroblast, product of radial glial cell, into midbrain DAN and survival of midbrain DAN. \cite{pbx3_dan}
 
-      To address the performance of AGEAS while analyzing cell physiological development, scRNA-Seq data of cardiomyocytes (CMs) in postnatal day 7 mice (P7) and day 28 mice (P28) are used as input for extracting key genetic regulatory elements in postnatal cardiomyocyte maturation.
+        Through substratification of all extracted GRPs, we only found HDAC2 and RBPJ as potential upstream regulatory elements of all ISL1, ELF3, and PBX3.
+        Few reports demonstrated HDAC2 is associated with neurogenesis of radial glial cells. \cite{hdac2_dan_1, hdac2_dan_2}
+        Nevertheless, HDAC2's role in DAN differentiation is yet to be clarified.
+        RBPJ was reported essential for DAN survival and affecting DAN development by regulating ASCL1 which is an essential factor in neurogenesis. \cite{rbpj_1, rbpj_2}
+        Original research where we retrieved scRNA-seq data also demonstrated ASCL1 as necessary factor regulating DA neurotransmitter selection. \cite{ASCL1_dopaminergic_neuron_2021}
+        Although AGEAS extracts ASCL1 as one of top TFs; however, no direct regulatory relationship between RBPJ and ASCL1 is identified.
+        % PHOX2B, and ELF3 are regulating essential functions differentiating DANs from neural progenitors referring to their correspond regulon sizes and differential expression profiles.
+        % Both ISL1 and PHOX2B were found related with DA phenotype in previous studies:
+        % ISL1 is
+        % and PHOX2B is connected with TH expression influencing DAN development and improving DA activity. \cite{phox2_caudal_da, phox2_rat_da}
 
-      Following same regulon size and expression profile based analytical procedure, we primarily investigated three TFs shown in Figure \ref{result_figs}(c): Sp1, Esr1 ($ER\alpha$), and Cebpb.
-      Previous studies demonstrated that Sp1 promotes CM hypertrophy \cite{sp1_hypertrophy} and maturation of electrophysiology and $Ca^{2+}$ handling. \cite{Sp1_electrophysiologt, CM_mature}
-      % trans-activation of the SERCA2 promoter
-      Esr1 was found modulating myocardial development for postnatal cardiac growth,\cite{esr1_cm, esr1_cm_growth} and Cebpb's role as repressor of CM growth and proliferation while preventing pathological CM hypertrophy also demonstrated by several studeis.\cite{cebpb_1, cebpb_2}
+        % EBF1, which forms the largest regulon with extracted GRPs, was determined as key neuronal differentiation regulator in the ventral telencephalon, nature source of neuronal and glial cells. \cite{ebf1_striatum, ebf1_cell_diff}
+        % Furthermore, EBF1 plays important role in mesodiencephalic DAN migration. \cite{ebf1_migration}
 
-      Other TFs known playing important roles in CM maturation, such as Srf, \cite{CM_mature, cebpb_1} Nkx2-5,\cite{cebpb_1, nkx25, CM_posnatal_mature} and Yap1,\cite{CM_mature, yap1, CM_posnatal_mature} are also forming sizeable regulons in GRN atlas returned by AGEAS.
 
-    \item {\textbf{Hepatic stellate cell activation in $CCl_4$ induced liver fibrosis}}:
+      \item {\textbf{Postnatal cardiomyocyte maturation}}:
 
-      Here we address AGEAS's applicability on cell pathological development studies through analyzing hepatic stellate cells (HSCs) in mice liver administrated with chronic carbon tetrachloride ($CCl_4$) for 6 weeks and according portal fibroblasts (PF) simulating activated HSCs.
+        To address the performance of AGEAS while analyzing cell physiological development, scRNA-seq data of cardiomyocytes (CMs) in postnatal day 7 mice (P7) and day 28 mice (P28) are used as input for extracting key genetic regulatory elements in postnatal cardiomyocyte maturation.
 
-      Within TFs shown in Figure \ref{result_figs}(d), we suppose Lhx2, Osr1, and Ebf1 are regulating HSC activation considering their correspond TF regulon sizes and expression changes.
-      Previously, Lhx2 was found indispensable for quiescent HSCs. \cite{lhx2_fibro, Lhx2_hsc_1}
-      Extensive studies found Osr1 related with pathological fibrogenic process in liver fibroblast. \cite{osr1_1, osr1_2, osr1_3}
-      However, little literature address Ebf1's role in liver fibrosis.
-      One recent study reported the expression of Ebf1 increases concurrent with Acta2, marker gene of myofibroblast formation\cite{acta2_myofb_marker} which is essential for fibrosis, in wound fibroblast. \cite{ebf1_fibroblast}
-      Also, Ebf1 was found associated with lung fibrosis.\cite{ebf1_lung}
+        As indicated by extracted differential GRPs, we primarily investigated Sp1 and Esr1 ($ER\alpha$) which also have top regulatory degrees and considerably expression changes (Figure \ref{result_figs}c).
+        Previous studies demonstrated that Sp1 promotes CM hypertrophy \cite{sp1_hypertrophy} and maturation of electrophysiology, $Ca^{2+}$ handling. \cite{Sp1_electrophysiologt, CM_mature}
+        % trans-activation of the SERCA2 promoter
+        Esr1 was found modulating myocardial development for postnatal cardiac growth.\cite{esr1_cm, esr1_cm_growth}
 
-      Furthermore, Mef2c, forming largest TF regulon, has been well-documented as key regulator in HSC activation. \cite{mef2c_1, mef2c_2, mef2c_3}
+        Beside inter-regulation between Sp1 and Esr1, 3 other top TFs (Srf, Cebpb, Rest) and 2 TFs forming relatively small regulons (Gata4, Prox1), are expected to have reversible regulation with both Sp1 and Esr1 based on extraction network.
+        All 5 TFs were found having CM maturation related functions. (Table \ref{interact_TFs})
 
-  \end{itemize}
+        \begin{table}[ht]
+            \centering
+            \begin{tabular}{|l|l|}
+              \hline
+              \textbf{Gene} & \textbf{Function}  \\
+              \hline
+              Srf & Regulate sarcomere genes and broadly impact almost every aspect of CM maturation\cite{CM_mature} \\
+              \hline
+              Cebpb & Repress CM proliferation and hypertrophy\cite{cebpb_1, cebpb_2}\\
+              \hline
+              Rest (Nrsf) & Repress CM hypertrophy; Prevent dilated cardiomyopathy\cite{rest_1}\\
+              \hline
+              Prox1 & Repress CM hypertrophy; Prevent dilated cardiomyopathy\cite{prox1_CM} \\
+              \hline
+              Gata4 & Promote CM proliferation and hypertrophy\cite{CM_posnatal_mature} \\
+              \hline
+            \end{tabular}
+            \caption{
+              \label{interact_TFs}
+              TFs interacting with both Sp1 and Esr1 order by extracted regulon size.
+            }
+        \end{table}
 
-  \begin{figure}
-    \begin{subfigure}{0.49\linewidth}
-      \centering
-      \includegraphics[width=\linewidth, keepaspectratio,]{../images/MEF_ESC_top.png}
-      \caption{}
-    \end{subfigure}
-    \begin{subfigure}{0.49\linewidth}
-      \centering
-      \includegraphics[width=\linewidth, keepaspectratio,]{../images/N_cocul_top.png}
-      \caption{}
-    \end{subfigure}
+        % Other top TFs expected to directly influence expression of either Sp1 or Esr1 are:
+        % \begin{table}[ht]
+        %     \centering
+        %     \begin{tabular}{|l|l|}
+        %       \hline
+        %       \textbf{Gene} & \textbf{Function}  \\
+        %       \hline
+        %       Nfe2l2 &  mitochondrial and cardiac oxidative stress, cardiac fibrosis (10.1089/ars.2016.6831) \\
+        %       \hline
+        %       Nfib & 1 \\
+        %       \hline
+        %       Cbfb & 1 \\
+        %       \hline
+        %       Fosl2 & 1 \\
+        %       \hline
+        %       Nkx2-5 & \cite{cebpb_1, nkx25, CM_posnatal_mature} \\
+        %       \hline
+        %       Rxra & 1 \\
+        %       \hline
+        %       Mef2a & 1 \\
+        %       \hline
+        %       Yap1 & \cite{CM_mature, yap1, CM_posnatal_mature} \\
+        %       \hline
+        %       Thra & 1 \\
+        %       \hline
+        %     \end{tabular}
+        %     \caption{
+        %       \label{interact_TFs}
+        %       Extracted top TFs interacting with either Sp1 or Esr1.
+        %     }
+        % \end{table}
 
-    \begin{subfigure}{0.49\linewidth}
-      \centering
-      \includegraphics[width=\linewidth, keepaspectratio,]{../images/CMp7d_CMp28d_top.png}
-      \caption{}
-    \end{subfigure}
-    \begin{subfigure}{0.49\linewidth}
-      \centering
-      \includegraphics[width=\linewidth, keepaspectratio,]{../images/HSCp6w_PFp6w_top.png}
-      \caption{}
-    \end{subfigure}
 
-    \caption{
-      TFs forming largest regulons with GRPs extracted by AGEAS.
-      Each TF has regulon size indicating amount of direct regulatory genes and $log_2$ gene expression levels in binary sample classes.
-      \textbf{\emph{(a)}} Mouse embryonic fibroblast vs. Embryonic stem cell
-      \textbf{\emph{(b)}} Purified dopaminergic neuron vs. Radial glial/neuronal co-culture
-      \textbf{\emph{(c)}} 7 days postnatal cardiomyocyte vs. 28 days postnatal cardiomyocyte
-      \textbf{\emph{(d)}} Hepatic stellate cell vs. Portal fibroblast (both after 6 weeks of CCl4 administration)
-    }
-    \label{result_figs}
-  \end{figure}
+      \item {\textbf{Hepatic stellate cell activation in $CCl_4$ induced liver fibrosis}}:
 
-  To demonstrate empirically the predictive capabilities...
-  Since Lhx2's expression pattern is strongly favoring HSC than PF, and previous study proved Lhx2 KO promotes liver fibrosis\cite{lhx2_fibro}...
-  We suppose overexpression of Lhx2 could halt HSC as quiescent in order to prevent pathological fibrogenic process...
-  In vitro experiment goes here...
+        Here we address AGEAS's applicability on cell pathological development studies through analyzing hepatic stellate cells (HSCs) in mice liver administrated with chronic carbon tetrachloride ($CCl_4$) for 6 weeks and according portal fibroblasts (PF) simulating activated HSCs.
 
-  % \begin{table}[ht]
-  %     \centering
-  %     \begin{tabular}{|l|l|l|l|}
-  %       \hline
-  %       \textbf{Gene} & \textbf{Main Exp Class} & \textbf{$|log2FC|$} & \textbf{Description}  \\
-  %       \hline
-  %       Mef2c & 1 & 1.82 & sth \\
-  %       \hline
-  %     \end{tabular}
-  %     \caption{
-  %       \label{ccl4liver_result}
-  %       In total of 35 Genes
-  %     }
-  % \end{table}
+        Based on extracted important GRPs, we identified Mef2c, Jun, and Jund as potential representitives of key regulatory elements in HSC activation (Figure \ref{result_figs}d).
+        As TF extracted with most important GRPs, Mef2c has been well-documented as key regulator in HSC activation. \cite{mef2c_1, mef2c_2, mef2c_3}
+        Extensive studies also found Jun and Jund, both being functional components of the AP1 TF complex, essential for fibrosis-related HSC activation and profibrogenic process. \cite{ap1_hsc_1, ap1_hsc_2, ap1_hsc_3, ap1_hsc_4}
+
+        Analyzing TF regulons of Mef2c, Jun, and Jund, we suppose Mef2c is acting as targetome of Jund and inter-regulatory element of Jun.
+        While no regulatory relationship between Jund and Jun determined, 3 extracted top TFs (Lhx2, Nfib, Junb) can potentially influence expressions of both Jund and Jun.
+        Since Junb is also functional component of AP1, we infer it associated with HSC activaion in a similar manner.
+        Furthermore, Lhx2 was found indispensable for quiescent HSCs. \cite{lhx2_fibro, Lhx2_hsc_1}
+        Although, little literature addressed Nfib's role in HSC, Nfib was reported acting as anti-apoptotic gene for cell proliferation during $CCl_4$ induced liver damage. \cite{Nfib_sadly}
+    \end{itemize}
+
+  \subsection*{In vitro validation}
+    To demonstrate empirically the predictive capabilities of utilizing AGEAS extraction result, we further investigated the extraction result of $CCl_4$ induced liver fibrosis study setting scenario of identifying theraputic targets inhibiting pathological fibrogenic process in liver.
+    Through analyzing extracted TF regulons, we further confirmed Mef2c's role as key targetome noticing direct regulational relationships with HSC activation marker Acta2\cite{acta2_hsc_act} and fibrotic collagen Col1a1 (Figure \ref{regulons_figs}d).
+    Moreover, since only Lhx2 has all related GRPs mainly being functional in HSC (Figure \ref{regulons_figs}a) and significantly differential expression in HSC (Figure \ref{result_figs}d), we decided to proceed manipulation of Lhx2 expression.
+    Previous study already proved knockdown of Lhx2 promotes liver fibrosis in mice.\cite{lhx2_fibro}
+    Thus, we suppose overexpression of Lhx2 could assist to maintain quiescent of HSCs through Jun/Jund-Mef2c dependent pathways.
+
+    To verify our hypothesis, we firstly validated the association between Lhx2 and HSC activation with $in$ $vitro$ experiments.
+    In mice primary HSC (mHSC) and human HSC cell lines (LX2), we detected the expression of Lhx2/LHX2 with the activation of HSC.
+    The results showed that the expression of Lhx2 was significantly decreased with the activation of HSC (Figure \ref{hsc_activation_mRNA}), consistent with our previous analysis result.
+    To further clarify the role of LHX2 in human cell, we knocked down LHX2 by small interfering RNA (siRNA) in LX2 cells.
+    The results showed that knockdown of LHX2 significantly promoted the expression of fibrosis-related genes in Figure \ref{hsc_activation_mRNA}d, compatible with previous knowledge in mice.
+
+    Subsequently, we overexpressed Lhx2/LHX2 in mHSCs and LX2 cells.
+    The results showed that overexpression of LHX2 directly affected the cell morphology of human HSCs and significantly inhibited the expression of fibrogenic genes (Figure \ref{LHX2_LX2_morphology} and \ref{LHX2_OEs}a).
+    In addition, observation in mHSCs further confirmed that Lhx2 could inhibit the expression of fibrosis-related genes (Figure \ref{LHX2_OEs}b).
+    In order to comprehensively understand the gene expression profile of HSC regulated by LHX2, RNA-seq results showed that the differential genes were mainly related to extracellular matrix structure and assembly (Figure \ref{LHX2_GO}), which was consistent with fibrosis-related phenotype.
+
+    Thus, systematic and comprehensive $in$ $vitro$ verification showed that Lhx2/LHX2 is indeed capable to regulate fibrogenic gene expressions and inhibit HSC activation as we concluded from AGEAS extraction output.
+    However, the preliminarily identified regulatory pathways for Lhx2 to inhibit HSC activation is yet to be addressed.
+    % In vivo experiment will take longer time...
+
+  \subsection*{Conclusion}
+    With result achieved so far, AGEAS shows robustness in extracting key regulatory elements for several biological researches.
+    Key TFs inferred by extracted important GRPs and regulon analysis in all 4 $in$ $silico$ cases were confirmed informative to reveal main functionalities responsible for biological process of interest.
+    Furthermore, the direct extractions of ISL1 in DAN differentiation and Jund in HSC activation as regulatory source in top amount of important GRPs can demonstrate that AGEAS is not focusing solely on TF regulon sizes in reconstructed meta-GRN nor expression differences between sample classes.
+    Also, $in$ $vitro$ experiments indicate great potential in AGEAS to promote method development in phenotypic manipulation.
+    % While TF regulons reconstructed with all extracted GRPs are having sizes proportional to meta-GRN... GO enrichment?
+    % However, whether extracted regulatory elements covering all functional aspects of studying biological phenomena, admittedly, remains undetermined due to lack of validation for GRPs' activities.
+    Overall, we anticipate that AGEAS will become useful in providing insightful regulatory information and promoting pioneer researches in revealing complicate mechanism behind biological phenomena.
+
 
 \section*{Discussion}
   \label{disc}
+  Considering the rapid development of both sequencing technology and machine learning algorithms, we implemented
+  AGEAS with modular design.
+  In data preprocessing part, the meta-GRN reconstruction section can be replaced with other methods to further increase fidelity of regulatory relationships or integrating more information such as cis-regulatory elements (CREs) accessibility which can be obtained from Assay for Transposase-Accessible Chromatin Sequencing (ATAC-seq) data.
+  Moreover, CRE accessibility information combining with motif enrichment analysis is proved capable to identity potential regulatory pathways replacing ChIP-seq based dataset AGEAS utilizing in present study. \cite{scREMOTE}
+  Refine meta-GRN reconstruction method in consideration of having input data from simultaneous scRNA-seq and single cell ATAC-seq (scATAC-seq), such as SHARE-seq published in late 2020, \cite{share_seq} can potentially further improve applicability of AGEAS; however, accessibility of corresponding datasets will be essential for performance assessment and method development.
+  Similarly, initial set of classificaion models is also subject to be changed responding to future computational studies.
 
-  In present study, we showed AGEAS's applicability in analyzing scRNA-Seq derived data in cell reprogramming development, cell subtype differentiation .
-  According to test cases so far, key TFs closely related with sample class difference appear to either form substantial regulon with extracted GRPs or high regulatory influence on other key genes.
-  Without any previous knowledge on studying CSs, Gene Ontology (GO) enrichment analysis can potentially narrow down key cellular functions changed in different CSs.
+  Also, it is important to note that AGEAS can be applied with GEMs normalized with different methods on user's choice as well as derived from other sequencing technologies such as bulk RNA-seq or spatial sequencing in revealing tissue differences.
+  Replacing transcriptiomic data with proteomic data may also be achievable to analysis protein interaction networks.
+  However, larger scale of applicability tests shall be performed in advance.
 
-  However, larger scales of applicability test can further confirm AGEAS's capability on guiding frontier researches.
-  While more computational resources become available, other classification algorithms and according interpretation methods will be added and tested with current version on larger scales.
+  Due to the stochastic nature of AGEAS, extraction results of AGEAS are not expected to stay identical for repeated applications with exactly same inputs.
+  Main reason underlying the inconsistency is caused by how AGEAS attempt to obtain top performing models for later prediction interpretations.
+  Repeated random subsets of psGRNs using in model training and selection are expected to vary for each application hence resulting in different performance of classification models and ranking results.
+  As a result, the importance values of GRPs might differ and slightly affect top TFs extracted later.
 
+  Two possible workarounds of inconsistent issue would be:
+  (i) manually set random seed for every process influencing subset selection.
+  (ii) set multiple extractor unit and combine extraction results.
+  In present study, we found n = 4 units yielding relatively stable results, but this value could vary based on application scenario.
 
-  With result achieved so far, we anticipate that AGEAS will become useful in providing insightful advices on not only learning differences between CSs and cell subtypes, but also finding key GFs to induce CS conversions unachievable so far.
-
-  Limitations...
-  Fidelity of GRPs...
-  Reconstruct GRN with ATAC-Seq by motif enrichment instead of ChIP-Seq... (especially considering technology like Share-Seq which can perform scRNA-Seq with scATAC-Seq in same cell simultaneously...)
-  Apply AGEAS on tissue studies with spatial transcriptomics...
-
-
-
-% \section*{Conclusion}
-  % \label{conc}
-  % Conclusion goes here
+  Although Lhx2 extracted by AGEAS-based analysis indeed shows capability to inhibit HSC activation during liver fibrosis as predicted, the corresponding inference of functional pathways still need to be proved.
+  Furthermore, $in$ $vivo$ experiments are also necessary to evaluate functionality of Lhx2 and associated pathways for higher fidelity.
 
 \bibliography{reference}
 
 % For data citations of datasets uploaded to e.g. \emph{figshare}, please use the \verb|howpublished| option in the bib entry to specify the platform and the link, as in the \verb|Hao:gidmaps:2014| example in the sample bibliography file.
 
 \section*{Author contributions statement}
-\textbf{J.Y.}: Methodology, Software, Writing- Original draft preparation, Project administration
-\textbf{M.N.}: Methodology, Software
-\textbf{J.T.}: Writing - Review \& Editing, Project administration
+  \textbf{J.Y.}: Methodology, Software, Writing- Original draft preparation, Project administration
+  \textbf{M.N.}: Methodology, Software
+  \textbf{J.T.}: Methodology, Writing- Original draft preparation, Project administration
+% Writing - Review \& Editing,
 
 \section*{Additional information}
-All scRNA-Seq datasets are retrieved from Gene Expression Omnibus(GEO) as described in the Table below.
+  All scRNA-seq datasets are retrieved from Gene Expression Omnibus(GEO) as described in the Table below.
 
-\begin{table}[ht]
+  \begin{table}[ht]
+    \centering
+    \begin{tabular}{|l|l|}
+    \specialrule{.2em}{.1em}{.1em}
+    \textbf{Sample Class} & \textbf{Accession number}\\
+
+    \specialrule{.2em}{.1em}{.1em}
+    \multicolumn{2}{|l|}{GSE103221} \\
+    \hline
+    MEF & GSM3629847 \\
+    \hline
+    ESC & GSM3629848 \\
+
+    \specialrule{.2em}{.1em}{.1em}
+    \multicolumn{2}{|l|}{GSE137720 } \\
+    \hline
+    $CCl_4$ a6w hsc & GSM4085625 \\
+    \hline
+    $CCl_4$ a6w pf & GSM4085627 \\
+    % \hline
+    % healthy hsc & GSM4085623 \\
+    % \hline
+    % healthy pf & GSM4085626 \\
+
+    \specialrule{.2em}{.1em}{.1em}
+    \multicolumn{2}{|l|}{GSE185275 } \\
+    \hline
+    glial/neuronal co-culture & GSM5609927 \\
+    \hline
+    purified DANs & GSM5609930 \\
+
+    \specialrule{.2em}{.1em}{.1em}
+    \multicolumn{2}{|l|}{GSE156482 } \\
+    % \hline
+    % p4 cm & GSM4732219 \\
+    \hline
+    p7 CM & GSM4732221 \\
+    \hline
+    p28 CM & GSM4732225 \\
+    % \hline
+    % p28 ncm & GSM4732226 \\
+
+    \specialrule{.2em}{.1em}{.1em}
+    \end{tabular}
+    \caption{
+      \label{geo_table}
+    }
+  \end{table}
+
+\begin{figure}[ht]
   \centering
-  \begin{tabular}{|l|l|}
-  \specialrule{.2em}{.1em}{.1em}
-  \textbf{Sample Class} & \textbf{Accession number}\\
-
-  \specialrule{.2em}{.1em}{.1em}
-  \multicolumn{2}{|l|}{GSE103221} \\
-  \hline
-  MEF & GSM3629847 \\
-  \hline
-  ESC & GSM3629848 \\
-
-  \specialrule{.2em}{.1em}{.1em}
-  \multicolumn{2}{|l|}{GSE137720 } \\
-  \hline
-  $CCl_4$ a6w hsc & GSM4085625 \\
-  \hline
-  $CCl_4$ a6w pf & GSM4085627 \\
-  % \hline
-  % healthy hsc & GSM4085623 \\
-  % \hline
-  % healthy pf & GSM4085626 \\
-
-  \specialrule{.2em}{.1em}{.1em}
-  \multicolumn{2}{|l|}{GSE185275 } \\
-  \hline
-  glial/neuronal co-culture & GSM5609927 \\
-  \hline
-  purified DA neurons & GSM5609930 \\
-
-  \specialrule{.2em}{.1em}{.1em}
-  \multicolumn{2}{|l|}{GSE156482 } \\
-  % \hline
-  % p4 cm & GSM4732219 \\
-  \hline
-  p7 CM & GSM4732221 \\
-  \hline
-  p28 CM & GSM4732225 \\
-  % \hline
-  % p28 ncm & GSM4732226 \\
-
-  \specialrule{.2em}{.1em}{.1em}
-  \end{tabular}
+  % \includegraphics[width=0.8\linewidth, height=18cm, keepaspectratio,]{../images/summary_trans.png}
+  \includegraphics[width=0.8\linewidth, keepaspectratio,]{../images/summary_trans.png}
   \caption{
-    \label{geo_table}
+    The overall workflow of AGEAS:
+    \textbf{\emph{(1)}} Reconstruct meta-level GRN (meta-GRN) with expression data of all samples.
+    \textbf{\emph{(2)}} Build pseudo-samples with sliding window algorithm and reconstruct GRNs with GRPs identified in meta-GRN accordingly.
+    \textbf{\emph{(3)}} Select best performing classifiers in predicting class labels of pseudo-sample GRNs (psGRNs).
+    \textbf{\emph{(4)}} Interpret how top models make classifications and gradually exclude GRPs with low weights or outlier-level high weights.
+    \textbf{\emph{(5)}} Repeatedly train classifiers with different set of psGRNs as training data to extract GRPs frequently ranked as top important features for decision.
+    \textbf{\emph{(6)}} Reconstruct GRNs with extracted GRPs and GRPs excluded as significant outliers.
   }
-\end{table}
+  \label{workflow}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  % \includegraphics[width=0.8\linewidth, height=12cm, keepaspectratio,]{../images/data_preprocess_trans.png}
+  \includegraphics[width=0.8\linewidth, keepaspectratio,]{../images/data_preprocess_trans.png}
+  \caption{
+    Workflow to reconstruct meta-GRN and psGRNs.
+    \textbf{\emph{(1)}} Filter genes from GEMs with log2FC filter(optional), MWW filter, and $\sigma$ filter.
+    \textbf{\emph{(2)}} Find candidate GRP gene pairs from either interaction database or predictions made by \emph{GRNBoost2}\cite{grnboost2}-like algorithm.
+    \textbf{\emph{(3)}} Filter candidate GRP gene pairs with PCC filter and reconstruct meta-GRN with validated GRPs.
+    \textbf{\emph{(4)}} Generate pseudo-samples with SWA.
+    \textbf{\emph{(5)}} Utilize GRPs in meta-GRN as generic guidance to form candidate GRPs for pseudo-samples.
+    \textbf{\emph{(6)}} Filter every candidate GRP for all pseudo-samples with PCC filter and reconstruct psGRNs with validated GRPs.
+  }
+  \label{data_preprocess}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{../images/nn.png}
+  \caption{1D-CNN with 2 convolution layer set.}
+  \label{1dCNN}
+\end{figure}
+
+\begin{figure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/top_TFs/MEF_ESC.png}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/top_TFs/N_cocul.png}
+    \caption{}
+  \end{subfigure}
+
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/top_TFs/CMp7d_CMp28d.png}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/top_TFs/HSCp6w_PFp6w.png}
+    \caption{}
+  \end{subfigure}
+
+  \caption{
+    Top 15 TFs ranked by regulatory degrees in all GRPs extracted by AGEAS.
+    % Heatmap at right indicates relative $log_2$ gene expression levels in binary sample classes.
+    \textbf{\emph{(a)}} Mouse embryonic fibroblast vs. Embryonic stem cell
+    \textbf{\emph{(b)}} Purified dopaminergic neuron vs. Radial glial/neuronal co-culture
+    \textbf{\emph{(c)}} 7 days postnatal cardiomyocyte vs. 28 days postnatal cardiomyocyte
+    \textbf{\emph{(d)}} Hepatic stellate cell vs. Portal fibroblast (both after 6 weeks of CCl4 administration)
+  }
+  \label{result_figs}
+\end{figure}
+
+\begin{figure}
+
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/lhx2_class.png}
+    \caption{Lhx2 regulon}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/junb_class.png}
+    \caption{Junb regulon}
+  \end{subfigure}
+
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/nfib_class.png}
+    \caption{Nfib regulon}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/mef2c_class.png}
+    \caption{Mef2c regulon}
+  \end{subfigure}
+
+  \caption{
+    Regulons of extracted top TFs interacting with both Jund and Jun and Mef2c.
+    Class 1 stands for HSC; class 2 stands for PF.
+  }
+  \label{regulons_figs}
+\end{figure}
+
+\begin{figure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_a.png}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_b.png}
+    \caption{}
+  \end{subfigure}
+
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_c.png}
+    \caption{}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_h.png}
+    \caption{}
+  \end{subfigure}
+  \caption{
+    Relative mRNA expression levels during HSC activation.
+    \textbf{\emph{(a)}} Fibrosis-related gene (Col1a1, Col3a1, Acta2) expression in mHSCs were increased with the extension of culture time, indicating HSC activation.
+    n = 3.
+    \textbf{\emph{(b)}} With the activation of mHSC, expression of Lhx2 decreased gradually.
+    n = 3.
+    \textbf{\emph{(c)}} In human HSC cell line LX2, TGF-$\beta$ can remarkably activate HSC and promote expressions of fibrosis-related genes. % Reference ?
+    Meanwhile, the expression of LHX2 decreased with the activation of HSC.
+    \textbf{\emph{(d)}} Knockdown of LHX2 by siRNA (si-LHX2) significantly increased the expression of fibrosis-related genes in LX2 cells compared with negative control (si-NC).
+    n = 4.
+  }
+  \label{hsc_activation_mRNA}
+\end{figure}
+
+\begin{figure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_wt.png}
+    \caption{LX2-WT}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_pcdh_oe.png}
+    \caption{LX2-PCDH-OE}
+  \end{subfigure}
+
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_lhx2_oe.png}
+    \caption{LX2-LHX2-OE}
+  \end{subfigure}
+  \caption{
+    Overexpression of LHX2 significantly altered cell morphology in LX2 cell lines.
+    \textbf{\emph{(a)}} LX2 wild type.
+    \textbf{\emph{(b)}} LX2 overexpressing negative control vector.
+    \textbf{\emph{(c)}} LX2 overexpressing LHX2.
+  }
+  \label{LHX2_LX2_morphology}
+\end{figure}
+
+\begin{figure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_e.png}
+    \caption{LX2}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_f.png}
+    \caption{mHSC}
+  \end{subfigure}
+
+  \caption{
+    Overexpression of Lhx2/LHX2 significantly decreased the expression of fibrosis-related genes.
+    \textbf{\emph{(a)}} in LX2 cells. n = 3.
+    \textbf{\emph{(b)}} in mHSCs. n = 3.
+  }
+  \label{LHX2_OEs}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{../images/wet_lab/tao_g.png}
+  \caption{
+    RNA-seq results of LHX2 overexpressed cells showed that gene ontology (GO) enrichment of differentially expressed genes was mainly concentrated in extracellular matrix related genes.
+  }
+  \label{LHX2_GO}
+\end{figure}
 
 % $CASH$        & Combined Algorithm Selection and Hyperparameter optimization\\
 \end{document}

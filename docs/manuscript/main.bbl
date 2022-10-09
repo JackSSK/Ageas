@@ -7,6 +7,48 @@
 \providecommand{\bibinfo}[2]{#2}
 \providecommand{\eprint}[2][]{\url{#2}}
 
+\bibitem{Scenic}
+\bibinfo{author}{Aibar, S.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Scenic: Single-cell regulatory
+  network inference and clustering}}.
+\newblock {\emph{\JournalTitle{Nature Methods}}} \textbf{\bibinfo{volume}{14}},
+  \bibinfo{pages}{1083–1086}, \doiprefix\url{10.1038/nmeth.4463}
+  (\bibinfo{year}{2017}).
+
+\bibitem{pySCENIC}
+\bibinfo{author}{Van~de Sande, B.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{A scalable scenic workflow for
+  single-cell gene regulatory network analysis}}.
+\newblock {\emph{\JournalTitle{Nature Protocols}}}
+  \textbf{\bibinfo{volume}{15}}, \bibinfo{pages}{2247–2276},
+  \doiprefix\url{10.1038/s41596-020-0336-2} (\bibinfo{year}{2020}).
+
+\bibitem{mogrify_2016}
+\bibinfo{author}{Rackham, O.~J.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{A predictive computational
+  framework for direct reprogramming between human cell types}}.
+\newblock {\emph{\JournalTitle{Nature Genetic}}} \textbf{\bibinfo{volume}{48}},
+  \bibinfo{pages}{331–335}, \doiprefix\url{10.1038/ng.3487}
+  (\bibinfo{year}{2016}).
+
+\bibitem{cellnet_2014}
+\bibinfo{author}{Cahan, P.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Cellnet: Network biology applied to
+  stem cell engineering}}.
+\newblock {\emph{\JournalTitle{Cell}}} \textbf{\bibinfo{volume}{158}},
+  \bibinfo{pages}{903–915}, \doiprefix\url{10.1016/j.cell.2014.07.020}
+  (\bibinfo{year}{2014}).
+
+\bibitem{scREMOTE}
+\bibinfo{author}{Tran, A.}, \bibinfo{author}{Yang, P.}, \bibinfo{author}{Yang,
+  J.~Y.} \& \bibinfo{author}{Ormerod, J.~T.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Scremote: Using multimodal single
+  cell data to predict regulatory gene relationships and to build a
+  computational cell reprogramming model}}.
+\newblock {\emph{\JournalTitle{NAR Genomics and Bioinformatics}}}
+  \textbf{\bibinfo{volume}{4}}, \doiprefix\url{10.1093/nargab/lqac023}
+  (\bibinfo{year}{2022}).
+
 \bibitem{2020SciPy-NMeth}
 \bibinfo{author}{Virtanen, P.} \emph{et~al.}
 \newblock \bibinfo{journal}{\bibinfo{title}{{{SciPy} 1.0: Fundamental
@@ -159,6 +201,23 @@
   \bibinfo{pages}{635–646}, \doiprefix\url{10.1242/dev.02787}
   (\bibinfo{year}{2007}).
 
+\bibitem{oct4_1}
+\bibinfo{author}{Shi, G.} \& \bibinfo{author}{Jin, Y.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Role of oct4 in maintaining and
+  regaining stem cell pluripotency}}.
+\newblock {\emph{\JournalTitle{Stem Cell Research \&; Therapy}}}
+  \textbf{\bibinfo{volume}{1}}, \doiprefix\url{10.1186/scrt39}
+  (\bibinfo{year}{2010}).
+
+\bibitem{oct4_2}
+\bibinfo{author}{PAN, G.~J.}, \bibinfo{author}{CHANG, Z.~Y.},
+  \bibinfo{author}{SCHÖLER, H.~R.} \& \bibinfo{author}{PEI, D.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Stem cell pluripotency and
+  transcription factor oct4}}.
+\newblock {\emph{\JournalTitle{Cell Research}}} \textbf{\bibinfo{volume}{12}},
+  \bibinfo{pages}{321–329}, \doiprefix\url{10.1038/sj.cr.7290134}
+  (\bibinfo{year}{2002}).
+
 \bibitem{ips7f}
 \bibinfo{author}{Wang, B.} \emph{et~al.}
 \newblock \bibinfo{journal}{\bibinfo{title}{Induction of pluripotent stem cells
@@ -192,6 +251,29 @@
   \bibinfo{pages}{373–378}, \doiprefix\url{10.1038/embor.2011.11}
   (\bibinfo{year}{2011}).
 
+\bibitem{cebpb_ipsc}
+\bibinfo{author}{Chronis, C.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Cooperative binding of
+  transcription factors orchestrates reprogramming}}.
+\newblock {\emph{\JournalTitle{Cell}}} \textbf{\bibinfo{volume}{168}},
+  \doiprefix\url{10.1016/j.cell.2016.12.016} (\bibinfo{year}{2017}).
+
+\bibitem{hdac2_ipsc}
+\bibinfo{author}{Jamaladdin, S.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Histone deacetylase (hdac) 1 and 2
+  are essential for accurate cell division and the pluripotency of embryonic
+  stem cells}}.
+\newblock {\emph{\JournalTitle{Proceedings of the National Academy of
+  Sciences}}} \textbf{\bibinfo{volume}{111}}, \bibinfo{pages}{9840–9845},
+  \doiprefix\url{10.1073/pnas.1321330111} (\bibinfo{year}{2014}).
+
+\bibitem{rad21_smc3_esc}
+\bibinfo{author}{Nitzsche, A.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Rad21 cooperates with pluripotency
+  transcription factors in the maintenance of embryonic stem cell identity}}.
+\newblock {\emph{\JournalTitle{PLoS ONE}}} \textbf{\bibinfo{volume}{6}},
+  \doiprefix\url{10.1371/journal.pone.0019470} (\bibinfo{year}{2011}).
+
 \bibitem{ASCL1_dopaminergic_neuron_2021}
 \bibinfo{author}{Earley, A.~M.}, \bibinfo{author}{Burbulla, L.~F.},
   \bibinfo{author}{Krainc, D.} \& \bibinfo{author}{Awatramani, R.}
@@ -211,23 +293,6 @@
   \textbf{\bibinfo{volume}{369}}, \bibinfo{pages}{133–149},
   \doiprefix\url{10.1016/j.ydbio.2012.06.010} (\bibinfo{year}{2012}).
 
-\bibitem{phox2_caudal_da}
-\bibinfo{author}{Hoekstra, E.~J.}, \bibinfo{author}{von Oerthel, L.},
-  \bibinfo{author}{van~der Linden, A.~J.} \& \bibinfo{author}{Smidt, M.~P.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Phox2b influences the development
-  of a caudal dopaminergic subset}}.
-\newblock {\emph{\JournalTitle{PLoS ONE}}} \textbf{\bibinfo{volume}{7}},
-  \doiprefix\url{10.1371/journal.pone.0052118} (\bibinfo{year}{2012}).
-
-\bibitem{phox2_rat_da}
-\bibinfo{author}{Fan, Y.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Transcription factors phox2a/2b
-  upregulate expression of noradrenergic and dopaminergic phenotypes in aged
-  rat brains}}.
-\newblock {\emph{\JournalTitle{Neurotoxicity Research}}}
-  \textbf{\bibinfo{volume}{38}}, \bibinfo{pages}{793–807},
-  \doiprefix\url{10.1007/s12640-020-00250-9} (\bibinfo{year}{2020}).
-
 \bibitem{ELF3_precursor_marker}
 \bibinfo{author}{Tang, Y.} \emph{et~al.}
 \newblock \bibinfo{journal}{\bibinfo{title}{Elf a $\beta$-spectrin is a
@@ -237,31 +302,44 @@
   \bibinfo{pages}{5255–5267}, \doiprefix\url{10.1038/sj.onc.1205548}
   (\bibinfo{year}{2002}).
 
-\bibitem{ebf1_striatum}
-\bibinfo{author}{Garel, S.}, \bibinfo{author}{Marin, F.},
-  \bibinfo{author}{Grosschedl, R.} \& \bibinfo{author}{Charnay, P.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Ebf1 controls early cell
-  differentiation in the embryonic striatum}}.
-\newblock {\emph{\JournalTitle{Development}}} \textbf{\bibinfo{volume}{126}},
-  \bibinfo{pages}{5285–5294}, \doiprefix\url{10.1242/dev.126.23.5285}
-  (\bibinfo{year}{1999}).
+\bibitem{pbx3_dan}
+\bibinfo{author}{Villaescusa, J.~C.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{A pbx1 transcriptional network
+  controls dopaminergic neuron development and is impaired in parkinson's
+  disease}}.
+\newblock {\emph{\JournalTitle{The EMBO Journal}}}
+  \textbf{\bibinfo{volume}{35}}, \bibinfo{pages}{1963–1978},
+  \doiprefix\url{10.15252/embj.201593725} (\bibinfo{year}{2016}).
 
-\bibitem{ebf1_cell_diff}
-\bibinfo{author}{Faedo, A.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Differentiation of human
-  telencephalic progenitor cells into msns by inducible expression of gsx2 and
-  ebf1}}.
-\newblock {\emph{\JournalTitle{Proceedings of the National Academy of
-  Sciences}}} \textbf{\bibinfo{volume}{114}},
-  \doiprefix\url{10.1073/pnas.1611473114} (\bibinfo{year}{2017}).
+\bibitem{hdac2_dan_1}
+\bibinfo{author}{Jawerka, M.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{The specific role of histone
+  deacetylase 2 in adult neurogenesis}}.
+\newblock {\emph{\JournalTitle{Neuron Glia Biology}}}
+  \textbf{\bibinfo{volume}{6}}, \bibinfo{pages}{93–107},
+  \doiprefix\url{10.1017/s1740925x10000049} (\bibinfo{year}{2010}).
 
-\bibitem{ebf1_migration}
-\bibinfo{author}{Yin, M.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Ventral mesencephalon-enriched
-  genes that regulate the development of dopaminergic neurons in vivo}}.
-\newblock {\emph{\JournalTitle{Journal of Neuroscience}}}
-  \textbf{\bibinfo{volume}{29}}, \bibinfo{pages}{5170–5182},
-  \doiprefix\url{10.1523/jneurosci.5569-08.2009} (\bibinfo{year}{2009}).
+\bibitem{hdac2_dan_2}
+\bibinfo{author}{Tang, T.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Hdac1 and hdac2 regulate
+  intermediate progenitor positioning to safeguard neocortical development}}.
+\newblock {\emph{\JournalTitle{Neuron}}} \textbf{\bibinfo{volume}{101}},
+  \doiprefix\url{10.1016/j.neuron.2019.01.007} (\bibinfo{year}{2019}).
+
+\bibitem{rbpj_1}
+\bibinfo{author}{Shi, M.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Notch-rbpj signaling is required
+  for the development of noradrenergic neurons in mouse locus coeruleus}}.
+\newblock {\emph{\JournalTitle{Journal of Cell Science}}}
+  \doiprefix\url{10.1242/jcs.102152} (\bibinfo{year}{2012}).
+
+\bibitem{rbpj_2}
+\bibinfo{author}{Toritsuka, M.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Regulation of striatal dopamine
+  responsiveness by notch/rbp-j signaling}}.
+\newblock {\emph{\JournalTitle{Translational Psychiatry}}}
+  \textbf{\bibinfo{volume}{7}}, \doiprefix\url{10.1038/tp.2017.21}
+  (\bibinfo{year}{2017}).
 
 \bibitem{sp1_hypertrophy}
 \bibinfo{author}{Sun, S.} \emph{et~al.}
@@ -321,13 +399,22 @@
   \textbf{\bibinfo{volume}{390}}, \bibinfo{pages}{18–25},
   \doiprefix\url{10.1016/j.mce.2014.03.007} (\bibinfo{year}{2014}).
 
-\bibitem{nkx25}
-\bibinfo{author}{Serpooshan, V.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Nkx2.5+ cardiomyoblasts contribute
-  to cardiomyogenesis in the neonatal heart}}.
-\newblock {\emph{\JournalTitle{Scientific Reports}}}
-  \textbf{\bibinfo{volume}{7}}, \doiprefix\url{10.1038/s41598-017-12869-4}
-  (\bibinfo{year}{2017}).
+\bibitem{rest_1}
+\bibinfo{author}{Kuwahara, K.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Nrsf regulates the fetal cardiac
+  gene program and maintains normal cardiac structure and function}}.
+\newblock {\emph{\JournalTitle{The EMBO Journal}}}
+  \textbf{\bibinfo{volume}{22}}, \bibinfo{pages}{6310–6321},
+  \doiprefix\url{10.1093/emboj/cdg601} (\bibinfo{year}{2003}).
+
+\bibitem{prox1_CM}
+\bibinfo{author}{Petchey, L.~K.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Loss of prox1 in striated muscle
+  causes slow to fast skeletal muscle fiber conversion and dilated
+  cardiomyopathy}}.
+\newblock {\emph{\JournalTitle{Proceedings of the National Academy of
+  Sciences}}} \textbf{\bibinfo{volume}{111}}, \bibinfo{pages}{9515–9520},
+  \doiprefix\url{10.1073/pnas.1406191111} (\bibinfo{year}{2014}).
 
 \bibitem{CM_posnatal_mature}
 \bibinfo{author}{Padula, S.~L.}, \bibinfo{author}{Velayutham, N.} \&
@@ -337,84 +424,6 @@
 \newblock {\emph{\JournalTitle{International Journal of Molecular Sciences}}}
   \textbf{\bibinfo{volume}{22}}, \bibinfo{pages}{3288},
   \doiprefix\url{10.3390/ijms22063288} (\bibinfo{year}{2021}).
-
-\bibitem{yap1}
-\bibinfo{author}{Hou, N.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Activation of yap1/taz signaling in
-  ischemic heart disease and dilated cardiomyopathy}}.
-\newblock {\emph{\JournalTitle{Experimental and Molecular Pathology}}}
-  \textbf{\bibinfo{volume}{103}}, \bibinfo{pages}{267–275},
-  \doiprefix\url{10.1016/j.yexmp.2017.11.006} (\bibinfo{year}{2017}).
-
-\bibitem{lhx2_fibro}
-\bibinfo{author}{Wandzioch, E.}, \bibinfo{author}{Kolterud, A.},
-  \bibinfo{author}{Jacobsson, M.}, \bibinfo{author}{Friedman, S.~L.} \&
-  \bibinfo{author}{Carlsson, L.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Lhx2–/– mice develop liver
-  fibrosis}}.
-\newblock {\emph{\JournalTitle{Proceedings of the National Academy of
-  Sciences}}} \textbf{\bibinfo{volume}{101}}, \bibinfo{pages}{16549–16554},
-  \doiprefix\url{10.1073/pnas.0404678101} (\bibinfo{year}{2004}).
-
-\bibitem{Lhx2_hsc_1}
-\bibinfo{author}{Kolterud, A.}, \bibinfo{author}{Wandzioch, E.} \&
-  \bibinfo{author}{Carlsson, L.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Lhx2 is expressed in the septum
-  transversum mesenchyme that becomes an integral part of the liver and the
-  formation of these cells is independent of functional lhx2}}.
-\newblock {\emph{\JournalTitle{Gene Expression Patterns}}}
-  \textbf{\bibinfo{volume}{4}}, \bibinfo{pages}{521–528},
-  \doiprefix\url{10.1016/j.modgep.2004.03.001} (\bibinfo{year}{2004}).
-
-\bibitem{osr1_1}
-\bibinfo{author}{Zhou, Y.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Osr1 regulates hepatic inflammation
-  and cell survival in the progression of non-alcoholic fatty liver disease}}.
-\newblock {\emph{\JournalTitle{Laboratory Investigation}}}
-  \textbf{\bibinfo{volume}{101}}, \bibinfo{pages}{477–489},
-  \doiprefix\url{10.1038/s41374-020-00493-2} (\bibinfo{year}{2020}).
-
-\bibitem{osr1_2}
-\bibinfo{author}{Gupta, V.}, \bibinfo{author}{Gupta, I.},
-  \bibinfo{author}{Park, J.}, \bibinfo{author}{Bram, Y.} \&
-  \bibinfo{author}{Schwartz, R.~E.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Hedgehog signaling demarcates a
-  niche of fibrogenic peribiliary mesenchymal cells}}.
-\newblock {\emph{\JournalTitle{Gastroenterology}}}
-  \textbf{\bibinfo{volume}{159}}, \doiprefix\url{10.1053/j.gastro.2020.03.075}
-  (\bibinfo{year}{2020}).
-
-\bibitem{osr1_3}
-\bibinfo{author}{Matsuda, M.} \& \bibinfo{author}{Seki, E.}
-\newblock \bibinfo{journal}{\bibinfo{title}{The liver fibrosis niche: Novel
-  insights into the interplay between fibrosis-composing mesenchymal cells,
-  immune cells, endothelial cells, and extracellular matrix}}.
-\newblock {\emph{\JournalTitle{Food and Chemical Toxicology}}}
-  \textbf{\bibinfo{volume}{143}}, \bibinfo{pages}{111556},
-  \doiprefix\url{10.1016/j.fct.2020.111556} (\bibinfo{year}{2020}).
-
-\bibitem{acta2_myofb_marker}
-\bibinfo{author}{Nagamoto, T.}, \bibinfo{author}{Eguchi, G.} \&
-  \bibinfo{author}{Beebe, D.~C.}
-\newblock \bibinfo{title}{Alpha-smooth muscle actin expression in cultured lens
-  epithelial cells} (\bibinfo{year}{2000}).
-
-\bibitem{ebf1_fibroblast}
-\bibinfo{author}{Guerrero-Juarez, C.~F.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Single-cell analysis reveals
-  fibroblast heterogeneity and myeloid-derived adipocyte progenitors in murine
-  skin wounds}}.
-\newblock {\emph{\JournalTitle{Nature Communications}}}
-  \textbf{\bibinfo{volume}{10}}, \doiprefix\url{10.1038/s41467-018-08247-x}
-  (\bibinfo{year}{2019}).
-
-\bibitem{ebf1_lung}
-\bibinfo{author}{Liu, X.} \emph{et~al.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Categorization of lung mesenchymal
-  cells in development and fibrosis}}.
-\newblock {\emph{\JournalTitle{iScience}}} \textbf{\bibinfo{volume}{24}},
-  \bibinfo{pages}{102551}, \doiprefix\url{10.1016/j.isci.2021.102551}
-  (\bibinfo{year}{2021}).
 
 \bibitem{mef2c_1}
 \bibinfo{author}{Wang, X.} \emph{et~al.}
@@ -442,5 +451,85 @@
 \newblock {\emph{\JournalTitle{The American Journal of Chinese Medicine}}}
   \textbf{\bibinfo{volume}{40}}, \bibinfo{pages}{481–494},
   \doiprefix\url{10.1142/s0192415x12500371} (\bibinfo{year}{2012}).
+
+\bibitem{ap1_hsc_1}
+\bibinfo{author}{Smart, D.~E.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Jund is a profibrogenic
+  transcription factor regulated by jun n-terminal kinase-independent
+  phosphorylation}}.
+\newblock {\emph{\JournalTitle{Hepatology}}} \textbf{\bibinfo{volume}{44}},
+  \bibinfo{pages}{1432–1440}, \doiprefix\url{10.1002/hep.21436}
+  (\bibinfo{year}{2006}).
+
+\bibitem{ap1_hsc_2}
+\bibinfo{author}{Smart, D.~E.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Jund regulates transcription of the
+  tissue inhibitor of metalloproteinases-1 and interleukin-6 genes in activated
+  hepatic stellate cells}}.
+\newblock {\emph{\JournalTitle{Journal of Biological Chemistry}}}
+  \textbf{\bibinfo{volume}{276}}, \bibinfo{pages}{24414–24421},
+  \doiprefix\url{10.1074/jbc.m101840200} (\bibinfo{year}{2001}).
+
+\bibitem{ap1_hsc_3}
+\bibinfo{author}{Yoshida, K.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Transforming growth factor-$\beta$
+  and platelet-derived growth factor signal via c-jun n-terminal
+  kinase-dependent smad2/3 phosphorylation in rat hepatic stellate cells after
+  acute liver injury}}.
+\newblock {\emph{\JournalTitle{The American Journal of Pathology}}}
+  \textbf{\bibinfo{volume}{166}}, \bibinfo{pages}{1029–1039},
+  \doiprefix\url{10.1016/s0002-9440(10)62324-3} (\bibinfo{year}{2005}).
+
+\bibitem{ap1_hsc_4}
+\bibinfo{author}{Mann, D.~A.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Transcriptional regulation of
+  hepatic stellate cell activation}}.
+\newblock {\emph{\JournalTitle{Gut}}} \textbf{\bibinfo{volume}{50}},
+  \bibinfo{pages}{891–896}, \doiprefix\url{10.1136/gut.50.6.891}
+  (\bibinfo{year}{2002}).
+
+\bibitem{lhx2_fibro}
+\bibinfo{author}{Wandzioch, E.}, \bibinfo{author}{Kolterud, A.},
+  \bibinfo{author}{Jacobsson, M.}, \bibinfo{author}{Friedman, S.~L.} \&
+  \bibinfo{author}{Carlsson, L.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Lhx2–/– mice develop liver
+  fibrosis}}.
+\newblock {\emph{\JournalTitle{Proceedings of the National Academy of
+  Sciences}}} \textbf{\bibinfo{volume}{101}}, \bibinfo{pages}{16549–16554},
+  \doiprefix\url{10.1073/pnas.0404678101} (\bibinfo{year}{2004}).
+
+\bibitem{Lhx2_hsc_1}
+\bibinfo{author}{Kolterud, A.}, \bibinfo{author}{Wandzioch, E.} \&
+  \bibinfo{author}{Carlsson, L.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Lhx2 is expressed in the septum
+  transversum mesenchyme that becomes an integral part of the liver and the
+  formation of these cells is independent of functional lhx2}}.
+\newblock {\emph{\JournalTitle{Gene Expression Patterns}}}
+  \textbf{\bibinfo{volume}{4}}, \bibinfo{pages}{521–528},
+  \doiprefix\url{10.1016/j.modgep.2004.03.001} (\bibinfo{year}{2004}).
+
+\bibitem{Nfib_sadly}
+\bibinfo{author}{Roy, S.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Mir-1224 inhibits cell
+  proliferation in acute liver failure by targeting the antiapoptotic gene
+  nfib}}.
+\newblock {\emph{\JournalTitle{Journal of Hepatology}}}
+  \textbf{\bibinfo{volume}{67}}, \bibinfo{pages}{966–978},
+  \doiprefix\url{10.1016/j.jhep.2017.06.007} (\bibinfo{year}{2017}).
+
+\bibitem{acta2_hsc_act}
+\bibinfo{author}{Friedman, S.~L.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Hepatic stellate cells: Protean,
+  multifunctional, and enigmatic cells of the liver}}.
+\newblock {\emph{\JournalTitle{Physiological Reviews}}}
+  \textbf{\bibinfo{volume}{88}}, \bibinfo{pages}{125–172},
+  \doiprefix\url{10.1152/physrev.00013.2007} (\bibinfo{year}{2008}).
+
+\bibitem{share_seq}
+\bibinfo{author}{Ma, S.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Chromatin potential identified by
+  shared single-cell profiling of rna and chromatin}}.
+\newblock {\emph{\JournalTitle{Cell}}} \textbf{\bibinfo{volume}{183}},
+  \doiprefix\url{10.1016/j.cell.2020.09.056} (\bibinfo{year}{2020}).
 
 \end{thebibliography}
