@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  12 OCT 2022 11:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.23 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2022.1.29)  12 OCT 2022 12:41
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -837,10 +837,10 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <5> not available
 
 {d:/texlive/2021/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 LaTeX Font Info:    Font shape `T1/phv/b/it' in size <9> not available
-(Font)              Font shape `T1/phv/b/sl' tried instead on input line 95.
+(Font)              Font shape `T1/phv/b/sl' tried instead on input line 96.
  [2]
 LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 1
-94.
+95.
 
 (d:/texlive/2021/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
@@ -849,42 +849,42 @@ File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 <../images/summary_trans.png, id=287, 2428.07124pt x 2860.6875pt>
 File: ../images/summary_trans.png Graphic file (type png)
 <use ../images/summary_trans.png>
-Package pdftex.def Info: ../images/summary_trans.png  used on input line 598.
+Package pdftex.def Info: ../images/summary_trans.png  used on input line 599.
 (pdftex.def)             Requested size: 400.38872pt x 471.68753pt.
 <../images/data_preprocess_trans.png, id=289, 2672.98625pt x 2426.06375pt>
 File: ../images/data_preprocess_trans.png Graphic file (type png)
 <use ../images/data_preprocess_trans.png>
 Package pdftex.def Info: ../images/data_preprocess_trans.png  used on input lin
-e 614.
+e 615.
 (pdftex.def)             Requested size: 400.38872pt x 363.3756pt.
 <../images/nn.png, id=292, 2271.48625pt x 1011.78pt>
 File: ../images/nn.png Graphic file (type png)
 <use ../images/nn.png>
-Package pdftex.def Info: ../images/nn.png  used on input line 629.
+Package pdftex.def Info: ../images/nn.png  used on input line 630.
 (pdftex.def)             Requested size: 400.38872pt x 178.33011pt.
 <../images/top_TFs/MEF_ESC.png, id=293, 505.89pt x 433.62pt>
 File: ../images/top_TFs/MEF_ESC.png Graphic file (type png)
 <use ../images/top_TFs/MEF_ESC.png>
-Package pdftex.def Info: ../images/top_TFs/MEF_ESC.png  used on input line 637.
+Package pdftex.def Info: ../images/top_TFs/MEF_ESC.png  used on input line 638.
 
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
 <../images/top_TFs/N_cocul.png, id=294, 505.89pt x 433.62pt>
 File: ../images/top_TFs/N_cocul.png Graphic file (type png)
 <use ../images/top_TFs/N_cocul.png>
-Package pdftex.def Info: ../images/top_TFs/N_cocul.png  used on input line 642.
+Package pdftex.def Info: ../images/top_TFs/N_cocul.png  used on input line 643.
 
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
 <../images/top_TFs/CMp7d_CMp28d.png, id=295, 505.89pt x 433.62pt>
 File: ../images/top_TFs/CMp7d_CMp28d.png Graphic file (type png)
 <use ../images/top_TFs/CMp7d_CMp28d.png>
 Package pdftex.def Info: ../images/top_TFs/CMp7d_CMp28d.png  used on input line
- 648.
+ 649.
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
 <../images/top_TFs/HSCp6w_PFp6w.png, id=296, 505.89pt x 433.62pt>
 File: ../images/top_TFs/HSCp6w_PFp6w.png Graphic file (type png)
 <use ../images/top_TFs/HSCp6w_PFp6w.png>
 Package pdftex.def Info: ../images/top_TFs/HSCp6w_PFp6w.png  used on input line
- 653.
+ 654.
 (pdftex.def)             Requested size: 245.2399pt x 210.20619pt.
  
 AED: lastpage setting LastPage
@@ -896,11 +896,11 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 6BD39270F678D10654A6B391B6A8FD72;99.
  ) 
 Here is how much of TeX's memory you used:
- 26808 strings out of 478287
- 502466 string characters out of 5850749
+ 26812 strings out of 478287
+ 502504 string characters out of 5850749
  855624 words of memory out of 5000000
  44136 multiletter control sequences out of 15000+600000
- 569035 words of font info for 400 fonts, out of 8000000 for 9000
+ 569421 words of font info for 403 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,16n,91p,1001b,595s stack positions out of 5000i,500n,10000p,200000b,80000s
 {d:/texlive/2021/texmf-dist/fonts/enc/dvips/base/8r.enc}<d:/texlive/2021/texm
@@ -916,7 +916,7 @@ b><d:/texlive/2021/texmf-dist/fonts/type1/urw/times/utmb8a.pfb><d:/texlive/2021
 /texmf-dist/fonts/type1/urw/times/utmbi8a.pfb><d:/texlive/2021/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb><d:/texlive/2021/texmf-dist/fonts/type1/urw/times/u
 tmri8a.pfb>
-Output written on main.pdf (14 pages, 994524 bytes).
+Output written on main.pdf (14 pages, 994367 bytes).
 PDF statistics:
  415 PDF objects out of 1000 (max. 8388607)
  350 compressed objects within 4 object streams

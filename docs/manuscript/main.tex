@@ -51,31 +51,32 @@
   Even though limited computational methods are capable of completely and precisly extracting key genetic regulatory elements in biological process of interest, Mogrify\cite{mogrify_2016} and CellNet\cite{cellnet_2014} have demonstrated GRN based methods can help to analyze cell type differentiation and to implement cell reprogramming.
   However, both methods may require large scale of additional background data to be applicable in other studies such as analyzing physiological or pathological development of selected cell type.
   The scREMOTE \cite{scREMOTE} published in 2022 is a potential method to extract generalized regulatory elements since limited background data is required with sequencing data representing sample classes.
-  But prior knowledge on key TFs and marker genes is still indispensable.
-  Indeed, a regulation trajectory of DEGs or regulons showing significant activity difference after GRN reconstruction would be able to reveal the developmental pathways as generalized approach, but numerous noisy signals are expected due to general gene regulatory nature of TFs.
-  Therefore, here we present AGEAS with feasibility in extracting key regulatory elements for biological phenomena of interest even with scarce prior knowledge and potentially promoting further discoveries.
+  But prior knowledge on key TFs and marker genes is indispensable.
+  A regulation trajectory of DEGs or regulons showing significant activity difference after GRN reconstruction would be able to reveal the developmental pathways as generalized approach.
+  Due to general gene regulatory nature of TFs, numerous noisy signals are expected.
+  Therefore, here we present AGEAS, an algorithm with feasibility in extracting key regulatory elements for biological phenomena of interest and can potentially promote further discoveries, even with scarce prior knowledge.
 
   Several reasons motivated us to develop semi-supervised AutoML based method.
-  Firstly, accurate labeling of regulatory elements' relativeness in biological phenomena would require extensive prior knowledge in according research area that may hardly available.
-  While unsupervised clustering can potentially extract factos playing important roles, this approach would result in lossing comprehensiveness through focusing on specific aspects with regulatory elements showing similar patterns.
-  As a result, we chose to apply biological phenomena reflecting sample classes, such as cell types and cell states which should be easily retrievable, as labels for classification models to predict with masked GRN as input and then interpret success predictions to extract key regulatory elements.
-  Secondly, developing a generalized classificaton model in differentiating GRNs is still hard to guarantee comprehensiveness considering that capturing few significant differences would be sufficient for the model to reach outstanding accuracy.
-  Hence, a extraction system with multiple independent classification models implemented with various algorithms should be helpful to recover from potential comprehensiveness loss.
-  Thirdly, the process of interpreting all success prediction made by every classificaion model and integrating corresponding interpretation results is expected to be extremely computational expensive.
-  Thus, applying AutoML-based model and feature selection procedure that can effectively decreas interpretation cost would be necessary to increase feasibility of the method.
+  Firstly, accurate labeling of regulatory elements' relatedness in biological phenomena would require extensive prior knowledge may be unavailable.
+  While unsupervised clustering can potentially extract factors playing important roles, this approach may focus on specific aspects with regulatory elements showing similar patterns and result in losing comprehensiveness.
+  As a result, we chose to apply biological phenomena associating sample classes, such as cell types and cell states which should be easily retrievable, as labels for classification models to predict with masked GRN as input and then interpret success predictions to extract key regulatory elements.
+  Secondly, it is also hard to guarantee comprehensiveness when developing a generalized classification model in differentiating GRNs, considering that capturing few significant differences would be sufficient for the model to reach outstanding accuracy.
+  Hence, an extraction system with multiple independent classification models implemented with various algorithms should be helpful to recover from potential comprehensiveness loss.
+  Thirdly, the process of interpreting all success prediction made by every classification model and integrating corresponding interpretation results may be computational expensive.
+  Thus, applying an AutoML-based model and feature selection procedure that can effectively decrease interpretation cost would be necessary to increase feasibility of the method.
 
-  To evaluate performance of AGEAS, we primarily applied AGEAS in studying somatic cell reprogramming process and then further addressed performance in analyzing 3 other biological process in cell subtype differentiation, physiological and pathological development.
+  To evaluate the performance of AGEAS, we primarily applied it on studying somatic cell reprogramming process and further addressed performance in analyzing 3 other biological processes in cell subtype differentiation, physiological and pathological development.
   % Later, we also addressed the applicability of AGEAS extraction result in guiding further studies about biological phenomena with $in$ $vitro$ experiments in determining Lhx2, key TF regulating liver fibrosis extracted with AGEAS, can indeed inhibit HSC activation.
 
 \section*{Method}
   \label{method}
-  The basic principle of AGEAS is to find key regulatory elements associated with biological phenomena of interest through analyzing how well-performing classification models distinguish GRNs of sample with the phenomena from GRNs of samples without.
+  The basic principle of AGEAS is to find key regulatory elements associated with biological phenomena of interest through analyzing how well-performing classification models distinguish GRNs of sample with the phenomena from those without.
   To reconstruct sufficient GRNs for each class, RNA-seq based expression data is segmented into subsets while each one is analogized as a pseudo-sample having discrete expression data.
-  The pseudo-sample GRNs (psGRNs) are reconstructed accordingly; thus, classification models can be trained, evaluated, and interpreted having GRPs as input factors.
-  With heavily weighted GRPs and correspond genes repeatedly obtained from interpretations of success sample class predictions, GRNs could be formed and potentially playing important role in differentiating the studying sample classes.
-  The overall workflow can be summarized as Figure \ref{workflow}.
-  By default setting, four seperate extractor units in workflow run parallelly after data preprocessing part in order to increase output stability considering stochastic nature of AGEAS, and all extracted regulatory elements are used to form GRNs later combined into one atlas.
-  Following sections describe each step of AGEAS in more depth.
+  The pseudo-sample GRNs (psGRNs) are reconstructed accordingly; thus, classification models can be trained, evaluated, and interpreted with GRPs as input factors.
+  With heavily weighted GRPs and corresponding genes repeatedly obtained from interpretations of successful sample class predictions, GRNs could be formed and potentially play an important role in differentiating the studying sample classes.
+  The overall workflow can be summarized in Figure \ref{workflow}.
+  By default, four separate extractor units in workflow run in parallel after data preprocessing part in order to increase output stability considering the stochastic nature of AGEAS, and all extracted regulatory elements are used to form GRNs, which will later be combined into one atlas.
+  The following sections describe each step of AGEAS in more depth.
   % \begin{itemize}
   %   \item \hyperref[step1]{\textbf{\emph{Step 1}}}: Data preprocessing
   %   \item \hyperref[step2]{\textbf{\emph{Step 2}}}: Classification model selection.
@@ -87,42 +88,42 @@
 
   \subsection*{Step 1:Data preprocessing}
     \label{step1}
-    The main purpose of this step is to build pseudo-samples and reconstruct corresponding pseudo-sample GRNs (psGRNs).
-    For each sample class, gene expression matrices (GEMs) labeled with same class label are concatenated as one comprehensive expression matrix.
-    With comprehensive GEMs, a meta-level GRN (meta-GRN) is reconstructed in advance of psGRNs to provide generic guidance on reconstruction.
-    In general, the workflow of this step can be represented as Figure \ref{data_preprocess}.
+    The main purpose of this step is to build pseudo-samples and to reconstruct corresponding pseudo-sample GRNs (psGRNs).
+    For each sample class, gene expression matrices (GEMs) with the same class label are concatenated as one comprehensive expression matrix.
+    With comprehensive GEMs, a meta-level GRN (meta-GRN) is reconstructed before psGRNs to provide generic guidance on reconstruction.
+    In general, the workflow of this step can be summarized in Figure \ref{data_preprocess}.
 
     \subsubsection*{Reconstruct meta-GRN}
       Firstly, genes included in the comprehensive GEMs are assessed and determined whether having potential to form informative GRPs with other genes.
-      Commonly, differentially expressed genes (DEGs) would be considered as important factors of studying  phenomena.
-      Here we apply the Mann-Whitney U rank test (MWW) implemented by \emph{SciPy}\cite{2020SciPy-NMeth} to exclude genes having indistinguishable expression level distribution across GEMs of different classes.
+      Commonly, DEGs are considered as important factors of studying phenomena.
+      Here we apply the Mann-Whitney U rank test (MWW) implemented by \emph{SciPy}\cite{2020SciPy-NMeth} to exclude genes with indistinguishable expression level distribution across GEMs of different classes.
       The p-value for rejecting null hypothesis, that expression profile underlying class 1 samples is the same as the expression profile underlying class 2 samples, is set to 0.05 by default.
-      Furthermore, a $\log_2$ fold change (log2FC) filter is also implemented in AGEAS.
-      However, enabling the log2FC filter is not encouraged considering upstream TFs indirectly regulating key genes associated with phenomena of interest may not always have significant differential expression profiles.
-      The lof2FC filter shall mostly be used in order to decrease meta-GRN's GRP total amount in a compromising position caused by limited computational resources.
-      After differential expression based filters, a standard deviation ($\sigma$) filter is applied to exclude genes either having low expression level or merely affected by dynamic expression status of other genes.
+      Furthermore, a $\log_2$ fold change (log2FC) filter is implemented in AGEAS.
+      However, enabling the log2FC filter is not encouraged, considering that upstream TFs indirectly regulate key genes associated with phenomena of interest may not be significantly differential expressed.
+      The lof2FC filter shall mostly be used to decrease meta-GRN's total degree in a compromising position caused by limited computational resources.
+      After differential expression based filters, a standard deviation ($\sigma$) filter is applied to exclude genes with low expression level or merely affected by dynamic expression status of other genes.
       By default, the $\sigma$ threshold is set to 1.0, the lowest expression level in raw gene count matrix gained from RNA-seq data.
-      The threshold value should be adjusted corresponding to prior knowledge of input GEMs, for example of what normalization method was applied to the GEMs.
+      The threshold value should be adjusted based on prior knowledge of input GEMs, for example, the normalization method applied to the GEMs.
 
-      With candidate genes passed filters above, some gene pairs are formed and assessed potential of representing GRPs.
-      To reduce overall computational complexity, a gene pair shall be formed with at least one TF which could be the regulatory source of GRP.
-      If not further specified, TF list will be retrieved from integrated \emph{TRANSFAC}\cite{transfac} datasets according to the provided species information.
+      With candidate genes passing filters above, some gene pairs are formed and evaluated by the potential of representing GRPs.
+      To reduce overall computational complexity, a gene pair shall be formed with at least one TF, which could be the regulatory source of GRP.
+      If not further specified, a TF list will be retrieved from integrated \emph{TRANSFAC}\cite{transfac} dataset according to the provided species information.
       Utilizing genetic interaction database like \emph{GTRD}\cite{gkaa1057} and \emph{BioGRID}\cite{biogrid}, AGEAS checks whether the binding ability of gene pair is confirmed or not.
-      By default, if TF being recorded to have binding site within target gene's promoter range (-1000 to +100) by Chromatin Immunoprecipitation Sequencing (ChIP-seq) dataset retrieved from \emph{GTRD}\cite{gkaa1057}, the potential GRP gene pair will be passed to expression correlation assessment.
+      By default, if the TF recorded has at least one binding site within target gene's promoter range (-1000 to +100) by Chromatin Immunoprecipitation Sequencing (ChIP-seq) dataset retrieved from \emph{GTRD}\cite{gkaa1057}, the potential GRP gene pair will be passed to expression correlation assessment.
       For TFs not covered by interaction database, \emph{GRNBoost2}\cite{grnboost2}-like algorithm is initiated to predict potential regulatory target genes.
       The prediction importance threshold can either be set manually or automatically based on recorded interactions as:
 
       \centerline{$Threshold = min(GA(M_1, t)\, \uplus \, GA(M_2, t), \frac{1}{g})$}
 
       \noindent Here $GA()$ denotes \emph{GRNBoost2}\cite{grnboost2}-like algorithm;
-      $M_1$ is concatenated class 1 samples GEM with genes passed filters;
-      $M_2$ is concatenated class 2 samples GEM with genes passed filters;
-      $t$ is the TF having largest amount of recorded interaction in dataset;
-      $g$ is total amount of unique genes in all samples passed filters.
+      $M_1$ denotes concatenated class 1 samples GEM with genes passed filters;
+      $M_2$ denotes concatenated class 2 samples GEM with genes passed filters;
+      $t$ denotes the TF having largest amount of recorded interaction in dataset;
+      $g$ denotes total amount of unique genes in all samples passed filters.
 
-      After potential GRP gene pairs obtained, a expression correlation filter is used to exclude gene pairs having low covariance which implies weak relationship.
-      To assess expression correlation, AGEAS applies Pearson's Correlation coefficient\cite{pcc_2012} (PCC) whihc is one of the widely adopted methods.\cite{cid_2019}
-      With default setting, gene pairs can reach absolute correlation coefficient of 0.2 while keeping correspond p-value lower than 0.05 are included in meta-GRN as validated GRP.
+      After potential GRP gene pairs are obtained, an expression correlation filter is used to exclude gene pairs with low covariance.
+      To assess expression correlation, AGEAS applies Pearson's Correlation coefficient\cite{pcc_2012} (PCC), one of the widely adopted methods.\cite{cid_2019}
+      With default setting, gene pairs can reach absolute correlation coefficient of 0.2 and p-value lower than 0.05 are included in meta-GRN as validated GRP.
 
     \subsubsection*{Reconstruct psGRNs}
       The comprehensive GEMs is divided into few sample subsets with sliding window algorithm (SWA) to build pseudo-samples.
@@ -183,7 +184,7 @@
     \end{algorithm}
 
     The model selection algorithm requires five inputs
-    (1)$R$, the maximum amount of training resource, equivalent to all avaliable psGRNs
+    (1)$R$, the maximum amount of training resource, equivalent to all available psGRNs
     (2)$C$, the total set of provided classification model configurations
     (3)$I$, the number of iterations for model pruning (default set as 3)
     (4)$\alpha_{max}$, the maximum portion of $R$ can be fed to single model (default set as 0.95)
@@ -232,7 +233,7 @@
       \caption{
         \label{models}
         Classification model algorithms integrated in AGEAS with correspond numbers of hyperparameter and preset model configurations.
-        Categorical hyperparameters and continuous numerical hyperparameters are clarifed beside total number of hyperparameters ($\# \lambda$).
+        Categorical hyperparameters and continuous numerical hyperparameters are clarified beside total number of hyperparameters ($\# \lambda$).
         Conditional hyperparameters which are required for selected other hyperparameters are shown in brackets if there is any.
         $\#$ Configs indicates total amount of configurations AGEAS applies by default.
       }
@@ -248,18 +249,18 @@
     \label{step3}
     With selected well-performing models, AGEAS already can start repetition of model training and interpretation in \hyperref[step4]{Step 4} to extract key GRPs.
     However, few uninformative GRPs in training psGRNs merely relied by any model to make classification could be pruned in advance for saving computational power.
-    Furthermore, to prevent classification models focusing on a small group of GRPs regardless of training psGRNs, GRPs draw excessive attention shall also be seperated from psGRNs to improve extraction comprehensiveness.
-    Thus, in this step, AGEAS iteratively train classificaion models with dynamic $\alpha_{max}$ portion of psGRNs and obtain feature importance scores as described in \hyperref[features_importances]{subsection} below to find GRPs either scored extremely high or considerably low.
+    Furthermore, to prevent classification models focusing on a small group of GRPs regardless of training psGRNs, GRPs draw excessive attention shall also be separated from psGRNs to improve extraction comprehensiveness.
+    Thus, in this step, AGEAS iteratively train classification models with dynamic $\alpha_{max}$ portion of psGRNs and obtain feature importance scores as described in \hyperref[features_importances]{subsection} below to find GRPs either scored extremely high or considerably low.
 
     More specifically, at each iteration, GRPs having z-scores ranked as bottom $b$ portion (default set as 0.1) are discarded.
-    Also, an $i$-th ranked GRP will be seperated from psGRNs and passed to \hyperref[step5]{Step 5} directly if having z-score fulfilling the condition:
+    Also, an $i$-th ranked GRP will be separated from psGRNs and passed to \hyperref[step5]{Step 5} directly if having z-score fulfilling the condition:
 
     \centerline{
       $Z_{score}^{i} \ge max(Z_{score}^{thread}, \frac{Z_{score}^{i-1}}{3}, 3 \cdot IQR)$
     }
 
     \noindent The $Z_{score}^{thread}$ is input z-score threshold (default set as 3.0), and $IQR$ stands for interquartile range calculated by the beginning of each iteration.\
-    With this criterion, AGEAS ensures only GRPs draw significantly more attention shall be selected by each iteration despite the data distribution of varying z-score scalled importance values.
+    With this criterion, AGEAS ensures only GRPs draw significantly more attention shall be selected by each iteration despite the data distribution of varying z-score scaled importance values.
 
     By default, AGEAS iterates this feature selection step for 3 times.
 
@@ -267,12 +268,12 @@
       \label{features_importances}
       AGEAS applies concept of The Shapley value\cite{roth_1988} for estimating importance of each input feature, equivalent to GRP of input psGRN, in any kind of classification model while making predictions.
       Specific Shapley value calculation or approximating methods are implemented with \emph{SHAP}\cite{lundberg2017unified} and applied to different algorithms as shown in Table \ref{shap}.
-      Regarding the standard differences between feature importance estimating methods, we utilize \emph{softmax} function to normalize feature importances and define the normalized importance calculation function as:
+      Regarding the standard differences between feature importance estimating methods, we utilize \emph{softmax} function to normalize feature importance and define the normalized importance calculation function as:
 
       \centerline{$T(X) = softmax(\left\{ F(x) \right\}, x \in X)$}
 
       \noindent Here $X$ is total set of all features, and $F(x)$ is the importance estimating method of individual classification model being interpreted.\
-      If the feature importances can be approached with internalized method $f(x)$, $F(x)$ is set as:
+      If the feature importance can be approached with internalized method $f(x)$, $F(x)$ is set as:
 
       \centerline{$F(x) = \frac{f(x)}{\sum_{x' \in X} f(x')}$}
 
@@ -280,7 +281,7 @@
 
       \centerline{$F(x) = \sum_{s \in S}\frac{\left|\phi_{c_1,s}^{x}\right| + \left|\phi_{c_2,s}^{x}\right|}{2}$}
 
-      \noindent After all selected classification models $M$ have been interpreted, we can intergrate the feature importances matrices weighted with corresponding models' $L_{CE}$ to one matrix $A$ as:\
+      \noindent After all selected classification models $M$ have been interpreted, we can integrate the feature importance matrices weighted with corresponding models' $L_{CE}$ to one matrix $A$ as:\
 
       \centerline{
         $ A = \left\{ \sum_{m \in M}(1 - L_{CE}^{m})T_{m}(x) \right\}, x \in X $
@@ -323,7 +324,7 @@
           Algorithms marked with \textbf{*} have internalized feature importance estimating methods which will be applied with higher priority than Shapley value based methods.
           GBDT implemented with \emph{XGBoost}\cite{chen2016xgboost} can have feature importance approximated with average weight gain at each split involving the feature.
           Linear SVM implemented with \emph{scikit-learn}\cite{scikit-learn} can have the importance estimated with feature coefficient or using Linear Explainer.
-          However, for SVM with kernel function, the feature coefficient estimation would be inappropriate, and feature importances should be approximated with Kernel Explainer.
+          However, for SVM with kernel function, the feature coefficient estimation would be inappropriate, and feature importance should be approximated with Kernel Explainer.
         }
       \end{table}
 
@@ -338,7 +339,7 @@
 
   \subsection*{Step 5: Key network reconstruction}
     \label{step5}
-    Analoging every GRP previously extracted or seperated with high z-score in \hyperref[step3]{Step 3} as a directional edge connecting two gene vertices, equivalent to a TF and a gene, in graph theory, AGEAS attempts to reconstruct a network graph representing regulatory differences between query sample classes.
+    Analoging every GRP previously extracted or separated with high z-score in \hyperref[step3]{Step 3} as a directional edge connecting two gene vertices, equivalent to a TF and a gene, in graph theory, AGEAS attempts to reconstruct a network graph representing regulatory differences between query sample classes.
     Since there is no guarantee on all GRP edges can be connected, some regulatory relationships between gene vertices could be missed.
     Hence, AGEAS utilizes meta-GRN gained from \hyperref[step1]{Step 1} to find GRPs which can further elucidate the regulatory relationships and adds the GRPs back to the network graph.
 
@@ -354,8 +355,8 @@
 
   Among top TFs, Pou5f1 (Oct4) has more association with GRPs extracted as important differential regulatory element between MEF and ESC than any other TFs while forming largest regulon and having expression pattern significantly favoring ESC.
   Thus, we can infer Pou5f1 is key regulatory element associated with ESC identity.
-  Extensive studies already addressed Pou5f1's important role in maintaing pluripotency. \cite{niwa_2007, oct4_1, oct4_2}
-  Moreover, to implement cell reprogramming to iPSC, Nanog and Sox2 are also noteworthy since they are closely interacting with Pou5f1 in extracted network, having high regulatory degrees, and differentially expressed in ESC.
+  Extensive studies already addressed Pou5f1's important role in pluripotency maintenance. \cite{niwa_2007, oct4_1, oct4_2}
+  Moreover, to implement cell reprogramming to iPSC, Nanog and Sox2 are also noteworthy since they are closely interacting with Pou5f1 in extracted network, having high regulatory degrees, and differently expressed in ESC.
   Multiple previous studies confirmed that all of Oct4, Nanog, and Sox2 are playing important role to induce cell conversion from somatic cell to iPSC. \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}
   Cebpb, Hdac2, and Smc3, extracted as top TFs frequently acting as regulatory source in extracted important GRPs and directly affecting Pou5f1 expression, were also reported with relevant functions. \cite{cebpb_ipsc, hdac2_ipsc, rad21_smc3_esc}
 
@@ -374,7 +375,7 @@
         Previously, ISL1 was determined essential for differentiation of prethalamic DANs, \cite{isl1_da} and ELF3 was found to be neuronal precursor cell marker associated with neural stem cell development, \cite{ELF3_precursor_marker} consistent with it's high expression level in neuronal co-culture samples.
         Moreover, a DAN development study reported PBX3 being required for correct differentiation of neuroblast, product of radial glial cell, into midbrain DAN and survival of midbrain DAN. \cite{pbx3_dan}
 
-        Through substratification of all extracted GRPs, we only found HDAC2 and RBPJ as potential upstream regulatory elements of all ISL1, ELF3, and PBX3.
+        Through stratification of all extracted GRPs, we only found HDAC2 and RBPJ as potential upstream regulatory elements of all ISL1, ELF3, and PBX3.
         Few reports demonstrated HDAC2 is associated with neurogenesis of radial glial cells. \cite{hdac2_dan_1, hdac2_dan_2}
         Nevertheless, HDAC2's role in DAN differentiation is yet to be clarified.
         RBPJ was reported essential for DAN survival and affecting DAN development by regulating ASCL1 which is an essential factor in neurogenesis. \cite{rbpj_1, rbpj_2}
@@ -461,13 +462,13 @@
 
         Here we address AGEAS's applicability on cell pathological development studies through analyzing hepatic stellate cells (HSCs) in mice liver administrated with chronic carbon tetrachloride ($CCl_4$) for 6 weeks and according portal fibroblasts (PF) simulating activated HSCs.
 
-        Based on extracted important GRPs, we identified Mef2c, Jun, and Jund as potential representitives of key regulatory elements in HSC activation (Figure \ref{result_figs}d).
+        Based on extracted important GRPs, we identified Mef2c, Jun, and Jund as potential representatives of key regulatory elements in HSC activation (Figure \ref{result_figs}d).
         As TF extracted with most important GRPs, Mef2c has been well-documented as key regulator in HSC activation. \cite{mef2c_1, mef2c_2, mef2c_3}
         Extensive studies also found Jun and Jund, both being functional components of the AP1 TF complex, essential for fibrosis-related HSC activation and profibrogenic process. \cite{ap1_hsc_1, ap1_hsc_2, ap1_hsc_3, ap1_hsc_4}
 
         Analyzing TF regulons of Mef2c, Jun, and Jund, we suppose Mef2c is acting as targetome of Jund and inter-regulatory element of Jun.
         While no regulatory relationship between Jund and Jun determined, 3 extracted top TFs (Lhx2, Nfib, Junb) can potentially influence expressions of both Jund and Jun.
-        Since Junb is also functional component of AP1, we infer it associated with HSC activaion in a similar manner.
+        Since Junb is also functional component of AP1, we infer it associated with HSC activation in a similar manner.
         Furthermore, Lhx2 was found indispensable for quiescent HSCs. \cite{lhx2_fibro, Lhx2_hsc_1}
         Although, little literature addressed Nfib's role in HSC, Nfib was reported acting as anti-apoptotic gene for cell proliferation during $CCl_4$ induced liver damage. \cite{Nfib_sadly}
     \end{itemize}
