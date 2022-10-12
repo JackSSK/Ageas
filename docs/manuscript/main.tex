@@ -26,10 +26,10 @@
 
 \begin{abstract}
   As rapid progress in sequencing technology since last decade, numerous mechanisms underlying cell functions and developmental processes have been revealed as complex regulations of gene expressions.
-  While single-cell RNA sequencing (scRNA-seq) made high-resolution transcriptomic view increasingly accessible, precise identification of gene regulatory network (GRN) describing cell types and cell states became achievable.
-  However, extracting key regulatory elements, including gene regulatory pathways (GRPs), transcription factors (TFs), and targetomes, accurately and completely reflecting functionality changes in biological phenomena remains challenging.
-  Herein, we describe AGEAS, an semi-supervised automated machine learning (AutoML) based genetic regulatory element extraction system that assesses importances of GRPs in resulting biological phenomena, such as cell type differentiation, physiological and pathological development, and reconstruct GRNs with extracted important GRPs for comprehensive inference.
-  With several case studies in divergent research areas, we show that AGEAS can indeed extract informative regulatory elements and reconstruct networks referring biological phenomena of interest.
+  Since single-cell RNA sequencing (scRNA-seq) made high-resolution transcriptomic view increasingly accessible, precise identification of gene regulatory network (GRN) describing cell types and cell states became achievable.
+  However, extracting key regulatory elements, including gene regulatory pathways (GRPs), transcription factors (TFs), and targetomes, that accurately and completely reflects functionality changes in biological phenomena remains challenging.
+  Herein, we describe AGEAS, an semi-supervised automated machine learning (AutoML) based genetic regulatory element extraction system that assesses importances of GRPs in resulting biological phenomena, such as cell type differentiation, physiological and pathological development, and reconstructs GRNs with extracted important GRPs for comprehensive inference.
+  With several case studies in divergent research areas, we show that AGEAS can indeed extract informative regulatory elements and reconstruct networks to indicate regulatory changes in biological phenomena of interest.
   % Furthermore, we validated applicability of AGEAS with empirical evidence that LIM homeobox 2 (Lhx2), key quiescent hepatic stellate cell (HSC) factor AGEAS extracted through analyzing chronic carbon tetrachloride ($CCl_4$) induced liver fibrosis data, can indeed halt HSC activation to prevent fibrogenic process.
 
   \subsection*{Availability and implementation}
@@ -48,9 +48,9 @@
   As high-resolution sequencing technologies become increasingly applicable and accessible, an efficient and robost analytical system capable of extracting key genetic features responsible for cell types and cell states difference with limited prior biological knowledge also become highly demanded.
   Several methodologies like SCENIC \cite{Scenic} already demonstrated informativeness and robustness in studying cellular phenotypes with GRN analysis.
   Regulons, collections of a TF and corresponding targetomes, can successfully address cell identities with more comprehensive information compared with differential expressing genes (DEGs). \cite{Scenic, pySCENIC}
-  Even though limited computational methods are capable to completely and precisly extract key genetic regulatory elements in biological process of interest, Mogrify\cite{mogrify_2016} and CellNet\cite{cellnet_2014} have demonstrated GRN based methods can help to analysis cell type differentiation and implement cell reprogramming.
-  However, either method may require large scale of additional background data to be applicable in other studies such as analyzing physiological or pathological development of selected cell type.
-  The scREMOTE \cite{scREMOTE} published in 2022 shows great potential as generalized regulatory element extraction method since limited background data is required with sequencing data representing sample classes.
+  Even though limited computational methods are capable of completely and precisly extracting key genetic regulatory elements in biological process of interest, Mogrify\cite{mogrify_2016} and CellNet\cite{cellnet_2014} have demonstrated GRN based methods can help to analyze cell type differentiation and to implement cell reprogramming.
+  However, both methods may require large scale of additional background data to be applicable in other studies such as analyzing physiological or pathological development of selected cell type.
+  The scREMOTE \cite{scREMOTE} published in 2022 is a potential method to extract generalized regulatory elements since limited background data is required with sequencing data representing sample classes.
   But prior knowledge on key TFs and marker genes is still indispensable.
   Indeed, a regulation trajectory of DEGs or regulons showing significant activity difference after GRN reconstruction would be able to reveal the developmental pathways as generalized approach, but numerous noisy signals are expected due to general gene regulatory nature of TFs.
   Therefore, here we present AGEAS with feasibility in extracting key regulatory elements for biological phenomena of interest even with scarce prior knowledge and potentially promoting further discoveries.
