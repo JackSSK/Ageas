@@ -517,14 +517,6 @@
   \textbf{\bibinfo{volume}{67}}, \bibinfo{pages}{966–978},
   \doiprefix\url{10.1016/j.jhep.2017.06.007} (\bibinfo{year}{2017}).
 
-\bibitem{acta2_hsc_act}
-\bibinfo{author}{Friedman, S.~L.}
-\newblock \bibinfo{journal}{\bibinfo{title}{Hepatic stellate cells: Protean,
-  multifunctional, and enigmatic cells of the liver}}.
-\newblock {\emph{\JournalTitle{Physiological Reviews}}}
-  \textbf{\bibinfo{volume}{88}}, \bibinfo{pages}{125–172},
-  \doiprefix\url{10.1152/physrev.00013.2007} (\bibinfo{year}{2008}).
-
 \bibitem{share_seq}
 \bibinfo{author}{Ma, S.} \emph{et~al.}
 \newblock \bibinfo{journal}{\bibinfo{title}{Chromatin potential identified by

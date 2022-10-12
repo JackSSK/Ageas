@@ -30,7 +30,7 @@
   However, extracting key regulatory elements, including gene regulatory pathways (GRPs), transcription factors (TFs), and targetomes, accurately and completely reflecting functionality changes in biological phenomena remains challenging.
   Herein, we describe AGEAS, an semi-supervised automated machine learning (AutoML) based genetic regulatory element extraction system that assesses importances of GRPs in resulting biological phenomena, such as cell type differentiation, physiological and pathological development, and reconstruct GRNs with extracted important GRPs for comprehensive inference.
   With several case studies in divergent research areas, we show that AGEAS can indeed extract informative regulatory elements and reconstruct networks referring biological phenomena of interest.
-  Furthermore, we validated applicability of AGEAS with empirical evidence that LIM homeobox 2 (Lhx2), key quiescent hepatic stellate cell (HSC) factor AGEAS extracted through analyzing chronic carbon tetrachloride ($CCl_4$) induced liver fibrosis data, can indeed halt HSC activation to prevent fibrogenic process.
+  % Furthermore, we validated applicability of AGEAS with empirical evidence that LIM homeobox 2 (Lhx2), key quiescent hepatic stellate cell (HSC) factor AGEAS extracted through analyzing chronic carbon tetrachloride ($CCl_4$) induced liver fibrosis data, can indeed halt HSC activation to prevent fibrogenic process.
 
   \subsection*{Availability and implementation}
   The AGEAS code is available at \url{https://github.com/JackSSK/Ageas}.
@@ -65,7 +65,7 @@
   Thus, applying AutoML-based model and feature selection procedure that can effectively decreas interpretation cost would be necessary to increase feasibility of the method.
 
   To evaluate performance of AGEAS, we primarily applied AGEAS in studying somatic cell reprogramming process and then further addressed performance in analyzing 3 other biological process in cell subtype differentiation, physiological and pathological development.
-  Later, we also addressed the applicability of AGEAS extraction result in guiding further studies about biological phenomena with $in$ $vitro$ experiments in determining Lhx2, key TF regulating liver fibrosis extracted with AGEAS, can indeed inhibit HSC activation.
+  % Later, we also addressed the applicability of AGEAS extraction result in guiding further studies about biological phenomena with $in$ $vitro$ experiments in determining Lhx2, key TF regulating liver fibrosis extracted with AGEAS, can indeed inhibit HSC activation.
 
 \section*{Method}
   \label{method}
@@ -360,12 +360,11 @@
   Cebpb, Hdac2, and Smc3, extracted as top TFs frequently acting as regulatory source in extracted important GRPs and directly affecting Pou5f1 expression, were also reported with relevant functions. \cite{cebpb_ipsc, hdac2_ipsc, rad21_smc3_esc}
 
   Therefore, we suppose investigating TFs acting as common regulatory sources in extracted important differential GRPs and correspond regulons can effectively study differences between cell types cell states.
+  % \subsection*{In silico evaluations}
+  To further address AGEAS's applicability and limitation, we applied AGEAS to three other scRNA-seq based studies in distinct research areas.
+  With all default settings describe in \hyperref[method]{Method} section above, we can assess AGEAS's performance in following scenarios with public data set (Table \ref{geo_table}):
 
-  \subsection*{In silico evaluations}
-    To further address AGEAS's applicability and limitation, we applied AGEAS to three other scRNA-seq based studies in distinct research areas.
-    With all default settings describe in \hyperref[method]{Method} section above, we can assess AGEAS's performance in following scenarios with public data set (Table \ref{geo_table}):
-
-    \begin{itemize}
+  \begin{itemize}
       \setlength\itemsep{0em}
       \item {\textbf{Dopaminergic neuron generation}}:
 
@@ -473,36 +472,36 @@
         Although, little literature addressed Nfib's role in HSC, Nfib was reported acting as anti-apoptotic gene for cell proliferation during $CCl_4$ induced liver damage. \cite{Nfib_sadly}
     \end{itemize}
 
-  \subsection*{In vitro validation}
-    To demonstrate empirically the predictive capabilities of utilizing AGEAS extraction result, we further investigated the extraction result of $CCl_4$ induced liver fibrosis study setting scenario of identifying theraputic targets inhibiting pathological fibrogenic process in liver.
-    Through analyzing extracted TF regulons, we further confirmed Mef2c's role as key targetome noticing direct regulational relationships with HSC activation marker Acta2\cite{acta2_hsc_act} and fibrotic collagen Col1a1 (Figure \ref{regulons_figs}d).
-    Moreover, since only Lhx2 has all related GRPs mainly being functional in HSC (Figure \ref{regulons_figs}a) and significantly differential expression in HSC (Figure \ref{result_figs}d), we decided to proceed manipulation of Lhx2 expression.
-    Previous study already proved knockdown of Lhx2 promotes liver fibrosis in mice.\cite{lhx2_fibro}
-    Thus, we suppose overexpression of Lhx2 could assist to maintain quiescent of HSCs through Jun/Jund-Mef2c dependent pathways.
+  % \subsection*{In vitro validation}
+  %   To demonstrate empirically the predictive capabilities of utilizing AGEAS extraction result, we further investigated the extraction result of $CCl_4$ induced liver fibrosis study setting scenario of identifying theraputic targets inhibiting pathological fibrogenic process in liver.
+  %   Through analyzing extracted TF regulons, we further confirmed Mef2c's role as key targetome noticing direct regulational relationships with HSC activation marker Acta2\cite{acta2_hsc_act} and fibrotic collagen Col1a1 (Figure \ref{regulons_figs}d).
+  %   Moreover, since only Lhx2 has all related GRPs mainly being functional in HSC (Figure \ref{regulons_figs}a) and significantly differential expression in HSC (Figure \ref{result_figs}d), we decided to proceed manipulation of Lhx2 expression.
+  %   Previous study already proved knockdown of Lhx2 promotes liver fibrosis in mice.\cite{lhx2_fibro}
+  %   Thus, we suppose overexpression of Lhx2 could assist to maintain quiescent of HSCs through Jun/Jund-Mef2c dependent pathways.
+  %
+  %   To verify our hypothesis, we firstly validated the association between Lhx2 and HSC activation with $in$ $vitro$ experiments.
+  %   In mice primary HSC (mHSC) and human HSC cell lines (LX2), we detected the expression of Lhx2/LHX2 with the activation of HSC.
+  %   The results showed that the expression of Lhx2 was significantly decreased with the activation of HSC (Figure \ref{hsc_activation_mRNA}), consistent with our previous analysis result.
+  %   To further clarify the role of LHX2 in human cell, we knocked down LHX2 by small interfering RNA (siRNA) in LX2 cells.
+  %   The results showed that knockdown of LHX2 significantly promoted the expression of fibrosis-related genes in Figure \ref{hsc_activation_mRNA}d, compatible with previous knowledge in mice.
+  %
+  %   Subsequently, we overexpressed Lhx2/LHX2 in mHSCs and LX2 cells.
+  %   The results showed that overexpression of LHX2 directly affected the cell morphology of human HSCs and significantly inhibited the expression of fibrogenic genes (Figure \ref{LHX2_LX2_morphology} and \ref{LHX2_OEs}a).
+  %   In addition, observation in mHSCs further confirmed that Lhx2 could inhibit the expression of fibrosis-related genes (Figure \ref{LHX2_OEs}b).
+  %   In order to comprehensively understand the gene expression profile of HSC regulated by LHX2, RNA-seq results showed that the differential genes were mainly related to extracellular matrix structure and assembly (Figure \ref{LHX2_GO}), which was consistent with fibrosis-related phenotype.
+  %
+  %   Thus, systematic and comprehensive $in$ $vitro$ verification showed that Lhx2/LHX2 is indeed capable to regulate fibrogenic gene expressions and inhibit HSC activation as we concluded from AGEAS extraction output.
+  %   However, the preliminarily identified regulatory pathways for Lhx2 to inhibit HSC activation is yet to be addressed.
+  %   % In vivo experiment will take longer time...
 
-    To verify our hypothesis, we firstly validated the association between Lhx2 and HSC activation with $in$ $vitro$ experiments.
-    In mice primary HSC (mHSC) and human HSC cell lines (LX2), we detected the expression of Lhx2/LHX2 with the activation of HSC.
-    The results showed that the expression of Lhx2 was significantly decreased with the activation of HSC (Figure \ref{hsc_activation_mRNA}), consistent with our previous analysis result.
-    To further clarify the role of LHX2 in human cell, we knocked down LHX2 by small interfering RNA (siRNA) in LX2 cells.
-    The results showed that knockdown of LHX2 significantly promoted the expression of fibrosis-related genes in Figure \ref{hsc_activation_mRNA}d, compatible with previous knowledge in mice.
-
-    Subsequently, we overexpressed Lhx2/LHX2 in mHSCs and LX2 cells.
-    The results showed that overexpression of LHX2 directly affected the cell morphology of human HSCs and significantly inhibited the expression of fibrogenic genes (Figure \ref{LHX2_LX2_morphology} and \ref{LHX2_OEs}a).
-    In addition, observation in mHSCs further confirmed that Lhx2 could inhibit the expression of fibrosis-related genes (Figure \ref{LHX2_OEs}b).
-    In order to comprehensively understand the gene expression profile of HSC regulated by LHX2, RNA-seq results showed that the differential genes were mainly related to extracellular matrix structure and assembly (Figure \ref{LHX2_GO}), which was consistent with fibrosis-related phenotype.
-
-    Thus, systematic and comprehensive $in$ $vitro$ verification showed that Lhx2/LHX2 is indeed capable to regulate fibrogenic gene expressions and inhibit HSC activation as we concluded from AGEAS extraction output.
-    However, the preliminarily identified regulatory pathways for Lhx2 to inhibit HSC activation is yet to be addressed.
-    % In vivo experiment will take longer time...
-
-  \subsection*{Conclusion}
-    With result achieved so far, AGEAS shows robustness in extracting key regulatory elements for several biological researches.
-    Key TFs inferred by extracted important GRPs and regulon analysis in all 4 $in$ $silico$ cases were confirmed informative to reveal main functionalities responsible for biological process of interest.
-    Furthermore, the direct extractions of ISL1 in DAN differentiation and Jund in HSC activation as regulatory source in top amount of important GRPs can demonstrate that AGEAS is not focusing solely on TF regulon sizes in reconstructed meta-GRN nor expression differences between sample classes.
-    Also, $in$ $vitro$ experiments indicate great potential in AGEAS to promote method development in phenotypic manipulation.
-    % While TF regulons reconstructed with all extracted GRPs are having sizes proportional to meta-GRN... GO enrichment?
-    % However, whether extracted regulatory elements covering all functional aspects of studying biological phenomena, admittedly, remains undetermined due to lack of validation for GRPs' activities.
-    Overall, we anticipate that AGEAS will become useful in providing insightful regulatory information and promoting pioneer researches in revealing complicate mechanism behind biological phenomena.
+\section*{Conclusion}
+  With result achieved so far, AGEAS shows robustness in extracting key regulatory elements for several biological researches.
+  Key TFs inferred by extracted important GRPs and regulon analysis in all 4 $in$ $silico$ cases were confirmed informative to reveal main functionalities responsible for biological process of interest.
+  Furthermore, the direct extractions of ISL1 in DAN differentiation and Jund in HSC activation as regulatory source in top amount of important GRPs can demonstrate that AGEAS is not focusing solely on TF regulon sizes in reconstructed meta-GRN nor expression differences between sample classes.
+  % Also, $in$ $vitro$ experiments indicate great potential in AGEAS to promote method development in phenotypic manipulation.
+  % While TF regulons reconstructed with all extracted GRPs are having sizes proportional to meta-GRN... GO enrichment?
+  % However, whether extracted regulatory elements covering all functional aspects of studying biological phenomena, admittedly, remains undetermined due to lack of validation for GRPs' activities.
+  Overall, we anticipate that AGEAS will become useful in providing insightful regulatory information and promoting pioneer researches in revealing complicate mechanism behind biological phenomena.
 
 
 \section*{Discussion}
@@ -528,8 +527,8 @@
   (ii) set multiple extractor unit and combine extraction results.
   In present study, we found n = 4 units yielding relatively stable results, but this value could vary based on application scenario.
 
-  Although Lhx2 extracted by AGEAS-based analysis indeed shows capability to inhibit HSC activation during liver fibrosis as predicted, the corresponding inference of functional pathways still need to be proved.
-  Furthermore, $in$ $vivo$ experiments are also necessary to evaluate functionality of Lhx2 and associated pathways for higher fidelity.
+  % Although Lhx2 extracted by AGEAS-based analysis indeed shows capability to inhibit HSC activation during liver fibrosis as predicted, the corresponding inference of functional pathways still need to be proved.
+  % Furthermore, $in$ $vivo$ experiments are also necessary to evaluate functionality of Lhx2 and associated pathways for higher fidelity.
 
 \bibliography{reference}
 
@@ -666,127 +665,127 @@
   \label{result_figs}
 \end{figure}
 
-\begin{figure}
+% \begin{figure}
+%
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/lhx2_class.png}
+%     \caption{Lhx2 regulon}
+%   \end{subfigure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/junb_class.png}
+%     \caption{Junb regulon}
+%   \end{subfigure}
+%
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/nfib_class.png}
+%     \caption{Nfib regulon}
+%   \end{subfigure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/mef2c_class.png}
+%     \caption{Mef2c regulon}
+%   \end{subfigure}
+%
+%   \caption{
+%     Regulons of extracted top TFs interacting with both Jund and Jun and Mef2c.
+%     Class 1 stands for HSC; class 2 stands for PF.
+%   }
+%   \label{regulons_figs}
+% \end{figure}
 
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/lhx2_class.png}
-    \caption{Lhx2 regulon}
-  \end{subfigure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/junb_class.png}
-    \caption{Junb regulon}
-  \end{subfigure}
-
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/nfib_class.png}
-    \caption{Nfib regulon}
-  \end{subfigure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/mef2c_class.png}
-    \caption{Mef2c regulon}
-  \end{subfigure}
-
-  \caption{
-    Regulons of extracted top TFs interacting with both Jund and Jun and Mef2c.
-    Class 1 stands for HSC; class 2 stands for PF.
-  }
-  \label{regulons_figs}
-\end{figure}
-
-\begin{figure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_a.png}
-    \caption{}
-  \end{subfigure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_b.png}
-    \caption{}
-  \end{subfigure}
-
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_c.png}
-    \caption{}
-  \end{subfigure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_h.png}
-    \caption{}
-  \end{subfigure}
-  \caption{
-    Relative mRNA expression levels during HSC activation.
-    \textbf{\emph{(a)}} Fibrosis-related gene (Col1a1, Col3a1, Acta2) expression in mHSCs were increased with the extension of culture time, indicating HSC activation.
-    n = 3.
-    \textbf{\emph{(b)}} With the activation of mHSC, expression of Lhx2 decreased gradually.
-    n = 3.
-    \textbf{\emph{(c)}} In human HSC cell line LX2, TGF-$\beta$ can remarkably activate HSC and promote expressions of fibrosis-related genes. % Reference ?
-    Meanwhile, the expression of LHX2 decreased with the activation of HSC.
-    \textbf{\emph{(d)}} Knockdown of LHX2 by siRNA (si-LHX2) significantly increased the expression of fibrosis-related genes in LX2 cells compared with negative control (si-NC).
-    n = 4.
-  }
-  \label{hsc_activation_mRNA}
-\end{figure}
-
-\begin{figure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_wt.png}
-    \caption{LX2-WT}
-  \end{subfigure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_pcdh_oe.png}
-    \caption{LX2-PCDH-OE}
-  \end{subfigure}
-
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_lhx2_oe.png}
-    \caption{LX2-LHX2-OE}
-  \end{subfigure}
-  \caption{
-    Overexpression of LHX2 significantly altered cell morphology in LX2 cell lines.
-    \textbf{\emph{(a)}} LX2 wild type.
-    \textbf{\emph{(b)}} LX2 overexpressing negative control vector.
-    \textbf{\emph{(c)}} LX2 overexpressing LHX2.
-  }
-  \label{LHX2_LX2_morphology}
-\end{figure}
-
-\begin{figure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_e.png}
-    \caption{LX2}
-  \end{subfigure}
-  \begin{subfigure}{0.49\linewidth}
-    \centering
-    \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_f.png}
-    \caption{mHSC}
-  \end{subfigure}
-
-  \caption{
-    Overexpression of Lhx2/LHX2 significantly decreased the expression of fibrosis-related genes.
-    \textbf{\emph{(a)}} in LX2 cells. n = 3.
-    \textbf{\emph{(b)}} in mHSCs. n = 3.
-  }
-  \label{LHX2_OEs}
-\end{figure}
-
-\begin{figure}[ht]
-  \centering
-  \includegraphics[width=0.8\linewidth]{../images/wet_lab/tao_g.png}
-  \caption{
-    RNA-seq results of LHX2 overexpressed cells showed that gene ontology (GO) enrichment of differentially expressed genes was mainly concentrated in extracellular matrix related genes.
-  }
-  \label{LHX2_GO}
-\end{figure}
+% \begin{figure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_a.png}
+%     \caption{}
+%   \end{subfigure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_b.png}
+%     \caption{}
+%   \end{subfigure}
+%
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_c.png}
+%     \caption{}
+%   \end{subfigure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_h.png}
+%     \caption{}
+%   \end{subfigure}
+%   \caption{
+%     Relative mRNA expression levels during HSC activation.
+%     \textbf{\emph{(a)}} Fibrosis-related gene (Col1a1, Col3a1, Acta2) expression in mHSCs were increased with the extension of culture time, indicating HSC activation.
+%     n = 3.
+%     \textbf{\emph{(b)}} With the activation of mHSC, expression of Lhx2 decreased gradually.
+%     n = 3.
+%     \textbf{\emph{(c)}} In human HSC cell line LX2, TGF-$\beta$ can remarkably activate HSC and promote expressions of fibrosis-related genes. % Reference ?
+%     Meanwhile, the expression of LHX2 decreased with the activation of HSC.
+%     \textbf{\emph{(d)}} Knockdown of LHX2 by siRNA (si-LHX2) significantly increased the expression of fibrosis-related genes in LX2 cells compared with negative control (si-NC).
+%     n = 4.
+%   }
+%   \label{hsc_activation_mRNA}
+% \end{figure}
+%
+% \begin{figure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_wt.png}
+%     \caption{LX2-WT}
+%   \end{subfigure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_pcdh_oe.png}
+%     \caption{LX2-PCDH-OE}
+%   \end{subfigure}
+%
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_d_lx2_lhx2_oe.png}
+%     \caption{LX2-LHX2-OE}
+%   \end{subfigure}
+%   \caption{
+%     Overexpression of LHX2 significantly altered cell morphology in LX2 cell lines.
+%     \textbf{\emph{(a)}} LX2 wild type.
+%     \textbf{\emph{(b)}} LX2 overexpressing negative control vector.
+%     \textbf{\emph{(c)}} LX2 overexpressing LHX2.
+%   }
+%   \label{LHX2_LX2_morphology}
+% \end{figure}
+%
+% \begin{figure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_e.png}
+%     \caption{LX2}
+%   \end{subfigure}
+%   \begin{subfigure}{0.49\linewidth}
+%     \centering
+%     \includegraphics[width=\linewidth, keepaspectratio,]{../images/wet_lab/tao_f.png}
+%     \caption{mHSC}
+%   \end{subfigure}
+%
+%   \caption{
+%     Overexpression of Lhx2/LHX2 significantly decreased the expression of fibrosis-related genes.
+%     \textbf{\emph{(a)}} in LX2 cells. n = 3.
+%     \textbf{\emph{(b)}} in mHSCs. n = 3.
+%   }
+%   \label{LHX2_OEs}
+% \end{figure}
+%
+% \begin{figure}[ht]
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{../images/wet_lab/tao_g.png}
+%   \caption{
+%     RNA-seq results of LHX2 overexpressed cells showed that gene ontology (GO) enrichment of differentially expressed genes was mainly concentrated in extracellular matrix related genes.
+%   }
+%   \label{LHX2_GO}
+% \end{figure}
 
 % $CASH$        & Combined Algorithm Selection and Hyperparameter optimization\\
 \end{document}
