@@ -488,6 +488,14 @@
   \bibinfo{pages}{891–896}, \doiprefix\url{10.1136/gut.50.6.891}
   (\bibinfo{year}{2002}).
 
+\bibitem{ap1_hsc_5}
+\bibinfo{author}{Rosenthal, S.~B.} \emph{et~al.}
+\newblock \bibinfo{journal}{\bibinfo{title}{Heterogeneity of hepatic stellate
+  cells in a mouse model of nonalcoholic steatohepatitis (nash)}}.
+\newblock {\emph{\JournalTitle{Hepatology}}} \textbf{\bibinfo{volume}{74}},
+  \bibinfo{pages}{667–685}, \doiprefix\url{10.1002/hep.31743}
+  (\bibinfo{year}{2021}).
+
 \bibitem{lhx2_fibro}
 \bibinfo{author}{Wandzioch, E.}, \bibinfo{author}{Kolterud, A.},
   \bibinfo{author}{Jacobsson, M.}, \bibinfo{author}{Friedman, S.~L.} \&
