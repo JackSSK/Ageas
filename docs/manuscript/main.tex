@@ -100,7 +100,7 @@
       The p-value for rejecting null hypothesis, that expression profile underlying class 1 samples is the same as the expression profile underlying class 2 samples, is set to 0.05 by default.
       Furthermore, a $\log_2$ fold change (log2FC) filter is implemented in AGEAS.
       However, enabling the log2FC filter is not encouraged, considering that upstream TFs indirectly regulate key genes associated with phenomena of interest may not be significantly differential expressed.
-      The lof2FC filter shall mostly be used to decrease meta-GRN's total degree in a compromising position caused by limited computational resources.
+      The log2FC filter shall mostly be used to decrease meta-GRN's total degree in a compromising position caused by limited computational resources.
       After differential expression based filters, a standard deviation ($\sigma$) filter is applied to exclude genes with low expression level or merely affected by dynamic expression status of other genes.
       By default, the $\sigma$ threshold is set to 1.0, the lowest expression level in raw gene count matrix gained from RNA-seq data.
       The threshold value should be adjusted based on prior knowledge of input GEMs, for example, the normalization method applied to the GEMs.
@@ -331,57 +331,59 @@
 
   \subsection*{Step 4: Top GRP extraction}
     \label{step4}
-    To extract GRPs capable to effectively define sample class differences, AGEAS iteratively initializes classification models with configurations kept from \hyperref[step2]{Step 2}, trains them with randomly selected $\alpha_{max}$ portion of rescaled psGRNs from \hyperref[step3]{Step 3}, and interpret every models' correct predictions with methods mentioned in \hyperref[features_importances]{subsection}.
-    At each iteration, AGEAS receives a z-score scaled feature importance score matrix $A$ and add up each GRP's score accordingly from matrix $A'$ kept from previous iteration if available.
-    Then, top $a$ (default set as 100) ranked GRPs, scored greater than $0.0$ as well, are compared with GRPs extracted from $A'$ by same setting.
-    If less than $d$ (default set as 0.05) portion of GRPs are distinct for top scored GRP sets from $A$ and $A'$, AGEAS will consider the GRP extration result of current iteration being consistent with previous iteration.
-    Extraction loop will terminate if AGEAS is either encountering $n$ (default set as 3) continuous consistent result or running out of preset iteration number (default set as 10).
-    All feature importance scores in matrix $A$ from last iteration are divided by total extraction iteration number processed, and top $a$ ranked GRPs are considered as important GRPs for sample class differentiation and passed to next step.
+    To extract GRPs capable of effectively defining sample class differences, AGEAS iteratively initializes classification models with configurations kept from \hyperref[step2]{Step 2}, trains them with randomly selected $\alpha_{max}$ portion of rescaled psGRNs from \hyperref[step3]{Step 3}, and interprets every models' accurate predictions with methods mentioned in \hyperref[features_importances]{subsection}.
+    At each iteration, AGEAS receives a feature importance matrix $A$ re-scaled by z-score and adds up each GRP's score accordingly from matrix $A'$ kept from previous iteration if available.
+    Then, top $a$, by default 100, ranked GRPs, whose scores are also greater than $0.0$, are compared with GRPs extracted from $A'$ by the same setting.
+    If changing portion of GRPs for top scored GRP sets from $A$ and $A'$ is less than $d$, by default 0.05, AGEAS will consider the GRP extraction result of current iteration consistent with previous iteration.
+    Extraction loop will terminate if AGEAS encounters $n$ (default set as 3) continuous consistent result or runs out of preset iteration number (default set as 10).
+    All feature importance scores in matrix $A$ from last iteration are divided by the total iteration number processed, and top $a$ ranked GRPs are considered as important GRPs for sample class differentiation.
 
   \subsection*{Step 5: Key network reconstruction}
     \label{step5}
     Analogizing every GRP previously extracted in \hyperref[step4]{Step 4} or separated as outlier in \hyperref[step3]{Step 3} as a directional edge connecting a TF vertex with a targetome vertex, AGEAS attempts to reconstruct a GRN graph representing regulatory differences between query sample classes.
     Since there is no guarantee on whether all extracted GRP edges can be connected or not, some regulatory relationships between gene vertices could be absent.
-    Hence, AGEAS utilizes meta-GRN gained from \hyperref[step1]{Step 1} to find GRPs which can further elucidate the regulatory relationships and adds those GRPs as supportive edges.
+    Hence, AGEAS utilizes meta-GRN gained from \hyperref[step1]{Step 1} to find GRPs, which can further elucidate the regulatory relationships, and to use those GRPs as supportive edges.
 
-    For a limited iteration time (default set as  1), AGEAS exhaustively search meta-GRN for TFs which can directly interact with any gene or TF already covered in extracted GRPs and add the returned TFs as new vertices.
-    Next, any GRP in meta-GRN capable to connect two distinct vertices will be included as supportive GRP in extraction result.
+    For a limited iteration time (default set as  1), AGEAS exhaustively searches meta-GRN for TFs which can directly interact with any gene already covered in extracted GRPs and add the returned TFs as new vertices.
+    Next, any GRP in meta-GRN capable of connecting two distinct vertices will be included as supportive GRP in extraction result.
     After expansion procedure above, the extracted GRN graph represents key genetic regulatory differences between input sample classes.
 
 \section*{Results}
   \label{res}
-  To assess predictive power of utilizing extraction result of AGEAS, we primarily applied AGEAS to study somatic reprogramming of induced pluripotent stem cells (iPSC) achieved in mice by the year 2006, \cite{yamanaka_2006} milestone discovery of cell plasticity. \cite{cell_repro_review}
-  With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, public scRNA-seq based GEMs of embryonic stem cells (ESCs) and mouse embryonic fibroblasts (MEFs) shown in Table \ref{geo_table} were used as input.
-  The extraction result can be summarized as TF regulons, and TFs having highest regulatory degree in extracted GRN atlas are marked as top TFs (Figure \ref{result_figs}a).
+  To assess predictive power of utilizing extraction result of AGEAS, we primarily applied AGEAS to study somatic reprogramming of induced pluripotent stem cells (iPSC) in mice, \cite{yamanaka_2006} a milestone discovery of cell plasticity. \cite{cell_repro_review}
+  With $\sigma$ thread set to 2.0 for constraining total GRP amount in psGRNs, we use public scRNA-seq based GEMs of embryonic stem cells (ESCs) and mouse embryonic fibroblasts (MEFs) shown in Table \ref{geo_table} as inputs.
+  The extraction result can be summarized as TF regulons, and TFs with highest regulatory degree in extracted GRN atlas are marked as top TFs (Figure \ref{result_figs}a).
 
-  Among top TFs, Pou5f1 (Oct4) has more association with GRPs extracted as important differential regulatory element between MEF and ESC than any other TFs while forming largest regulon and having expression pattern significantly favoring ESC.
-  Thus, we infer Pou5f1 is key regulatory element associated with ESC identity.
+  Among top TFs, Pou5f1 (Oct4) associates with GRPs extracted as important differential regulatory element between MEF and ESC more than any other TFs, while forming largest regulon and having expression pattern significantly favoring ESC.
+  Thus, we infer Pou5f1 is the key regulatory element associated with ESC identity.
   Extensive studies already addressed Pou5f1's important role in pluripotency maintenance. \cite{niwa_2007, oct4_1, oct4_2}
-  Moreover, to implement cell reprogramming of iPSC, Nanog and Sox2 are also noteworthy since they are closely interacting with Pou5f1 in extracted network, having high regulatory degrees, and differently expressed in ESC.
-  Multiple previous studies confirmed that all of Oct4, Nanog, and Sox2 are playing important role to induce cell conversion from somatic cell to iPSC. \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}
-  Cebpb, Hdac2, and Smc3, extracted as top TFs frequently acting as regulatory source in extracted important GRPs and directly affecting Pou5f1 expression, were also reported with relevant functions. \cite{cebpb_ipsc, hdac2_ipsc, rad21_smc3_esc}
+  Moreover, to implement cell reprogramming of iPSC, Nanog and Sox2 are noteworthy, since they closely interact with Pou5f1 in extracted network, have high regulatory degrees, and are differently expressed in ESC.
+  Multiple previous studies confirmed that all of Oct4, Nanog, and Sox2 are playing important roles to induce cell conversion from somatic cell to iPSC. \cite{yamanaka_2006, ips7f, ipsOK, oct4_nanog_sox2_lin28, oct4_nanog_sox2}
+  Cebpb, Hdac2, and Smc3, extracted as top TFs directly affecting Pou5f1 expression, were also reported with relevant functions. \cite{cebpb_ipsc, hdac2_ipsc, rad21_smc3_esc}
 
-  Therefore, we suppose investigating TFs acting as common regulatory sources in extracted important differential GRPs and correspond regulons can effectively study differences between cell types or cell states.
+  Therefore, we infer that the investigation of TFs as common regulatory sources in important differential GRPs and corresponding regulons can effectively reflect differences between cell types or cell states.
   % \subsection*{In silico evaluations}
   To further address AGEAS's applicability and limitation, we applied AGEAS to three other scRNA-seq based studies in distinct research areas.
-  With all default settings describe in \hyperref[method]{Method} section above, we evaluated AGEAS's performance in following scenarios with public data set (Table \ref{geo_table}):
+  With default settings described in \hyperref[method]{Method} section above, we evaluated AGEAS's performance in following scenarios with public dataset (Table \ref{geo_table}):
 
   \begin{itemize}
       \setlength\itemsep{0em}
-      \item {\textbf{Dopaminergic neuron generation}}:
+      \item {\textbf{Dopaminergic neuron differentiation}}:
 
-        Analyzing difference between human iPSC-derived radial glial / neuronal co-culture, as neural progenitors,\cite{ASCL1_dopaminergic_neuron_2021} and tyrosine hydroxylase (TH) expressing purified dopaminergic neurons (DANs), we address the applicability of AGEAS on cell subtype differentiation problems.
+        We address the applicability of AGEAS on cell subtype differentiation problems by analyzing the difference between human iPSC-derived radial glial / neuronal co-culture as neural progenitors\cite{ASCL1_dopaminergic_neuron_2021} and tyrosine hydroxylase (TH) expressing purified dopaminergic neurons (DANs).
 
-        From extracted TFs (Figure \ref{result_figs}b), we hypothesize ISL1, ELF3, and PBX3 playing important role in DAN differentiation due to their high regulatory degree in extracted important GRPs.
-        Previously, ISL1 was determined essential for differentiation of prethalamic DANs, \cite{isl1_da} and ELF3 was found to be neuronal precursor cell marker associated with neural stem cell development, \cite{ELF3_precursor_marker} consistent with it's high expression level in neuronal co-culture samples.
-        Moreover, a DAN development study reported PBX3 being required for correct differentiation of neuroblast, product of radial glial cell, into midbrain DAN and survival of midbrain DAN. \cite{pbx3_dan}
+        From extracted TFs (Figure \ref{result_figs}b), we hypothesized that ISL1, ELF3, and PBX3 play important roles in DAN differentiation due to their high regulatory degree in extracted important GRPs.
+        Previously, ISL1 was determined essential for differentiation of prethalamic DANs. \cite{isl1_da}
+        ELF3 was found to be the neuronal precursor cell marker associated with neural stem cell development. \cite{ELF3_precursor_marker}
+        This is consistent with ELF3's high expression level in neuronal co-culture samples.
+        Moreover, a DAN development study reported that PBX3 is required for correct differentiation of neuroblast, production of radial glial cell, into midbrain DAN and survival of midbrain DAN. \cite{pbx3_dan}
 
-        Through stratification of all extracted GRPs, we only found HDAC2 and RBPJ can potentially regulate all of ISL1, ELF3, and PBX3.
-        Few reports demonstrated HDAC2 is associated with neurogenesis of radial glial cells. \cite{hdac2_dan_1, hdac2_dan_2}
+        Through stratifying all extracted GRPs, we only found that HDAC2 and RBPJ can potentially regulate all of ISL1, ELF3, and PBX3.
+        Few reports demonstrated the association of HDAC2 with neurogenesis of radial glial cells. \cite{hdac2_dan_1, hdac2_dan_2}
         Nevertheless, HDAC2's role in DAN differentiation is yet to be clarified.
-        RBPJ was reported essential for DAN survival and affecting DAN development by regulating ASCL1 which is an essential factor in neurogenesis. \cite{rbpj_1, rbpj_2}
-        Original research where we retrieved scRNA-seq data also demonstrated ASCL1 as necessary factor regulating DA neurotransmitter selection. \cite{ASCL1_dopaminergic_neuron_2021}
-        Although AGEAS extracted ASCL1 as one of top TFs, no direct regulatory relationship between RBPJ and ASCL1 was identified.
+        RBPJ was reported to be essential for DAN survival and to affect DAN development by regulating ASCL1, a essential factor in neurogenesis. \cite{rbpj_1, rbpj_2}
+        The original research where we retrieved scRNA-seq data from also demonstrated that ASCL1 is a necessary factor to regulate DA neurotransmitter selection. \cite{ASCL1_dopaminergic_neuron_2021}
+        Although AGEAS extracted ASCL1 as one of the top TFs, no direct regulatory relationship between RBPJ and ASCL1 was identified.
         % PHOX2B, and ELF3 are regulating essential functions differentiating DANs from neural progenitors referring to their correspond regulon sizes and differential expression profiles.
         % Both ISL1 and PHOX2B were found related with DA phenotype in previous studies:
         % ISL1 is
@@ -393,15 +395,15 @@
 
       \item {\textbf{Postnatal cardiomyocyte maturation}}:
 
-        To address the performance of AGEAS while analyzing cell physiological development, scRNA-seq data of cardiomyocytes (CMs) in postnatal day 7 mice (P7) and day 28 mice (P28) are used as input for extracting key genetic regulatory elements in postnatal CM maturation.
+        To address the performance of AGEAS to analyze cell physiological development, scRNA-seq data of cardiomyocytes (CMs) in postnatal day 7 mice (P7) and day 28 mice (P28) are used as inputs for extracting key genetic regulatory elements in postnatal CM maturation.
 
-        As indicated by extracted differential GRPs, we firstly investigated Sp1 and Esr1 ($ER\alpha$) which also have top regulatory degrees and considerably differential expression profiles (Figure \ref{result_figs}c).
+        As indicated by important differential GRPs, we first investigated Sp1 and Esr1 ($ER\alpha$) that also have top regulatory degrees and considerably differential expression profiles (Figure \ref{result_figs}c).
         Previous studies demonstrated that Sp1 promotes CM hypertrophy \cite{sp1_hypertrophy} and maturation of electrophysiology, $Ca^{2+}$ handling. \cite{Sp1_electrophysiologt, CM_mature}
         % trans-activation of the SERCA2 promoter
         Esr1 was found modulating myocardial development for postnatal cardiac growth.\cite{esr1_cm, esr1_cm_growth}
 
-        Beside inter-regulation between Sp1 and Esr1, three other top TFs (Srf, Cebpb, Rest) and two TFs forming relatively small regulons (Gata4, Prox1), are expected to interact with both Sp1 and Esr1 based on extraction network.
-        All five TFs were found having CM maturation related functions. (Table \ref{interact_TFs})
+        Beside the inter-regulation between Sp1 and Esr1, three other top TFs (Srf, Cebpb, Rest) and two TFs forming relatively small regulons (Gata4, Prox1), are expected to interact with both Sp1 and Esr1 based on extraction network.
+        All five TFs were found to have CM maturation related functions. (Table \ref{interact_TFs})
 
         \begin{table}[ht]
             \centering
@@ -422,7 +424,7 @@
             \end{tabular}
             \caption{
               \label{interact_TFs}
-              TFs interacting with both Sp1 and Esr1 order by extracted regulon size.
+              TFs interacting with both Sp1 and Esr1 order by regulatory degree in extracted GRNs.
             }
         \end{table}
 
@@ -458,20 +460,20 @@
         %     }
         % \end{table}
 
-
       \item {\textbf{Hepatic stellate cell activation in $CCl_4$ induced liver fibrosis}}:
 
-        Here we address AGEAS's applicability on cell pathological development studies through analyzing hepatic stellate cells (HSCs) in mice liver administrated with chronic carbon tetrachloride ($CCl_4$) for six weeks and according portal fibroblasts (PFs) simulating activated HSCs.
+        Here we address AGEAS's applicability on cell pathological development studies through analyzing hepatic stellate cells (HSCs) and portal fibroblasts (PFs) simulating activated HSCs in mice liver administrated with chronic carbon tetrachloride ($CCl_4$) for six weeks.
 
-        Based on extracted important GRPs, we identified Mef2c, Jun, and Jund as potential representatives of key regulatory elements in HSC activation (Figure \ref{result_figs}d).
-        As the TF extracted with most important GRPs, Mef2c has been well-documented as key regulator in HSC activation. \cite{mef2c_1, mef2c_2, mef2c_3}
-        Extensive studies also found Jun and Jund, both being functional components of the AP1 TF complex, are essential for fibrosis-related HSC activation and profibrogenic process. \cite{ap1_hsc_1, ap1_hsc_2, ap1_hsc_3, ap1_hsc_4}
+        Based on extracted important GRPs, we identified Mef2c, Jun, and JunD as potential representatives of key regulatory elements in HSC activation (Figure \ref{result_figs}d).
+        As the TF extracted with most important GRPs, Mef2c has been well-documented as the key regulator in HSC activation. \cite{mef2c_1, mef2c_2, mef2c_3}
+        Extensive studies also found Jun and JunD, functional components of the AP1 TF complex, are essential for fibrosis-related HSC activation and profibrogenic process. \cite{ap1_hsc_1, ap1_hsc_2, ap1_hsc_3, ap1_hsc_4}
 
-        Analyzing TF regulons of Mef2c, Jun, and Jund, we suppose Mef2c is acting as targetome of Jund and inter-regulatory element of Jun.
-        While no regulatory relationship between Jund and Jun determined, three extracted top TFs (Lhx2, Nfib, Junb) can potentially affect expressions of both Jund and Jun.
-        Junb, another functional component of AP1, is also reported affecting with HSC activation \cite{ap1_hsc_5}.
+        Analyzing TF regulons of Mef2c, Jun, and JunD, we believe that Mef2c is targetome of JunD and the inter-regulatory element of Jun.
+        While no regulatory relationship between JunD and Jun determined, three extracted top TFs (Lhx2, Nfib, JunB) can potentially affect expressions of both JunD and Jun.
+        JunB, another functional component of AP1, is also reported to  affect HSC activation \cite{ap1_hsc_5}.
         Furthermore, Lhx2 was found indispensable for quiescent HSCs. \cite{lhx2_fibro, Lhx2_hsc_1}
-        Although, little literature addressed Nfib's role in HSC, Nfib was reported acting as anti-apoptotic gene for cell proliferation during $CCl_4$ induced liver damage. \cite{Nfib_sadly}
+        Although little literature had addressed Nfib's role in HSC, Nfib was reported to be the anti-apoptotic gene for cell proliferation during $CCl_4$ induced liver damage. \cite{Nfib_sadly}
+
     \end{itemize}
 
   % \subsection*{In vitro validation}
@@ -497,43 +499,41 @@
   %   % In vivo experiment will take longer time...
 
 \section*{Conclusion}
-  With result achieved so far, AGEAS shows robustness in extracting key regulatory elements for several biological researches.
-  Key TFs inferred by extracted important GRPs and regulon analysis in all four $in$ $silico$ cases were confirmed informative to reveal main functionalities responsible for biological process of interest.
-  Furthermore, the direct extractions of ISL1 in DAN differentiation and Jund in HSC activation as regulatory source in top amount of important GRPs can demonstrate that AGEAS is not solely focusing on TF regulon sizes in reconstructed meta-GRN nor expression differences between sample classes.
+  In summary, AGEAS shows robustness in extracting key regulatory elements in several biological studies.
+  Key TFs inferred by important differential GRPs and regulon analysis in all four $in$ $silico$ cases were confirmed informative to reveal main functionalities responsible for biological process of interest.
+  Furthermore, the direct extractions of ISL1 in DAN differentiation and JunD in HSC activation demonstrated that AGEAS is neither focusing solely on the regulatory degrees in reconstructed meta-GRN nor the expression differences between sample classes.
   % Also, $in$ $vitro$ experiments indicate great potential in AGEAS to promote method development in phenotypic manipulation.
   % While TF regulons reconstructed with all extracted GRPs are having sizes proportional to meta-GRN... GO enrichment?
   % However, whether extracted regulatory elements covering all functional aspects of studying biological phenomena, admittedly, remains undetermined due to lack of validation for GRPs' activities.
-  Overall, we anticipate that AGEAS will become useful in providing insightful regulatory information and promoting pioneer researches in revealing complicate mechanism behind biological phenomena.
-
+  Overall, we anticipate that AGEAS is useful in providing insightful regulatory information and in promoting pioneer researches that reveal complicated mechanism behind biological phenomena.
 
 \section*{Discussion}
   \label{disc}
   Considering the rapid development of both sequencing technology and machine learning algorithms, we implemented AGEAS with modular design.
-  In data preprocessing part, the meta-GRN reconstruction section can be replaced with other methods to further increase fidelity of regulatory relationships or integrating more information, such as cis-regulatory elements (CREs) accessibility which can be obtained from Assay for Transposase-Accessible Chromatin Sequencing (ATAC-seq) data.
-  Moreover, CRE accessibility information combining with motif enrichment analysis is proved capable to identity potential regulatory pathways replacing ChIP-seq based dataset AGEAS utilizing in present study. \cite{scREMOTE}
-  Refine meta-GRN reconstruction method in consideration of having input data from simultaneous scRNA-seq and single cell ATAC-seq (scATAC-seq), such as SHARE-seq published in late 2020, \cite{share_seq} can potentially further improve applicability of AGEAS; however, accessibility of corresponding datasets will be essential for performance assessment and method development.
-  Similarly, initial set of classificaion models is also subject to be changed responding to future computational studies.
+  In the data preprocessing part, the meta-GRN reconstruction section can be replaced with other methods to further increase fidelity of regulatory relationships or integrating more information, such as cis-regulatory elements (CREs) accessibility, which can be obtained from Assay for Transposase-Accessible Chromatin Sequencing (ATAC-seq) data.
+  Moreover, CRE accessibility information combining with motif enrichment analysis is proved capable of identifying potential regulatory pathways to replace ChIP-seq based dataset utilized in the current study. \cite{scREMOTE}
+  Refining meta-GRN reconstruction method in consideration of having input data from simultaneous scRNA-seq and single cell ATAC-seq (scATAC-seq), such as SHARE-seq published in late 2020, \cite{share_seq} can potentially further improve applicability of AGEAS; however, accessibility of corresponding datasets will be essential for performance assessment and method development.
+  Similarly, initial set of classification models is also subject to change in response to future computational studies.
 
-  Also, it is important to note that AGEAS can be applied with GEMs normalized with different methods on user's choice as well as derived from other sequencing technologies such as bulk RNA-seq or spatial sequencing in revealing tissue differences.
-  Replacing transcriptiomic data with proteomic data may also be achievable to analysis protein interaction networks.
-  However, larger scale of applicability tests shall be performed in advance.
+  Also, it is important to note that AGEAS can be applied with GEMs normalized with different methods on user's choice, as well as derived from other sequencing technologies, such as bulk RNA-seq or spatial sequencing in revealing tissue differences.
+  Replacing transcriptiomic data with proteomic data may also be achievable in the analysis of protein interaction networks.
+  However, larger scale of applicability tests are necessary.
 
-  Due to the stochastic nature of AGEAS, extraction results of AGEAS are not expected to stay identical for repeated applications even with exactly same inputs.
-  Main reason underlying the inconsistency is caused by how AGEAS attempt to obtain top performing models for later prediction interpretations.
-  Repeated random subsets of psGRNs using in model training and selection are expected to vary for each application hence resulting in different performance of classification models and ranking results.
-  As a result, the importance values of GRPs might differ and slightly affect top TFs extracted later.
+  Due to the stochastic nature of AGEAS, extraction results of AGEAS are not expected to stay identical for repeated applications even with exactly the same inputs.
+  The main reason underlying the inconsistency is how AGEAS attempts to obtain top performing models for later prediction interpretations.
+  Repeated random subsets of psGRNs used in model training and selection are expected to vary for each application, hence results in different performances of classification models and ranking results.
+  As a result, the importance scores of GRPs might differ and slightly affect top TFs extracted later.
 
-  Two possible workarounds of inconsistent issue would be:
+  Two possible workarounds of the inconsistent issue would be:
   (i) manually set random seed for every process influencing subset selection.
   (ii) set multiple extractor unit and combine extraction results.
-  In present study, we found n = 4 units yielding relatively stable results, but this value could vary based on application scenario.
+  In the present study, we found that n = 4 units yield relatively stable results, but this value could vary based on application scenario.
 
   % Although Lhx2 extracted by AGEAS-based analysis indeed shows capability to inhibit HSC activation during liver fibrosis as predicted, the corresponding inference of functional pathways still need to be proved.
   % Furthermore, $in$ $vivo$ experiments are also necessary to evaluate functionality of Lhx2 and associated pathways for higher fidelity.
 
 \section*{Acknowledgement}
-  We sincerely thank Cher Li and Jie Wang for inspirations and supports.
-
+  We sincerely thank Cher Li and Jie Wang for inspiration; Augustine(Xiaoran) Yuan for reviewing and support.
 
 \bibliography{reference}
 
