@@ -46,4 +46,4 @@ Please visit [Documentation Page](https://JackSSK.github.io/Ageas/html/index.htm
 
 # Disclaimer
 
-Further developed from [Odysseia Project](https://www.biorxiv.org/content/10.1101/2022.02.17.480852v1)
+Preprint manuscript is available on [bioRxiv](https://www.biorxiv.org/content/10.1101/2022.02.17.480852)
