@@ -22,16 +22,22 @@ class Interpret:
     Apply various methods to interpret correct predictions made by models
     Then, assign an importance score to every feature
     """
-    def __init__(self, trainer_data):
+    def __init__(self, trainer_data, background_mode = 'mean'):
         super(Interpret, self).__init__()
         # make background example based on mean of every sample
         # ToDo:
         # Background generation may need to be revised
         # We may just use grn generated based on universal exp matrix
-        bases = pd.DataFrame().append(
-            trainer_data.all_data.mean(axis = 0),
-            ignore_index = True
-        )
+        bases = None
+        if background_mode == 'all':
+            bases = trainer_data.all_data
+        elif background_mode == 'mean':
+            bases = pd.DataFrame().append(
+                trainer_data.all_data.mean(axis = 0),
+                ignore_index = True
+            )
+        else:
+            raise lib.Error('Unknown Background Data Mode')
         self.result = self.__interpret_process(trainer_data, bases)
         self.result = self.__subtract_feature_score(self.result)
 
