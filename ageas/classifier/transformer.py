@@ -166,9 +166,8 @@ class Make(classifier.Make_Template):
 #                 'has_mask': True,
 #                 'emsize': 512,
 #                 'nhead': 8,
-#                 'nhid': 200,
-#                 'nlayers': 2,
-#                 'dropout': 0.5,
+#                 'dim_feedforward':6,
+#                 'dropout': 0.05,
 #                 'learning_rate': 0.1
 #             }
 #     data = torch.rand((3,1,22090))
