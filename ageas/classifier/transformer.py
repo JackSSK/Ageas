@@ -10,7 +10,7 @@ author: jy, nkmtmsys
 import math
 import torch
 import torch.nn as nn
-import torch.nn.functional as func
+import torch.nn.functional as F
 from torch.nn import TransformerEncoder
 from torch.nn import TransformerEncoderLayer
 from torch.nn import TransformerDecoder
@@ -42,8 +42,9 @@ class Positional_Encoding(nn.Module):
         self.dropout = nn.Dropout(p = dropout)
         pe = torch.zeros(d_model, d_model)
         position = torch.arange(0, d_model, dtype = torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() *
-                                    (-math.log(10000.0) / d_model))
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model)
+        )
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0).transpose(0, 1)
@@ -70,7 +71,7 @@ class Transformer(nn.Module):
     def __init__(self,
                  id = 'transformer', # model id
                  num_features = 1024, # the number of expected features
-                 has_mask = True, # whether using mask or not
+                 has_mask = False, # whether using mask or not
                  emsize = 512, # size after encoder
                  nhead = 8, # number of heads in the multiheadattention models
                  num_encoder_layers = 6,
@@ -79,6 +80,7 @@ class Transformer(nn.Module):
                  dropout = 0.5, # dropout ratio
                  activation = 'relu',
                  layer_norm_eps = 1e-05,
+                 batch_first = True,
                  learning_rate = 0.1,
                  n_class = 2, # number of class for classification
                 ):
@@ -91,18 +93,30 @@ class Transformer(nn.Module):
         # self.pos_encoder = Positional_Encoding(emsize, dropout)
 
         encoder_layer = TransformerEncoderLayer(
-            emsize, nhead, dim_feedforward, dropout, activation, layer_norm_eps
+            emsize,
+            nhead,
+            dim_feedforward,
+            dropout,
+            activation,
+            layer_norm_eps = layer_norm_eps,
+            batch_first = batch_first,
         )
         self.encoder = TransformerEncoder(encoder_layer, num_encoder_layers)
 
         decoder_layer = TransformerDecoderLayer(
-            emsize, nhead, dim_feedforward, dropout, activation, layer_norm_eps
+            emsize,
+            nhead,
+            dim_feedforward,
+            dropout,
+            activation,
+            layer_norm_eps = layer_norm_eps,
+            batch_first = batch_first,
         )
         self.decoder = TransformerDecoder(decoder_layer, num_decoder_layers)
 
         self.decision = nn.Linear(emsize, n_class)
         # original optimizer is Adam
-        self.optimizer = torch.optim.SGD(self.parameters(), lr=learning_rate)
+        self.optimizer = torch.optim.SGD(self.parameters(), lr = learning_rate)
         self.loss_func = nn.CrossEntropyLoss()
         # init_weights
         initrange = 0.1
@@ -124,7 +138,7 @@ class Transformer(nn.Module):
 
     def forward(self, input):
         if self.has_mask:
-            mask = self._square_subsequent_mask(len(input))
+            mask = self._square_subsequent_mask(input.size()[1])
         else:
             mask = None
         input = self.embed(input)
@@ -132,7 +146,7 @@ class Transformer(nn.Module):
         output = self.encoder(input, mask)
         output = self.decoder(input, output)
         output = torch.flatten(output, start_dim = 1)
-        output = func.softmax(self.decision(output), dim = -1)
+        output = F.softmax(self.decision(output), dim = -1)
         return output
 
 

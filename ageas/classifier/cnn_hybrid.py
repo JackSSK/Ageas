@@ -26,7 +26,7 @@ import itertools
 import torch.nn as nn
 from warnings import warn
 import torch.optim as optim
-import torch.nn.functional as func
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import ageas.classifier as classifier
 
@@ -108,21 +108,21 @@ class Limited(nn.Module):
     # Overwrite the forward function in nn.Module
     def forward(self, input):
         input = self.reshape(input)
-        temp0 = self.poolVer(func.relu(self.convHor(input)))
-        temp1 = self.poolHor(func.relu(self.convVer(input)))
+        temp0 = self.poolVer(F.relu(self.convHor(input)))
+        temp1 = self.poolHor(F.relu(self.convVer(input)))
         if self.num_layers > 1:
-            temp0 = self.poolVer1(func.relu(self.convHor1(temp0)))
-            temp1 = self.poolHor1(func.relu(self.convVer1(temp1)))
+            temp0 = self.poolVer1(F.relu(self.convHor1(temp0)))
+            temp1 = self.poolHor1(F.relu(self.convVer1(temp1)))
         if self.num_layers > 2:
-            temp0 = self.poolVer2(func.relu(self.convHor2(temp0)))
-            temp1 = self.poolHor2(func.relu(self.convVer2(temp1)))
+            temp0 = self.poolVer2(F.relu(self.convHor2(temp0)))
+            temp1 = self.poolHor2(F.relu(self.convVer2(temp1)))
         if self.num_layers > 3:
             raise classifier.Error('CNN Model with more than 3 layer sets')
         temp0 = torch.flatten(temp0, start_dim = 1)
         temp1 = torch.flatten(temp1, start_dim = 1)
         input = torch.cat((temp0, temp1), dim = 1)
-        input = func.relu(self.dense(input))
-        input = func.softmax(self.decision(input),dim = 1)
+        input = F.relu(self.dense(input))
+        input = F.softmax(self.decision(input),dim = 1)
         return input
 
     # transform input(1D) into a 2D matrix
@@ -180,19 +180,19 @@ class Unlimited(nn.Module):
     # Overwrite the forward function in nn.Module
     def forward(self, input):
         input = self.reshape(input)
-        temp0 = self.pool0(func.relu(self.conv0(input)))
+        temp0 = self.pool0(F.relu(self.conv0(input)))
         for i in range(self.num_layers - 1):
-            temp0 = self.pool0(func.relu(self.conv0_recur(temp0)))
+            temp0 = self.pool0(F.relu(self.conv0_recur(temp0)))
 
         temp0 = torch.flatten(temp0, start_dim = 1)
 
-        temp1 = self.pool1(func.relu(self.conv1(input)))
+        temp1 = self.pool1(F.relu(self.conv1(input)))
         for i in range(self.num_layers - 1):
-            temp1 = self.pool1(func.relu(self.conv1_recur(temp1)))
+            temp1 = self.pool1(F.relu(self.conv1_recur(temp1)))
         temp1 = torch.flatten(temp1, start_dim = 1)
         input = torch.cat((temp0, temp1), dim = 1)
-        input = func.relu(self.dense(input))
-        input = func.softmax(self.decision(input),dim = 1)
+        input = F.relu(self.dense(input))
+        input = F.softmax(self.decision(input),dim = 1)
         return input
 
     # transform input(1D) into a 2D matrix

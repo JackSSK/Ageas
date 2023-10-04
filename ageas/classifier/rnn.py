@@ -11,7 +11,7 @@ author: jy, nkmtmsys
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as func
+import torch.nn.functional as F
 import ageas.classifier as classifier
 
 
@@ -56,7 +56,7 @@ class RNN(nn.Module):
         out, _ = self.rnn(input, h0)
         # out: tensor of shape (batch_size, seq_length, hidden_size)
         # Decode the hidden state of the last time step
-        out = func.softmax(self.fc(out[:, -1, :]), dim = 1)
+        out = F.softmax(self.fc(out[:, -1, :]), dim = 1)
         return out
 
 

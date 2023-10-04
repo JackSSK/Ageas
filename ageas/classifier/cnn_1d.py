@@ -24,7 +24,7 @@ import torch
 import itertools
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as func
+import torch.nn.functional as F
 import ageas.classifier as classifier
 
 
@@ -78,16 +78,16 @@ class Limited(nn.Module):
 
     # Overwrite the forward function in nn.Module
     def forward(self, input):
-        input = self.pool(func.relu(self.conv(input)))
+        input = self.pool(F.relu(self.conv(input)))
         if self.num_layers > 1:
-            input = self.pool1(func.relu(self.conv1(input)))
+            input = self.pool1(F.relu(self.conv1(input)))
         if self.num_layers > 2:
-            input = self.pool2(func.relu(self.conv2(input)))
+            input = self.pool2(F.relu(self.conv2(input)))
         if self.num_layers > 3:
             raise classifier.Error('CNN Model with more than 3 layer sets')
         input = torch.flatten(input, start_dim = 1)
-        input = func.relu(self.dense(input))
-        input = func.softmax(self.decision(input), dim = 1)
+        input = F.relu(self.dense(input))
+        input = F.softmax(self.decision(input), dim = 1)
         return input
 
 
@@ -127,12 +127,12 @@ class Unlimited(nn.Module):
 
     # Overwrite the forward function in nn.Module
     def forward(self, input):
-        input = self.pool(func.relu(self.conv(input)))
+        input = self.pool(F.relu(self.conv(input)))
         for i in range(self.num_layers - 1):
-            input = self.pool(func.relu(self.convMore(input)))
+            input = self.pool(F.relu(self.convMore(input)))
         input = torch.flatten(input, start_dim = 1)
-        input = func.relu(self.dense(input))
-        input = func.softmax(self.decision(input), dim = 1)
+        input = F.relu(self.dense(input))
+        input = F.softmax(self.decision(input), dim = 1)
         return input
 
 
