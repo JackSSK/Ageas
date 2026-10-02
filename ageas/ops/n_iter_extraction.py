@@ -15,6 +15,7 @@ from ageas.hangar import Hangar
 from ageas.tool import l1_normalize
 from ageas.tool.scores import label_score_columns, score_column
 from .n_kfold_selection import main as n_kfold_selection
+from .n_kfold_selection import monitor_args
 
 _logger = logging.getLogger(__name__)
 
@@ -51,9 +52,11 @@ def main(
     :param cuda_devices: Optional GPU device indices.
     :param query_dataset: Required dataset that drives selection and (by
         default) the explanation pass.
-    :param test_dataset: Optional held-out test dataset.
-    :param exp_dataset: Optional explanation dataset. Defaults to
-        ``test_dataset`` when provided, otherwise ``query_dataset``.
+    :param test_dataset: Optional held-out test dataset. It is scored for
+        reporting only and never influences selection, weights or
+        explanations.
+    :param exp_dataset: Optional explanation dataset. Defaults to the query
+        dataset.
     :param max_extraction_iter: Number of extraction iterations.
     :param extract_top_n: Number of top factors to retain per class in the
         final ranking.
@@ -81,10 +84,11 @@ def main(
     temp_query = query_dataset.copy()
     temp_test = test_dataset.copy() if test_dataset is not None else None
     if exp_dataset is None:
-        exp_dataset = temp_test if temp_test is not None else temp_query
+        exp_dataset = temp_query
     else:
         # Features are pruned from it in place below; leave the caller's intact.
         exp_dataset = exp_dataset.copy()
+    debrief_args = {**monitor_args(selection_args), **explain_args}
 
     answers = []
     hold_out = {}
@@ -104,15 +108,11 @@ def main(
         )
         _logger.info("Iteration %d — selected %d units.", i + 1, len(deck.squad))
 
-        if len(deck.squad) == 0:
-            _logger.warning("No units survived. Stopping extraction.")
-            break
-
         integrated_exps = deck.debrief(
             operation=f'{operation_name}_{i+1}',
             exp_dataset=exp_dataset,
             verbose=verbose,
-            **explain_args,
+            **debrief_args,
         )
         if integrated_exps is None:
             warn(f"No valid explanation for iteration {i+1}. Skipping it.")

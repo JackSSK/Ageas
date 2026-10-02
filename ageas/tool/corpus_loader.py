@@ -543,6 +543,26 @@ def kfold_random_split(
     return train_list, valid_list, test_list
 
 
+def oversample_corpus(
+    dataset,
+    oversample_method: str,
+    oversample_by: str = 'median',
+    random_seed: int = None,
+) -> Tensor_Corpus:
+    """Oversample a whole corpus so all classes reach a target size.
+
+    The same oversampling the k-fold training splits receive, applied to
+    every cell of ``dataset``. See :func:`_oversample` for the methods.
+    """
+    return _oversample(
+        query=Subset(dataset, list(range(len(dataset)))),
+        parent=dataset,
+        oversample_method=oversample_method,
+        oversample_by=oversample_by,
+        random_seed=random_seed,
+    )
+
+
 def _oversample(
     query: Dataset,
     parent: Dataset = None,

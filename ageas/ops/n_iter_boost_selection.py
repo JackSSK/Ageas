@@ -14,6 +14,7 @@ import pandas as pd
 
 from ageas.hangar import Hangar
 from .n_kfold_selection import main as n_kfold_selection
+from .n_kfold_selection import monitor_args
 
 _logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ def main(
             operation=f'{operation_name}_{i+1}',
             exp_dataset=temp_query,
             verbose=verbose,
-            **explain_args,
+            **{**monitor_args(selection_args), **explain_args},
         )
         if integrated_exps is None:
             warn(f"No valid explanation for iteration {i+1}. Skipping it.")
