@@ -72,6 +72,19 @@ class OversampleTest(unittest.TestCase):
             self.assertTrue((a.data == b.data).all())
 
 
+class StratifiedSplitTest(unittest.TestCase):
+
+    def test_too_small_validation_split_falls_back_to_unstratified(self):
+        # 15 training cells per fold, 10%: 2 validation cells for 3 classes.
+        corpus = id_corpus([10, 10, 10])
+        with self.assertLogs('ageas.tool.corpus_loader', level='WARNING'):
+            train_list, valid_list, _ = kfold_random_split(
+                corpus, n_splits=2, valid_fraction=0.1,
+                stratified_test=True, stratified_valid=True, random_seed=0,
+            )
+        self.assertEqual([len(v) for v in valid_list], [2, 2])
+
+
 class FakeAdataTest(unittest.TestCase):
 
     def test_informative_genes_are_the_class_separating_ones(self):

@@ -73,6 +73,7 @@ class Deck:
         n_dataloader_workers: int = 10,
         accelerator: str = 'cpu',
         cuda_devices: list = None,
+        seed: int = None,
     ) -> None:
         """Initialize a Deck.
 
@@ -85,7 +86,10 @@ class Deck:
         :param cuda_devices: Optional list of GPU device indices to bind. When
             ``accelerator='cuda'`` and this is ``None``, all visible devices
             are used.
+        :param seed: Passed to every trainer, which uses it for model
+            parameters such as ``random_state`` that the config leaves unset.
         """
+        self.seed = seed
         self.squad = squad
         self.trainer_maker = Trainer_Maker()
         self.n_dataloader_workers = n_dataloader_workers
@@ -157,6 +161,7 @@ class Deck:
                 train_data=train_data,
                 n_classes=n_classes,
                 fea_names=fea_names,
+                seed=self.seed,
                 **unit.config,
             )
 

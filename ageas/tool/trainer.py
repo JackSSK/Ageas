@@ -387,6 +387,7 @@ class Trainer_Maker:
         n_classes: int = 2,
         fea_names: list = None,
         model_params: dict = None,
+        seed: int = None,
         **kwargs,
     ) -> tuple:
         """Build a :class:`Fake_Trainer` and fit a scikit-learn classifier.
@@ -405,7 +406,8 @@ class Trainer_Maker:
             n_classes: Number of output classes.
             fea_names: Feature names forwarded to the classifier.
             model_params: Hyper-parameters dict for the classifier.
-            **kwargs: Ignored extra arguments.
+            seed: Fills ``random_state`` when the config leaves it unset.
+            **kwargs: Forwarded to the classifier.
 
         Returns:
             Tuple ``(model, trainer)`` after the fit call has returned.
@@ -413,13 +415,15 @@ class Trainer_Maker:
         Raises:
             ValueError: If ``accelerator`` is not ``'cpu'``.
         """
-        if model_params is None:
-            model_params = {}
+        # Copy so the unit's config is not modified.
+        model_params = dict(model_params or {})
 
         if accelerator != 'cpu':
             raise ValueError('Only CPU is supported for scikit-learn models.')
 
         model_params['num_class'] = n_classes
+        if seed is not None and model_params.get('random_state') is None:
+            model_params['random_state'] = seed
         clf_model = clf_object(
             fea_names=fea_names,
             model_params=model_params,
@@ -467,6 +471,7 @@ class Trainer_Maker:
         fea_names: list = None,
         model_params: dict = None,
         train_config: dict = None,
+        seed: int = None,
         **kwargs,
     ) -> tuple:
         """Build a :class:`Fake_Trainer` and fit an XGBoost classifier.
@@ -491,6 +496,7 @@ class Trainer_Maker:
             fea_names: Feature names forwarded to the classifier.
             model_params: XGBoost model parameters dict.
             train_config: XGBoost training parameters dict.
+            seed: XGBoost ``seed`` when the config does not set one.
             **kwargs: Ignored extra arguments.
 
         Returns:
@@ -504,6 +510,10 @@ class Trainer_Maker:
                 'tree_method': 'auto',
                 'max_depth': 6,
             }
+        # Copy so the unit's config is not modified.
+        model_params = dict(model_params)
+        if seed is not None:
+            model_params.setdefault('seed', seed)
         if train_config is None:
             train_config = {
                 'num_boost_round': 100,

@@ -7,10 +7,12 @@ between rounds. After all rounds the surviving models are retrained on the
 full dataset (the "last mission") to produce the final deck used for
 downstream prediction or factor extraction.
 """
+import copy
 import logging
 import time
 
 import numpy as np
+from pytorch_lightning import seed_everything
 
 from ageas.deck import Deck, split_metric_key
 from ageas.hangar import Hangar
@@ -108,8 +110,8 @@ def main(
     using_model_list: list = None,
     kfold_selection_list: list = None,
     valid_fraction: float = 0.1,
-    stratified_kfold_test: bool = False,
-    stratified_kfold_valid: bool = False,
+    stratified_kfold_test: bool = True,
+    stratified_kfold_valid: bool = True,
     oversample_method: str = None,
     oversample_by: str = 'median',
     monitor_type: str = 'max',
@@ -165,12 +167,20 @@ def main(
     :param selection_ratio: Fraction of the squad to keep when ranked by the
         metric.
     :param skip_final: If ``True``, skip the last mission retraining pass.
-    :param seed: Random seed forwarded to the k-fold splitter.
+    :param seed: Makes the whole run reproducible: seeds Python, NumPy and
+        torch at the start, splits round ``r`` (0-based) with ``seed + r``,
+        and fills any ``random_state``/XGBoost ``seed`` a unit's config
+        leaves unset. ``None`` leaves everything unseeded.
     :param verbose: If ``True``, emit per-fold and per-round progress logs.
-    :returns: The deck after selection with only the surviving units.
+    :returns: The deck after selection with only the surviving units. Each
+        surviving unit's ``report[operation_name]`` holds ``'round_<r>'``
+        entries (per-fold ``'vali'``/``'test'`` metric lists, 1-based ``r``)
+        and, unless ``skip_final``, a ``'final'`` entry.
     """
     if kfold_selection_list is None:
         kfold_selection_list = [5]
+    if seed is not None:
+        seed_everything(seed, verbose=False)
 
     n_classes = len(query_dataset.label_dict)
     fea_names = query_dataset.adata.var.index.tolist()
@@ -183,6 +193,7 @@ def main(
         n_dataloader_workers=n_dataloader_workers,
         accelerator=accelerator,
         cuda_devices=cuda_devices,
+        seed=seed,
     )
     assert len(deck.squad) > 0, "Not enough models in the squad."
 
@@ -204,16 +215,18 @@ def main(
             stratified_valid=stratified_kfold_valid,
             oversample_method=oversample_method,
             oversample_by=oversample_by,
-            random_seed=seed,
+            # A different split every round.
+            random_seed=None if seed is None else seed + deploy_i,
         )
         assert len(train_list) == len(test_list) == k_fold, \
             "Train and test data lists must have the same length."
 
+        round_report = deck.make_report()
+        start_time = time.time()
         for i in range(k_fold):
-            start_time = time.time()
             _logger.info("Fold %d / %d", i + 1, k_fold)
-
-            report = deck.sortie(
+            deck.sortie(
+                report=round_report,
                 train_data=train_list[i],
                 vali_data=valid_list[i],
                 n_classes=n_classes,
@@ -224,7 +237,12 @@ def main(
                 verbose=verbose,
             )
 
-        unit_rank = rank_units(report, monitor_metric, monitor_type)
+        # Units are ranked on every fold recorded so far, across all rounds.
+        for unit_id, record in round_report.items():
+            for split, folds in record.items():
+                deck.report[unit_id][split].extend(folds)
+
+        unit_rank = rank_units(deck.report, monitor_metric, monitor_type)
         deck.squad_update(round_survivors(
             unit_rank,
             expect_survival=expect_survival,
@@ -236,7 +254,9 @@ def main(
         for unit_id, unit in deck.squad.items():
             if deploy_i == 0:
                 unit.report[operation_name] = dict()
-            unit.report[operation_name][f'fold_{i+1}'] = report[unit_id]
+            unit.report[operation_name][f'round_{deploy_i + 1}'] = copy.deepcopy(
+                round_report[unit_id]
+            )
 
         _logger.info(
             "Survived: %d  |  elapsed: %.1fs",
