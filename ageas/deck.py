@@ -183,7 +183,7 @@ class Deck:
                         test_dataset,
                         num_workers=self.n_dataloader_workers,
                         batch_size=test_batch_size,
-                        shuffle=True,
+                        shuffle=False,
                     ),
                     verbose=verbose,
                 )[0]

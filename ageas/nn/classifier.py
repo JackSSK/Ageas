@@ -16,7 +16,7 @@ import pandas as pd
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
-from torchmetrics import AUROC, Accuracy, F1Score
+from torchmetrics import AUROC, Accuracy, F1Score, MetricCollection
 from warnings import warn
 
 from ageas.nn.blocks import Factorized_Residual_Mixer, ResNet_Basic, get_block
@@ -216,16 +216,30 @@ class NN_Classifier(pl.LightningModule):
                 nn.init.constant_(m.bias, 0)
 
     def set_metrics(self, num_classes: int) -> None:
-        """Attach multiclass accuracy, macro F1, and AUROC metrics.
+        """Attach validation and test metrics: accuracy, macro F1, AUROC.
+
+        Each stage has its own metric objects. They accumulate over every
+        batch of an epoch and are computed once over the whole split, so
+        small batches (where one batch may hold a single class) don't
+        distort F1 or AUROC.
 
         Args:
             num_classes: Number of label classes.
         """
-        self.accuracy = Accuracy(num_classes=num_classes, task='multiclass')
-        self.f1 = F1Score(
-            num_classes=num_classes, task='multiclass', average='macro'
-        )
-        self.auroc = AUROC(num_classes=num_classes, task='multiclass')
+        def stage_metrics(prefix: str) -> MetricCollection:
+            return MetricCollection(
+                {
+                    'accuracy': Accuracy(num_classes=num_classes, task='multiclass'),
+                    'f1': F1Score(
+                        num_classes=num_classes, task='multiclass', average='macro'
+                    ),
+                    'auroc': AUROC(num_classes=num_classes, task='multiclass'),
+                },
+                prefix=prefix,
+            )
+
+        self.vali_metrics = stage_metrics('vali.')
+        self.test_metrics = stage_metrics('test.')
 
     def forward(self, x):
         """Forward pass through embedder, blocks, and decision layer.
@@ -301,20 +315,7 @@ class NN_Classifier(pl.LightningModule):
         Returns:
             Scalar validation loss tensor.
         """
-        x, y = batch
-        out = self(x)
-        loss = self.criterion(out, y)
-        self.log_dict(
-            {
-                'vali.CEL': loss,
-                'vali.accuracy': self.accuracy(out, y),
-                'vali.f1': self.f1(out, y),
-                'vali.auroc': self.auroc(out, y),
-            },
-            sync_dist=True,
-            prog_bar=True,
-        )
-        return loss
+        return self._evaluate(batch, 'vali.', self.vali_metrics)
 
     def test_step(self, batch, batch_idx: int = None):
         """Lightning test step.
@@ -329,19 +330,21 @@ class NN_Classifier(pl.LightningModule):
         Returns:
             Scalar test loss tensor.
         """
+        return self._evaluate(batch, 'test.', self.test_metrics)
+
+    def _evaluate(self, batch, prefix: str, metrics: MetricCollection):
+        """Log the batch-size-weighted loss and update whole-split metrics."""
         x, y = batch
         out = self(x)
         loss = self.criterion(out, y)
-        self.log_dict(
-            {
-                'test.CEL': loss,
-                'test.accuracy': self.accuracy(out, y),
-                'test.f1': self.f1(out, y),
-                'test.auroc': self.auroc(out, y),
-            },
-            sync_dist=True,
-            prog_bar=True,
+        self.log(
+            f'{prefix}CEL', loss, on_step=False, on_epoch=True,
+            batch_size=len(y), sync_dist=True, prog_bar=True,
         )
+        metrics.update(out, y)
+        # Logging the collection makes Lightning compute and reset it once
+        # per epoch, over every batch of the split.
+        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         return loss
 
     def explain(
