@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deck object for Ageas.
 
-The deck is the operating squad layered on top of a :class:`~ageas.Hangar`:
+The deck operates a squad of units drawn from a :class:`~ageas.Hangar`:
 it dispatches sorties, keeps per-unit operation reports, drives prediction,
 and aggregates per-class explanation factors via :meth:`Deck.debrief`.
 """
@@ -13,20 +13,51 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from warnings import warn
 
-from ageas.hangar import Hangar
 from ageas.tool import Trainer_Maker
+from ageas.tool.scores import drop_std_columns
 
 _logger = logging.getLogger(__name__)
 
 
-class Deck(Hangar):
+def split_metric_key(metric_key: str) -> tuple:
+    """Split a dotted metric key such as ``'vali.CEL'`` into its parts.
+
+    Returns:
+        ``(split, name)``, e.g. ``('vali', 'CEL')``. The split is the key
+        under which the metric is filed in a report (``'vali'``/``'test'``).
+    """
+    split, name = metric_key.split('.', 1)
+    return split, name
+
+
+def weight_by_metric(
+    scores: pd.DataFrame, metric_value: float, monitor_type: str
+) -> pd.DataFrame:
+    """Scale one unit's score table by its selection metric.
+
+    Lower-is-better metrics (``'min'``, e.g. CEL) divide the scores and
+    higher-is-better metrics (``'max'``) multiply them. The weight is used
+    as is: it is unbounded and not normalised across units.
+
+    Raises:
+        ValueError: If ``monitor_type`` is not ``'min'`` or ``'max'``.
+    """
+    if monitor_type == 'min':
+        assert metric_value != 0, "Weight for 'min' monitor type cannot be zero."
+        return scores / metric_value
+    if monitor_type == 'max':
+        return scores * metric_value
+    raise ValueError(f"monitor_type must be 'min' or 'max', got {monitor_type!r}")
+
+
+class Deck:
     """Sortie deck that trains, evaluates, and explains a squad of units.
 
-    Inherits from :class:`~ageas.Hangar` and adds operational logic on top
-    of the candidate squad: a :class:`~ageas.tool.Trainer_Maker` to launch
-    the correct trainer per model type, a per-unit report ledger, and the
-    :meth:`debrief` aggregation that combines model-wise explanations
-    weighted by their validation/test metrics.
+    Operates on a squad produced by :meth:`~ageas.Hangar.sortie_generate`:
+    a :class:`~ageas.tool.Trainer_Maker` launches the correct trainer per
+    model type, a per-unit report ledger collects metrics, and
+    :meth:`debrief` combines model-wise explanations weighted by their
+    validation/test metrics.
 
     :ivar squad: Mapping ``unit_id -> Unit`` for the active operating units.
     :ivar trainer_maker: Factory that produces trainer-model pairs.
@@ -61,11 +92,13 @@ class Deck(Hangar):
         self.report = self.make_report(squad)
 
         self.accelerator = accelerator
-        if accelerator == 'cuda' and cuda_devices is None:
+        if accelerator != 'cuda':
+            self.cuda_devices = None
+        elif cuda_devices is not None:
+            self.cuda_devices = cuda_devices
+        else:
             self.cuda_devices = range(torch.cuda.device_count())
             assert len(self.cuda_devices) > 0, "No CUDA devices found"
-        else:
-            self.cuda_devices = None
 
     def sortie(
         self,
@@ -298,9 +331,8 @@ class Deck(Hangar):
 
         Each unit's ``explain`` method is called on ``exp_dataset`` and the
         resulting per-class score table is weighted by that unit's metric
-        value (``monitor_metric``). The weight direction depends on
-        ``monitor_type``: lower-is-better metrics divide by the score,
-        higher-is-better metrics multiply.
+        value (``monitor_metric``) through :func:`weight_by_metric`, then
+        summed across units.
 
         :param exp_dataset: Dataset to explain. Forwarded unchanged to every
             unit's ``explain`` method.
@@ -320,13 +352,11 @@ class Deck(Hangar):
         :returns: The integrated per-class score table. Columns ending in
             ``_Std`` are dropped from the final answer.
         """
-        met_type = monitor_metric.split('.')[0]
+        split, _ = split_metric_key(monitor_metric)
         general_ans = None
 
         for unit_id, unit in self.squad.items():
-            weight = float(
-                unit.report[operation][mission][met_type][monitor_metric]
-            )
+            weight = float(unit.report[operation][mission][split][monitor_metric])
 
             if verbose:
                 _logger.info("Explaining Unit: %s, Weight: %s", unit_id, weight)
@@ -336,23 +366,13 @@ class Deck(Hangar):
                 device=unit.accelerator,
                 **kwargs,
             )
-
-            if monitor_type == 'min':
-                assert weight != 0, (
-                    "Weight for 'min' monitor type cannot be zero."
-                )
-                ans = report / weight
-            elif monitor_type == 'max':
-                ans = report * weight
-
+            ans = weight_by_metric(report, weight, monitor_type)
             general_ans = ans if general_ans is None else general_ans + ans
 
             if verbose:
                 _logger.info("Unit: %s\n%s", unit_id, ans)
 
-        cols_to_drop = [c for c in general_ans.columns if 'Std' in str(c)]
-        if cols_to_drop:
-            general_ans = general_ans.drop(columns=cols_to_drop)
+        general_ans = drop_std_columns(general_ans)
 
         if verbose:
             _logger.info("General Answer\n%s", general_ans)

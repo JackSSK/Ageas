@@ -16,7 +16,29 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-from .sk_template import Classifier_Template
+from .sk_template import Classifier_Template, to_2d
+
+# Values used for any key missing from ``model_params``.
+DEFAULT_PARAMS = {
+    'scaler_copy': True,
+    'scaler_with_mean': True,
+    'scaler_with_std': True,
+    'C': 1.0,
+    'kernel': 'linear',
+    'degree': 3,
+    'gamma': 'scale',
+    'coef0': 0.0,
+    'shrinking': True,
+    'tol': 0.001,
+    'cache_size': 200,
+    'class_weight': None,
+    'verbose': False,
+    'max_iter': -1,
+    'decision_func_shape': 'ovr',
+    'break_ties': False,
+    'random_state': None,
+    'num_class': 2,
+}
 
 
 class SVM_Classifier(Classifier_Template):
@@ -44,31 +66,12 @@ class SVM_Classifier(Classifier_Template):
                 ``coef0``, ``shrinking``, ``tol``, ``cache_size``,
                 ``class_weight``, ``verbose``, ``max_iter``,
                 ``decision_func_shape``, ``break_ties``, ``random_state``,
-                ``num_class``.
+                ``num_class``. Missing keys take their value from
+                ``DEFAULT_PARAMS``.
             **kwargs: Forwarded to the parent
                 :class:`~ageas.classical.sk_template.Classifier_Template`.
         """
-        if model_params is None:
-            model_params = {
-                'scaler_copy': True,
-                'scaler_with_mean': True,
-                'scaler_with_std': True,
-                'C': 1.0,
-                'kernel': 'linear',
-                'degree': 3,
-                'gamma': 'scale',
-                'coef0': 0.0,
-                'shrinking': True,
-                'tol': 0.001,
-                'cache_size': 200,
-                'class_weight': None,
-                'verbose': False,
-                'max_iter': -1,
-                'decision_func_shape': 'ovr',
-                'break_ties': False,
-                'random_state': None,
-                'num_class': 2,
-            }
+        model_params = {**DEFAULT_PARAMS, **(model_params or {})}
 
         super().__init__(fea_names=fea_names, model_params=model_params, **kwargs)
         self.model = SVC(
@@ -100,29 +103,32 @@ class SVM_Classifier(Classifier_Template):
                 'explanation; explanations will be meaningless.'
             )
 
-    def apply_scaler(self, x) -> np.ndarray:
-        """Fit (or refit) the scaler on ``x`` and return the scaled features.
+    def apply_scaler(self, x, fit: bool = False) -> np.ndarray:
+        """Return the standard-scaled features of ``x``.
 
         Args:
             x: Input feature tensor.
+            fit: If ``True``, fit the scaler on ``x`` first. Only training
+                data should fit the scaler; prediction reuses its statistics.
 
         Returns:
             Standard-scaled feature matrix as :class:`numpy.ndarray`.
         """
-        self.scaler.fit(np.array(x.squeeze()))
-        return self.scaler.transform(np.array(x.squeeze()))
+        if fit:
+            self.scaler.fit(to_2d(x))
+        return self.scaler.transform(to_2d(x))
 
     def forward(self, x, y) -> None:
-        """Standard-scale ``x`` and fit the underlying SVC.
+        """Fit the scaler and the underlying SVC on ``(x, y)``.
 
         Args:
             x: Input feature tensor.
             y: Label tensor.
         """
-        self.model.fit(self.apply_scaler(x), np.array(y))
+        self.model.fit(self.apply_scaler(x, fit=True), np.array(y))
 
     def predict(self, x, y=None) -> np.ndarray:
-        """Standard-scale ``x`` and return per-class probabilities.
+        """Scale ``x`` with the training statistics and return probabilities.
 
         Args:
             x: Input feature tensor.
@@ -132,3 +138,19 @@ class SVM_Classifier(Classifier_Template):
             Output of ``self.model.predict_proba`` on the scaled inputs.
         """
         return self.model.predict_proba(self.apply_scaler(x))
+
+    def explain(self, score_name: str = 'Scores', **kwargs):
+        """Coefficient-based feature importance (binary problems only).
+
+        Raises:
+            NotImplementedError: For more than two classes, where SVC's
+                ``coef_`` holds one row per one-vs-one class pair rather than
+                one row per class.
+        """
+        if self.hparams.model_params['num_class'] > 2:
+            raise NotImplementedError(
+                'SVM_Classifier.explain supports binary problems only: '
+                'multi-class SVC coefficients are one-vs-one and cannot be '
+                'mapped to per-class scores.'
+            )
+        return super().explain(score_name=score_name, **kwargs)

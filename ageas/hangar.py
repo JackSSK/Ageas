@@ -38,10 +38,17 @@ class Hangar:
             files, each of which becomes a :class:`~ageas.Unit`.
         """
         self.units: dict = {}
-        for model_type in os.listdir(config_folder):
+        # Sorted for a reproducible unit order; hidden entries (.DS_Store,
+        # sync-client files, .ipynb_checkpoints) are not configs.
+        for model_type in sorted(os.listdir(config_folder)):
             type_dir = os.path.join(config_folder, model_type)
-            for unit_file in os.listdir(type_dir):
-                tail = unit_file.split('.')[0]
+            if model_type.startswith('.') or not os.path.isdir(type_dir):
+                continue
+            for unit_file in sorted(os.listdir(type_dir)):
+                if unit_file.startswith('.'):
+                    continue
+                # splitext keeps dots inside names such as 'logreg_C_0.1'.
+                tail = os.path.splitext(unit_file)[0]
                 unit_id = f"{model_type}_{tail}"
                 self.units[unit_id] = Unit(
                     tail=tail,

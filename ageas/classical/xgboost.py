@@ -14,6 +14,9 @@ import xgboost as xgb
 from torch.utils.data import DataLoader
 
 from ageas.tool import l1_normalize
+from ageas.tool.scores import contrast_classes, score_table
+
+from .sk_template import to_2d
 
 
 class XGB_Classifier(pl.LightningModule):
@@ -82,7 +85,7 @@ class XGB_Classifier(pl.LightningModule):
             y: Label tensor.
         """
         dtrain = xgb.DMatrix(
-            np.array(x.squeeze()),
+            to_2d(x),
             label=np.array(y),
             feature_names=self.hparams.fea_names,
         )
@@ -101,12 +104,17 @@ class XGB_Classifier(pl.LightningModule):
                     self.hparams.train_config['num_boost_round'] // 10
                 )
 
+        # ``evals`` is decided above; a config-level 'evals' entry would be
+        # passed twice.
+        train_kwargs = {
+            k: v for k, v in self.hparams.train_config.items() if k != 'evals'
+        }
         self.model = xgb.train(
             params=self.hparams.model_params,
             dtrain=dtrain,
             xgb_model=self.model,
             evals=evals,
-            **self.hparams.train_config,
+            **train_kwargs,
         )
 
     def predict(self, x, y) -> np.ndarray:
@@ -122,7 +130,7 @@ class XGB_Classifier(pl.LightningModule):
         self.model.set_param({'device': self.hparams.model_params['device']})
         return self.model.predict(
             xgb.DMatrix(
-                np.array(x.squeeze()),
+                to_2d(x),
                 label=np.array(y),
                 feature_names=self.hparams.fea_names,
             )
@@ -215,18 +223,18 @@ class XGB_Classifier(pl.LightningModule):
                 )
             )
 
+        # Rows are indexed by class id, so size them by the model's classes,
+        # not by the labels that happen to be present in ``dataset``.
+        n_class = self.hparams.model_params['num_class']
         explain_means = None
         explain_stds = None
-        unique_labels = None
 
         for data, label in loader:
-            if unique_labels is None:
-                unique_labels = label.unique()
             if explain_means is None:
-                explain_means = np.zeros((len(unique_labels), data.shape[-1]))
-                explain_stds = np.zeros((len(unique_labels), data.shape[-1]))
+                explain_means = np.zeros((n_class, data.shape[-1]))
+                explain_stds = np.zeros((n_class, data.shape[-1]))
 
-            for q_class in unique_labels:
+            for q_class in label.unique():
                 ct_data = data[label == q_class]
                 if len(ct_data) == 0:
                     continue
@@ -243,24 +251,10 @@ class XGB_Classifier(pl.LightningModule):
                     np.std(explain_result, axis=0), mode='numpy'
                 )
 
-        # Class-contrastive normalization: subtract max attribution of other classes.
-        # Uses max (aggressive); mean/median would produce softer contrasts.
-        backgrounds = np.zeros_like(explain_means)
-        for ind, exp in enumerate(explain_means):
-            backgrounds[ind] = np.max(np.delete(explain_means, ind, axis=0), axis=0)
-        for ind, exp in enumerate(explain_means):
-            explain_means[ind] = exp - backgrounds[ind]
-
-        return pd.DataFrame(
-            {
-                key: value
-                for ind in range(len(unique_labels))
-                for key, value in [
-                    (f'Class_{ind}_Scores', explain_means[ind]),
-                    (f'Class_{ind}_Std', explain_stds[ind]),
-                ]
-            },
-            index=self.hparams.fea_names,
+        return score_table(
+            self.hparams.fea_names,
+            contrast_classes(explain_means),
+            stds=explain_stds,
         )
 
     def save_model(self, path: str) -> None:

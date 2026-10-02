@@ -11,6 +11,16 @@ import pytorch_lightning as pl
 
 import ageas.tool.JSON as JSON
 from ageas.tool import l1_normalize
+from ageas.tool.scores import score_table
+
+
+def to_2d(x) -> np.ndarray:
+    """Flatten a batch to ``(n_samples, n_features)``, keeping the sample axis.
+
+    ``x.squeeze()`` would also drop the sample axis of a one-sample batch.
+    """
+    x = np.asarray(x)
+    return x.reshape(x.shape[0], -1)
 
 
 class Classifier_Template(pl.LightningModule):
@@ -38,7 +48,7 @@ class Classifier_Template(pl.LightningModule):
                 :class:`numpy.ndarray`.
             y: Label tensor.
         """
-        self.model.fit(np.array(x.squeeze()), np.array(y))
+        self.model.fit(to_2d(x), np.array(y))
 
     def predict(self, x, y=None) -> np.ndarray:
         """Return per-class probabilities from the underlying estimator.
@@ -50,14 +60,15 @@ class Classifier_Template(pl.LightningModule):
         Returns:
             Output of ``self.model.predict_proba``.
         """
-        return self.model.predict_proba(np.array(x.squeeze()))
+        return self.model.predict_proba(to_2d(x))
 
     def explain(self, score_name: str = 'Scores', **kwargs) -> pd.DataFrame:
         """Default coefficient-based feature importance.
 
-        For binary classifiers the negative-class scores are appended to
-        match the multi-class layout used everywhere else; multi-class
-        coefficients are L1-normalised per class.
+        For binary classifiers scikit-learn's single coefficient row points
+        toward ``classes_[1]``, so it becomes ``Class_1_Scores`` and its
+        negation ``Class_0_Scores``, matching the multi-class layout used
+        everywhere else; multi-class coefficients are L1-normalised per class.
 
         Note:
             This default implementation works on linear models with a
@@ -73,19 +84,13 @@ class Classifier_Template(pl.LightningModule):
             Per-feature, per-class score table as a
             :class:`~pandas.DataFrame`.
         """
+        coef = self.model.coef_
         if self.hparams.model_params['num_class'] == 2:
-            ans = l1_normalize(self.model.coef_.T, mode='numpy')
-            ans = np.concatenate((ans, -ans), axis=1)
+            class_1 = l1_normalize(coef[0], mode='numpy')
+            scores = np.stack((-class_1, class_1))
         else:
-            ans = self.model.coef_.T
-            for i, exp in enumerate(ans):
-                ans[i] = l1_normalize(exp, mode='numpy')
-
-        return pd.DataFrame(
-            ans,
-            index=self.hparams.fea_names,
-            columns=[f'Class_{i}_Scores' for i in range(ans.shape[1])],
-        )
+            scores = np.stack([l1_normalize(row, mode='numpy') for row in coef])
+        return score_table(self.hparams.fea_names, scores)
 
     def save_model(self, path: str) -> None:
         """Persist the estimator's hyper-parameters as JSON.

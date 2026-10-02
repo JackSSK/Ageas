@@ -164,8 +164,9 @@ class Basic_Clf_Explainer:
         t_model = self.model.to(self.device)
         t_model.eval()
 
+        strat_dataset = self.dataset.stratify(class_index)
         dataloader = DataLoader(
-            self.dataset.stratify(class_index),
+            strat_dataset,
             num_workers=self.n_dataloader_workers,
             batch_size=1,
             shuffle=False,
@@ -198,15 +199,14 @@ class Basic_Clf_Explainer:
         if len(record['loss']) == 0:
             del record['loss']
 
-        import pandas as pd
+        # The index of ``rec`` is each sample's position in ``strat_dataset``
+        # (not in the full dataset), so subsets must be taken from it.
         rec = pd.DataFrame(record)
+        rec = rec[rec['decision'] == class_index]
+        explain_data = Subset(strat_dataset, rec.index.tolist())
 
-        keep_samples = rec[rec['decision'] == class_index].index.tolist()
-        explain_data = Subset(self.dataset, keep_samples)
-        rec = rec[rec['decision'] == class_index].reset_index(drop=True)
-
-        if sample_limit is not None and len(keep_samples) > 0:
-            sample_limit = min(sample_limit, len(explain_data))
+        if sample_limit is not None and len(rec) > 0:
+            sample_limit = min(sample_limit, len(rec))
             sort_key = 'loss' if 'loss' in rec.columns else 'gap'
             indices = (
                 rec.sort_values(sort_key)
@@ -218,7 +218,7 @@ class Basic_Clf_Explainer:
                 ]
                 .index.tolist()
             )
-            explain_data = Subset(self.dataset, indices)
+            explain_data = Subset(strat_dataset, indices)
 
         return DataLoader(
             explain_data,

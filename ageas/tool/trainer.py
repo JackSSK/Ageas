@@ -14,7 +14,6 @@ import torch
 import torch.nn as nn
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import (
-    Callback,
     GradientAccumulationScheduler,
     ModelCheckpoint,
 )
@@ -24,22 +23,15 @@ from torchmetrics import AUROC, Accuracy, F1Score
 _logger = logging.getLogger(__name__)
 
 
-class MetricTracker(Callback):
-    """Lightning callback that appends every epoch's logged metrics to a list.
+def probability_cross_entropy(
+    probs: torch.Tensor, labels: torch.Tensor
+) -> torch.Tensor:
+    """Mean cross-entropy of predicted class probabilities.
 
-    Useful for inspecting per-epoch training curves after a run without
-    spinning up a logger backend.
-
-    Attributes:
-        collection: List of metric dicts, one entry per validation epoch.
+    Classical models return probabilities, not logits;
+    :class:`torch.nn.CrossEntropyLoss` would apply softmax to them again.
     """
-
-    def __init__(self) -> None:
-        self.collection: list = []
-
-    def on_validation_epoch_end(self, trainer, module) -> None:
-        """Append the current epoch's logged metrics to :attr:`collection`."""
-        self.collection.append(trainer.logged_metrics)
+    return nn.functional.nll_loss(torch.log(probs.clamp_min(1e-12)), labels)
 
 
 class Fake_Trainer:
@@ -51,7 +43,8 @@ class Fake_Trainer:
     flow through the same sortie pipeline as the Lightning-based models.
 
     Attributes:
-        criterion: Cross-entropy loss function.
+        criterion: Cross-entropy of predicted probabilities
+            (:func:`probability_cross_entropy`).
         result_metrics: Per-batch metric dictionaries collected during
             validation and test.
         accuracy: Multiclass accuracy metric.
@@ -68,7 +61,7 @@ class Fake_Trainer:
             **kwargs: Ignored; accepted for API symmetry with Lightning
                 Trainer.
         """
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = probability_cross_entropy
         self.result_metrics: list = []
         task = 'multiclass'
         self.accuracy = Accuracy(num_classes=n_classes, task=task)
@@ -115,6 +108,23 @@ class Fake_Trainer:
 
         return train_result, vali_result
 
+    def _score(self, model, dataloaders, split: str, ckpt_path: str = None) -> list:
+        """Per-batch metric dicts keyed ``'{split}.CEL'``, ``'{split}.accuracy'``,
+        ``'{split}.f1'`` and ``'{split}.auroc'``."""
+        if ckpt_path is not None:
+            model.load_model(ckpt_path)
+
+        results: list = []
+        for data, label in dataloaders:
+            preds = torch.Tensor(model.predict(data, label))
+            results.append({
+                f'{split}.CEL': self.criterion(preds, label),
+                f'{split}.accuracy': self.accuracy(preds, label.cpu()),
+                f'{split}.f1': self.f1(preds, label.cpu()),
+                f'{split}.auroc': self.auroc(preds, label.cpu()),
+            })
+        return results
+
     def predict(
         self,
         model=None,
@@ -134,21 +144,7 @@ class Fake_Trainer:
             Per-batch list of dicts with ``vali.CEL``, ``vali.accuracy``,
             ``vali.f1`` and ``vali.auroc``.
         """
-        predict_result: list = []
-
-        if ckpt_path is not None:
-            model.load_model(ckpt_path)
-
-        for data, label in dataloaders:
-            preds = torch.Tensor(model.predict(data, label))
-            predict_result.append({
-                'vali.CEL': self.criterion(preds, label),
-                'vali.accuracy': self.accuracy(preds, label.cpu()),
-                'vali.f1': self.f1(preds, label.cpu()),
-                'vali.auroc': self.auroc(preds, label.cpu()),
-            })
-
-        return predict_result
+        return self._score(model, dataloaders, 'vali', ckpt_path)
 
     def test(
         self,
@@ -167,24 +163,11 @@ class Fake_Trainer:
 
         Returns:
             Per-batch list of dicts with ``test.CEL``, ``test.accuracy``,
-            ``test.f1`` and ``test.auroc``.
+            ``test.f1`` and ``test.auroc``. They also become the latest
+            :attr:`callback_metrics`.
         """
-        test_result: list = []
-
-        if ckpt_path is not None:
-            model.load_model(ckpt_path)
-
-        for data, label in dataloaders:
-            preds = torch.Tensor(model.predict(data, label))
-            result = {
-                'test.CEL': self.criterion(preds, label),
-                'test.accuracy': self.accuracy(preds, label.cpu()),
-                'test.f1': self.f1(preds, label.cpu()),
-                'test.auroc': self.auroc(preds, label.cpu()),
-            }
-            test_result.append(result)
-            self.result_metrics.append(result)
-
+        test_result = self._score(model, dataloaders, 'test', ckpt_path)
+        self.result_metrics.extend(test_result)
         return test_result
 
     @property
@@ -375,7 +358,7 @@ class Trainer_Maker:
                 pretrained_ckpt,
                 **ckpt['hyper_parameters'],
             )
-            model.to_dev('cpu')
+            model.to('cpu')
         else:
             model = clf_object(
                 model_params=model_params,

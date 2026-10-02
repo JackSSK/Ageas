@@ -3,8 +3,8 @@
 
 Defines the in-memory :class:`Tensor_Corpus` that wraps tensor data, the
 file-backed :class:`Multimodal_Corpus` and :class:`Repr_Corpus` built on top
-of ``AnnData``, and the ``random_split`` / ``kfold_random_split`` helpers
-used by the selection ops.
+of ``AnnData``, and the ``kfold_random_split`` helper used by the selection
+ops.
 """
 import logging
 from collections import Counter
@@ -296,7 +296,7 @@ class Multimodal_Corpus(Dataset):
             assert actual_label == self.label_dict[class_label], \
                 "Inconsistent class_label and actual_label"
 
-        return self.__class__(
+        strat_ds = self.__class__(
             adata_path=self.adata_path,
             adata=self.adata[
                 self.adata.obs[self.label_key] == actual_label
@@ -308,6 +308,12 @@ class Multimodal_Corpus(Dataset):
             backed=self.adata_backed,
             dtype=self.dtype,
         )
+        # Keep the parent's class ids: built from the subset alone, the
+        # mapping would renumber the single remaining class to 0.
+        if self.label_dict:
+            strat_ds.label_dict = self.label_dict.copy()
+            strat_ds.reverse_label_dict = self.reverse_label_dict.copy()
+        return strat_ds
 
     def copy(self) -> 'Multimodal_Corpus':
         """Return a deep copy of the dataset instance.
@@ -334,6 +340,15 @@ class Multimodal_Corpus(Dataset):
         if self.reverse_label_dict:
             new_ds.reverse_label_dict = self.reverse_label_dict.copy()
         return new_ds
+
+    def restrict_features(self, features) -> None:
+        """Keep only ``features`` (in the given order), in place.
+
+        Args:
+            features: Feature IDs from ``adata.var.index`` (a list, an index,
+                or a boolean mask over the current features).
+        """
+        self.adata = self.adata[:, features]
 
 
 class Repr_Corpus(Multimodal_Corpus):
@@ -416,82 +431,6 @@ def _get_data_labels(dataset: Dataset, query_idx: list = None) -> list:
         ]
         for idx in query_idx
     ]
-
-
-def random_split(
-    dataset,
-    test_fraction: float = None,
-    valid_fraction: float = 0.1,
-    stratified_test: bool = False,
-    stratified_valid: bool = False,
-    oversample_method: str = None,
-    oversample_by: str = 'median',
-    random_seed: int = None,
-) -> tuple:
-    """Random train/validation/test split of an ``AnnData``-backed corpus.
-
-    Args:
-        dataset: Source corpus to split.
-        test_fraction: Fraction of samples held out as a test set. ``None``
-            skips the test split.
-        valid_fraction: Fraction of the (post-test) samples used as
-            validation. ``None`` skips the validation split.
-        stratified_test: If ``True``, the test split is class-stratified.
-        stratified_valid: If ``True``, the validation split is
-            class-stratified.
-        oversample_method: Currently unused; kept for API symmetry with
-            :func:`kfold_random_split`.
-        oversample_by: Currently unused; see :func:`kfold_random_split`.
-        random_seed: Seed for reproducible splits.
-
-    Returns:
-        Tuple ``(train_list, valid_list, test_list)`` of
-        :class:`Tensor_Corpus` objects, each of length 1.
-    """
-    if stratified_test or stratified_valid:
-        assert dataset.label_key is not None, \
-            "Stratified split requires label_key in the dataset"
-
-    if test_fraction is not None:
-        train_indices, test_indices, train_labels, _ = train_test_split(
-            range(len(dataset.adata.obs.index)),
-            dataset.adata.obs[dataset.label_key],
-            test_size=test_fraction,
-            stratify=dataset.adata.obs[dataset.label_key] if stratified_test else None,
-            random_state=random_seed,
-        )
-        test_list = [
-            Tensor_Corpus(*get_all_data(Subset(dataset, test_indices)), parent=dataset)
-        ]
-    else:
-        train_indices = range(len(dataset.adata.obs.index))
-        train_labels = (
-            dataset.adata.obs[dataset.label_key]
-            if dataset.label_key is not None
-            else None
-        )
-        test_list = [None]
-
-    if valid_fraction is not None:
-        train_indices, valid_indices = train_test_split(
-            train_indices,
-            test_size=valid_fraction,
-            stratify=train_labels if stratified_valid else None,
-            random_state=random_seed,
-        )
-        valid_list = [
-            Tensor_Corpus(*get_all_data(Subset(dataset, valid_indices)), parent=dataset)
-        ]
-        train_list = [
-            Tensor_Corpus(*get_all_data(Subset(dataset, train_indices)), parent=dataset)
-        ]
-    else:
-        valid_list = [None]
-        train_list = [
-            Tensor_Corpus(*get_all_data(Subset(dataset, train_indices)), parent=dataset)
-        ]
-
-    return train_list, valid_list, test_list
 
 
 def kfold_random_split(
@@ -578,6 +517,7 @@ def kfold_random_split(
                     parent=dataset,
                     oversample_method=oversample_method,
                     oversample_by=oversample_by,
+                    random_seed=random_seed,
                 )
             )
 
@@ -629,17 +569,19 @@ def _oversample(
     target_class_count = target_map[oversample_by.lower()]
 
     if oversample_method.lower() == 'repeat':
+        rng = np.random.RandomState(random_seed)
         train_indices: list = []
         for label in parent.label_dict.values():
             label_indices = [
                 x for x in query.indices
                 if parent.adata.obs[parent.label_key].iloc[x] == label
             ]
-            if len(label_indices) >= target_class_count:
-                train_indices += label_indices
-            else:
+            train_indices += label_indices
+            # Top up a minority class with repeats; every real cell stays.
+            n_missing = target_class_count - len(label_indices)
+            if n_missing > 0:
                 train_indices += list(
-                    np.random.choice(label_indices, target_class_count, replace=True)
+                    rng.choice(label_indices, n_missing, replace=True)
                 )
         return Tensor_Corpus(
             *get_all_data(Subset(parent, train_indices)),

@@ -147,6 +147,9 @@ def make_fake_adata(
     """
     seed_everything(seed)
 
+    # Unshuffled, make_classification orders columns informative, redundant,
+    # repeated, then noise; shuffling would permute columns away from these
+    # names. Rows are shuffled separately below.
     X, y = make_classification(
         n_samples=n_cells,
         n_features=n_genes,
@@ -155,15 +158,18 @@ def make_fake_adata(
         n_repeated=n_repeated,
         n_classes=n_class,
         n_clusters_per_class=n_clusters_per_class,
+        shuffle=False,
         random_state=seed,
     )
+    row_order = np.random.RandomState(seed).permutation(n_cells)
+    X, y = X[row_order], y[row_order]
     standard_genes = n_genes - n_informative - n_redundant - n_repeated
 
     var_index = (
-        [f'fake_gene_{i}' for i in range(standard_genes)]
-        + [f'informative_gene_{i}' for i in range(n_informative)]
+        [f'informative_gene_{i}' for i in range(n_informative)]
         + [f'redundant_gene_{i}' for i in range(n_redundant)]
         + [f'repeated_gene_{i}' for i in range(n_repeated)]
+        + [f'fake_gene_{i}' for i in range(standard_genes)]
     )
 
     adata = ad.AnnData(

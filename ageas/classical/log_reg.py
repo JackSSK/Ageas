@@ -8,6 +8,19 @@ from sklearn.linear_model import LogisticRegression
 
 from .sk_template import Classifier_Template
 
+# Values used for any key missing from ``model_params``.
+DEFAULT_PARAMS = {
+    'penalty': 'l1',
+    'dual': False,
+    'tol': 1e-4,
+    'C': 1.0,
+    'fit_intercept': True,
+    'intercept_scaling': 1.0,
+    'class_weight': None,
+    'random_state': None,
+    'solver': 'lbfgs',
+}
+
 
 class LogReg_Classifier(Classifier_Template):
     """Lightning wrapper around :class:`sklearn.linear_model.LogisticRegression`.
@@ -31,22 +44,12 @@ class LogReg_Classifier(Classifier_Template):
                 :class:`~sklearn.linear_model.LogisticRegression`. Recognized
                 keys: ``penalty``, ``dual``, ``tol``, ``C``,
                 ``fit_intercept``, ``intercept_scaling``, ``class_weight``,
-                ``random_state``, ``solver``.
+                ``random_state``, ``solver``. Missing keys take their value
+                from ``DEFAULT_PARAMS``.
             **kwargs: Forwarded to the parent
                 :class:`~ageas.classical.sk_template.Classifier_Template`.
         """
-        if model_params is None:
-            model_params = {
-                'penalty': 'l1',
-                'dual': False,
-                'tol': 1e-4,
-                'C': 1.0,
-                'fit_intercept': True,
-                'intercept_scaling': 1.0,
-                'class_weight': None,
-                'random_state': None,
-                'solver': 'lbfgs',
-            }
+        model_params = {**DEFAULT_PARAMS, **(model_params or {})}
 
         super().__init__(fea_names=fea_names, model_params=model_params, **kwargs)
         self.model = LogisticRegression(

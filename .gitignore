@@ -13,3 +13,4 @@
 */.pytest
 */cache/*
 *.claude
+/.scratch/

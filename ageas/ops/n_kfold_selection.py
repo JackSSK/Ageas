@@ -12,11 +12,88 @@ import time
 
 import numpy as np
 
-from ageas.deck import Deck
+from ageas.deck import Deck, split_metric_key
 from ageas.hangar import Hangar
 from ageas.tool import kfold_random_split
 
 _logger = logging.getLogger(__name__)
+
+
+def rank_units(report: dict, monitor_metric: str, monitor_type: str) -> list:
+    """Rank units, best first, by their mean metric over one round's folds.
+
+    Args:
+        report: Deck report ``{unit_id: {'vali': [...], 'test': [...]}}``
+            holding one metric dict per fold.
+        monitor_metric: Dotted metric key, e.g. ``'test.accuracy'``.
+        monitor_type: ``'max'`` if higher is better, ``'min'`` if lower is.
+
+    Returns:
+        List of ``(unit_id, mean_metric)`` pairs, best first.
+    """
+    split, _ = split_metric_key(monitor_metric)
+    means = {
+        unit_id: np.mean([float(rec[monitor_metric]) for rec in records[split]])
+        for unit_id, records in report.items()
+    }
+    return sorted(means.items(), key=lambda x: x[1], reverse=monitor_type == 'max')
+
+
+def _beats(value, threshold, monitor_type: str) -> bool:
+    """Strictly better than ``threshold``; 'min' metrics are better when lower."""
+    if monitor_type == 'min':
+        return value < threshold
+    return value > threshold
+
+
+def round_survivors(
+    unit_rank: list,
+    expect_survival: int,
+    retention_point: float,
+    cutoff_point: float,
+    monitor_type: str,
+) -> list:
+    """Unit IDs kept after one selection round.
+
+    A unit survives if it ranks within the top ``expect_survival`` or beats
+    ``retention_point``, and in either case beats ``cutoff_point``.
+
+    Args:
+        unit_rank: Output of :func:`rank_units`, best first.
+    """
+    return [
+        unit_id
+        for rank, (unit_id, value) in enumerate(unit_rank)
+        if (rank < expect_survival or _beats(value, retention_point, monitor_type))
+        and _beats(value, cutoff_point, monitor_type)
+    ]
+
+
+def final_selection_metric(final_record: dict, monitor_metric: str):
+    """Value the last-mission filter compares with ``retention_point``.
+
+    Only the metric name is taken from ``monitor_metric``. The split is the
+    test split whenever the last mission had a test set, and otherwise the
+    last mission's validation split, which is the full query data the unit
+    was trained on.
+
+    Args:
+        final_record: ``{'vali': metrics, 'test': metrics or None}``.
+        monitor_metric: Dotted metric key, e.g. ``'test.accuracy'``.
+    """
+    _, name = split_metric_key(monitor_metric)
+    if final_record['test'] is not None:
+        return final_record['test'][f'test.{name}']
+    return final_record['vali'][f'vali.{name}']
+
+
+def passes_final_filter(value, retention_point: float, monitor_type: str) -> bool:
+    """Whether a unit reaches ``retention_point`` (inclusive) after the last mission."""
+    if monitor_type == 'max':
+        return value >= retention_point
+    if monitor_type == 'min':
+        return value <= retention_point
+    return False
 
 
 def main(
@@ -147,24 +224,14 @@ def main(
                 verbose=verbose,
             )
 
-        unit_rank = sorted(
-            {
-                k: np.mean([
-                    float(rec[monitor_metric])
-                    for rec in v[monitor_metric.split('.')[0]]
-                ])
-                for k, v in report.items()
-            }.items(),
-            key=lambda x: x[1],
-            reverse=monitor_type == 'max',
-        )
-
-        deck.squad_update([
-            unit_rank[i][0]
-            for i in range(len(unit_rank))
-            if (i < expect_survival or unit_rank[i][1] > retention_point)
-            and unit_rank[i][1] > cutoff_point
-        ])
+        unit_rank = rank_units(report, monitor_metric, monitor_type)
+        deck.squad_update(round_survivors(
+            unit_rank,
+            expect_survival=expect_survival,
+            retention_point=retention_point,
+            cutoff_point=cutoff_point,
+            monitor_type=monitor_type,
+        ))
 
         for unit_id, unit in deck.squad.items():
             if deploy_i == 0:
@@ -195,21 +262,14 @@ def main(
         for unit_id, unit in deck.squad.items():
             if operation_name not in unit.report:
                 unit.report[operation_name] = dict()
-            unit.report[operation_name]['final'] = {
+            final_record = {
                 'vali': report[unit_id]['vali'][0],
                 'test': report[unit_id]['test'][0],
             }
+            unit.report[operation_name]['final'] = final_record
 
-            metric_name = monitor_metric.split('.')[-1]
-            rec = unit.report[operation_name]['final']
-            if rec['test'] is not None:
-                metric = rec['test']['test.' + metric_name]
-            else:
-                metric = rec['vali']['vali.' + metric_name]
-
-            if monitor_type == 'max' and metric >= retention_point:
-                final_list.append(unit_id)
-            elif monitor_type == 'min' and metric <= retention_point:
+            metric = final_selection_metric(final_record, monitor_metric)
+            if passes_final_filter(metric, retention_point, monitor_type):
                 final_list.append(unit_id)
         deck.squad_update(final_list)
         _logger.info("Last mission end. Survivors: %d", len(deck.squad))

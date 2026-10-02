@@ -23,6 +23,7 @@ from ageas.nn.blocks import Factorized_Residual_Mixer, ResNet_Basic, get_block
 from ageas.tool import Basic_Clf_Explainer as Clf_Explainer
 from ageas.tool import configure_optimizers as config_optim
 from ageas.tool import l1_normalize
+from ageas.tool.scores import contrast_classes, score_table
 
 _logger = logging.getLogger(__name__)
 
@@ -256,8 +257,9 @@ class NN_Classifier(pl.LightningModule):
             Per-class probability matrix of shape ``(batch, num_classes)``.
         """
         self.eval()
-        out = nn.functional.softmax(self(x), dim=-1)
-        return np.array(out)
+        # The model may sit on another device, e.g. after explaining on GPU.
+        out = nn.functional.softmax(self(x.to(self.device)), dim=-1)
+        return out.cpu().numpy()
 
     def configure_optimizers(self):
         """Create the optimizer and the learning rate schedule.
@@ -375,65 +377,60 @@ class NN_Classifier(pl.LightningModule):
             else self.hparams.model_params['num_classes']
         )
 
-        clf_explainer = Clf_Explainer(
-            model=self,
-            dataset=dataset,
-            verbose=verbose,
-            **kwargs,
-        )
-
-        explain_means: list = []
-        explain_stds: list = []
-
-        for i in range(n_class):
-            if verbose:
-                _logger.info('Launching Class %d explanation...', i)
-                start = time.time()
-
-            dataloader = clf_explainer.stratify_dataset(
-                class_index=i,
-                sample_limit=exp_sample_limit,
+        # The explainer sets a process-wide matmul precision; restore it after.
+        previous_precision = torch.get_float32_matmul_precision()
+        try:
+            clf_explainer = Clf_Explainer(
+                model=self,
+                dataset=dataset,
+                verbose=verbose,
+                **kwargs,
             )
 
-            self.train()
-            exp_mean, exp_std = clf_explainer(i, dataloader=dataloader)
-            self.eval()
+            explain_means: list = []
+            explain_stds: list = []
 
-            if exp_mean is None or torch.all(torch.isnan(exp_mean)):
-                exp_mean = torch.zeros(len(dataset.features))
-            if exp_std is None or torch.all(torch.isnan(exp_std)):
-                exp_std = torch.zeros(len(dataset.features))
+            for i in range(n_class):
+                if verbose:
+                    _logger.info('Launching Class %d explanation...', i)
+                    start = time.time()
 
-            explain_means.append(l1_normalize(exp_mean))
-            explain_stds.append(l1_normalize(exp_std))
+                dataloader = clf_explainer.stratify_dataset(
+                    class_index=i,
+                    sample_limit=exp_sample_limit,
+                )
 
-            if verbose:
-                elapsed = (time.time() - start) / 60
-                _logger.info('Class %d explanation done: %.2f min', i, elapsed)
+                # Attribute the trained model as it predicts: eval mode keeps
+                # dropout off and BatchNorm on its running statistics (which
+                # train mode would also overwrite). cuDNN refuses RNN backward
+                # passes in eval mode, so it is disabled for the attribution.
+                self.eval()
+                with torch.backends.cudnn.flags(enabled=False):
+                    exp_mean, exp_std = clf_explainer(i, dataloader=dataloader)
+
+                if exp_mean is None or torch.all(torch.isnan(exp_mean)):
+                    exp_mean = torch.zeros(len(dataset.features))
+                if exp_std is None or torch.all(torch.isnan(exp_std)):
+                    exp_std = torch.zeros(len(dataset.features))
+
+                explain_means.append(l1_normalize(exp_mean))
+                explain_stds.append(l1_normalize(exp_std))
+
+                if verbose:
+                    elapsed = (time.time() - start) / 60
+                    _logger.info(
+                        'Class %d explanation done: %.2f min', i, elapsed
+                    )
+        finally:
+            torch.set_float32_matmul_precision(previous_precision)
 
         explain_means = np.array([x.cpu().numpy() for x in explain_means])
         explain_stds = np.array([x.cpu().numpy() for x in explain_stds])
 
-        # Class-contrastive normalization: subtract max attribution of other classes.
-        # Uses max (aggressive); mean/median would produce softer contrasts.
-        backgrounds = np.zeros_like(explain_means)
-        for ind in range(len(explain_means)):
-            backgrounds[ind] = np.max(
-                np.delete(explain_means, ind, axis=0), axis=0
-            )
-        for ind in range(len(explain_means)):
-            explain_means[ind] = explain_means[ind] - backgrounds[ind]
-
-        return pd.DataFrame(
-            {
-                key: value
-                for ind in range(n_class)
-                for key, value in [
-                    (f'Class_{ind}_Scores', explain_means[ind]),
-                    (f'Class_{ind}_Std', explain_stds[ind]),
-                ]
-            },
-            index=dataset.features,
+        return score_table(
+            dataset.features,
+            contrast_classes(explain_means),
+            stds=explain_stds,
         )
 
     def _make_block(

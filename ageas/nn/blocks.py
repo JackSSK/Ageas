@@ -30,7 +30,7 @@ def get_block(name: str) -> type:
         ValueError: If ``name`` is not in :data:`__all__`.
     """
     if name in __all__:
-        return eval(name)
+        return globals()[name]
     raise ValueError(
         f"Block '{name}' not found. Available blocks: {__all__}"
     )

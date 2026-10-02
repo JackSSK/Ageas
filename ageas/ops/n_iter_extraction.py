@@ -13,6 +13,7 @@ import pandas as pd
 
 from ageas.hangar import Hangar
 from ageas.tool import l1_normalize
+from ageas.tool.scores import label_score_columns, score_column
 from .n_kfold_selection import main as n_kfold_selection
 
 _logger = logging.getLogger(__name__)
@@ -81,6 +82,9 @@ def main(
     temp_test = test_dataset.copy() if test_dataset is not None else None
     if exp_dataset is None:
         exp_dataset = temp_test if temp_test is not None else temp_query
+    else:
+        # Features are pruned from it in place below; leave the caller's intact.
+        exp_dataset = exp_dataset.copy()
 
     answers = []
     hold_out = {}
@@ -116,119 +120,117 @@ def main(
 
         assert exp_dataset is not None, "Explain dataset becomes None"
 
-        temp_query, hold_out = _find_outliers(
-            integrated_exps, hold_out, i, temp_query
-        )
+        # Hold out this iteration's outliers: record their scores and the
+        # iteration, then drop them from every dataset.
+        outliers = find_outliers(integrated_exps)
+        for feature in outliers:
+            hold_out[feature] = (
+                integrated_exps.loc[feature, :].values.tolist() + [i]
+            )
+        if outliers:
+            temp_query.restrict_features(
+                ~temp_query.adata.var.index.isin(outliers)
+            )
+        remaining = temp_query.adata.var.index
         if temp_test is not None:
-            temp_test.adata = temp_test.adata[:, temp_query.adata.var.index]
-        exp_dataset.adata = exp_dataset.adata[:, temp_query.adata.var.index]
+            temp_test.restrict_features(remaining)
+        exp_dataset.restrict_features(remaining)
 
-        if len(temp_query.adata.var.index) == 0:
+        if len(remaining) == 0:
             warn("No features left in the query dataset. Stopping extraction.")
             break
 
         answers.append(integrated_exps)
 
-    final_exp = integrated_exps.copy() * 0.0
-    for c in temp_query.label_dict:
-        for exp_df in answers:
-            iter_df = exp_df.loc[final_exp.index, f"Class_{c}_Scores"]
-            final_exp[f"Class_{c}_Scores"] += iter_df
-        final_exp[f"Class_{c}_Scores"] = l1_normalize(
-            final_exp[f"Class_{c}_Scores"],
-            mode='numpy',
-        )
+    final_exp = aggregate_iterations(answers, integrated_exps, temp_query.label_dict)
+    top_factors = rank_top_factors(final_exp, extract_top_n)
 
-    top_factors = pd.DataFrame(columns=final_exp.columns)
-    for col in final_exp.columns:
-        head = final_exp[col].sort_values(ascending=False).head(extract_top_n)
-        class_tops = pd.DataFrame(
-            range(len(head), 0, -1),
-            index=head.index,
-        )
-        for gene in class_tops.index:
-            if gene not in top_factors:
-                top_factors.loc[gene, col] = 0
-            top_factors.loc[gene, col] += class_tops.loc[gene, 0]
-
-    def _rename_col(df):
-        l_map = temp_query.label_dict
-        return df.rename(
-            columns={
-                col: f"Pro_{l_map[int(col.split('_')[1])]}_Scores"
-                for col in df.columns
-            }
-        )
-
-    top_factors = _rename_col(top_factors)
-    final_exp = _rename_col(final_exp)
+    top_factors = label_score_columns(top_factors, temp_query.label_dict)
+    final_exp = label_score_columns(final_exp, temp_query.label_dict)
 
     top_factors['Outlier_Iter'] = -1
-    for outlier in hold_out:
-        top_factors.loc[outlier, :] = hold_out[outlier]
+    for feature, row in hold_out.items():
+        top_factors.loc[feature, :] = row
 
     if use_gene_names:
-        assert 'name' in temp_query.adata.var.columns, \
+        # Look names up in the caller's dataset: held-out outliers are no
+        # longer in ``temp_query``, which was pruned between iterations.
+        assert 'name' in query_dataset.adata.var.columns, \
             "Gene names are not available in the query dataset."
         top_factors.index = [
-            temp_query.adata.var.loc[gene, 'name']
+            query_dataset.adata.var.loc[gene, 'name']
             for gene in top_factors.index
         ]
     return top_factors, final_exp
 
 
-def _find_outliers(
+def find_outliers(
     exp_df: pd.DataFrame,
-    hold_out: dict,
-    extraction_iter: int,
-    query_dset,
-    remove_outliers: str = 'upper',
-    outlier_iqr_factor: int = 10,
-) -> tuple:
-    """Detect IQR-based outlier features in an explanation dataframe.
+    tail: str = 'upper',
+    iqr_factor: float = 10,
+) -> list:
+    """Features that are IQR outliers in any column of ``exp_df``.
 
-    Outlier features are stored in ``hold_out`` together with their
-    explanation scores and the iteration in which they were removed, then
-    excluded from the next iteration's query dataset.
+    A feature is an outlier in a column when its score is at or beyond the
+    upper (or lower) quartile by ``iqr_factor`` interquartile ranges. The
+    comparison is inclusive, so with a zero IQR every score at or beyond the
+    quartile counts.
 
     :param exp_df: Per-class explanation table from
         :meth:`~ageas.Deck.debrief`.
-    :param hold_out: Running dict of held-out features (modified in place).
-    :param extraction_iter: Current extraction iteration index.
-    :param query_dset: Query dataset whose features are pruned.
-    :param remove_outliers: Tail to remove: ``'upper'``, ``'lower'``, or a
-        falsy value to disable outlier removal.
-    :param outlier_iqr_factor: IQR multiplier defining the outlier threshold.
-    :returns: ``(query_dset, hold_out)`` — the query dataset with outlier
-        features removed and the updated hold-out dict.
+    :param tail: ``'upper'`` or ``'lower'``; any other value finds nothing.
+    :param iqr_factor: IQR multiplier defining the outlier threshold.
+    :returns: Outlier feature IDs without duplicates, in order of first
+        appearance (column by column).
     """
-    if not remove_outliers or outlier_iqr_factor is None or exp_df is None:
-        return query_dset, hold_out
-
-    assert outlier_iqr_factor >= 0, "Outlier IQR factor must be non-negative."
-    total_outliers = {}
+    assert iqr_factor >= 0, "Outlier IQR factor must be non-negative."
+    found = {}
     for col in exp_df.columns:
-        iqr = exp_df[col].quantile(0.75) - exp_df[col].quantile(0.25)
-        outlier_distance = outlier_iqr_factor * iqr
-        if remove_outliers.upper() == 'UPPER':
-            outliers = exp_df[
-                exp_df[col] >= exp_df[col].quantile(0.75) + outlier_distance
-            ].index.tolist()
-        elif remove_outliers.upper() == 'LOWER':
-            outliers = exp_df[
-                exp_df[col] <= exp_df[col].quantile(0.25) - outlier_distance
-            ].index.tolist()
+        q25, q75 = exp_df[col].quantile(0.25), exp_df[col].quantile(0.75)
+        distance = iqr_factor * (q75 - q25)
+        if tail.upper() == 'UPPER':
+            is_outlier = exp_df[col] >= q75 + distance
+        elif tail.upper() == 'LOWER':
+            is_outlier = exp_df[col] <= q25 - distance
         else:
-            outliers = []
+            continue
+        for feature in exp_df.index[is_outlier]:
+            found[feature] = None
+    return list(found)
 
-        for outlier in outliers:
-            hold_out[outlier] = (
-                exp_df.loc[outlier, :].values.tolist() + [extraction_iter]
-            )
-            total_outliers[outlier] = None
 
-    if total_outliers:
-        query_dset.adata = query_dset.adata[
-            :, ~query_dset.adata.var.index.isin(list(total_outliers.keys()))
-        ]
-    return query_dset, hold_out
+def aggregate_iterations(
+    answers: list, last_table: pd.DataFrame, label_dict: dict
+) -> pd.DataFrame:
+    """Sum each class's scores over the kept iterations, then L1-normalise.
+
+    The sum covers the features of ``last_table`` (the latest debrief
+    table). Iteration tables are added as they are, without normalising
+    each one first.
+
+    :param answers: Debrief tables of the iterations that were kept.
+    :param last_table: The latest debrief table; supplies index and columns.
+    :param label_dict: Class index to label mapping of the query dataset.
+    """
+    final_exp = last_table.copy() * 0.0
+    for c in label_dict:
+        column = score_column(c)
+        for exp_df in answers:
+            final_exp[column] += exp_df.loc[final_exp.index, column]
+        final_exp[column] = l1_normalize(final_exp[column], mode='numpy')
+    return final_exp
+
+
+def rank_top_factors(final_exp: pd.DataFrame, extract_top_n: int) -> pd.DataFrame:
+    """Rank points for each class's ``extract_top_n`` highest-scoring features.
+
+    In each column the best feature gets ``extract_top_n`` points (or as many
+    as there are features), the next one point less, down to 1. Features
+    outside a class's top N are NaN in that class's column.
+    """
+    top_factors = pd.DataFrame(columns=final_exp.columns)
+    for col in final_exp.columns:
+        head = final_exp[col].sort_values(ascending=False).head(extract_top_n)
+        for points, gene in zip(range(len(head), 0, -1), head.index):
+            top_factors.loc[gene, col] = points
+    return top_factors

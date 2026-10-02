@@ -10,6 +10,8 @@ final round.
 import logging
 from warnings import warn
 
+import pandas as pd
+
 from ageas.hangar import Hangar
 from .n_kfold_selection import main as n_kfold_selection
 
@@ -98,16 +100,12 @@ def main(
             warn(f"No valid explanation for iteration {i+1}. Skipping it.")
             continue
 
+        # The feature budget shrinks geometrically to extract_top_n in the
+        # last iteration and is split evenly across classes.
         target_nfea = extract_top_n / extract_ratio ** (max_boost_iter - 1 - i)
-        target_nfea_class = int(target_nfea / len(temp_query.label_dict))
+        n_per_class = int(target_nfea / len(temp_query.label_dict))
 
-        fea_keep = dict()
-        for col in integrated_exps.columns:
-            sorted_exps = integrated_exps[col].sort_values(ascending=False)
-            target_nfea_class = min(len(sorted_exps), target_nfea_class)
-            for gene in sorted_exps.head(target_nfea_class).index:
-                fea_keep[gene] = None
-        fea_keep = list(fea_keep.keys())
+        fea_keep = top_features_per_class(integrated_exps, n_per_class)
         _logger.info(
             "Iteration %d — keeping %d features from %d explanations.",
             i + 1,
@@ -115,9 +113,9 @@ def main(
             len(integrated_exps.columns),
         )
 
-        temp_query.adata = temp_query.adata[:, fea_keep]
+        temp_query.restrict_features(fea_keep)
         if temp_test is not None:
-            temp_test.adata = temp_test.adata[:, fea_keep]
+            temp_test.restrict_features(fea_keep)
 
     deck = n_kfold_selection(
         hangar=hangar,
@@ -131,3 +129,19 @@ def main(
         **selection_args,
     )
     return deck, fea_keep
+
+
+def top_features_per_class(scores: pd.DataFrame, n_per_class: int) -> list:
+    """Union of each column's ``n_per_class`` highest-scoring features.
+
+    :param scores: Per-class score table from :meth:`~ageas.Deck.debrief`.
+    :param n_per_class: Number of features taken from each column.
+    :returns: Feature IDs without duplicates, in order of first appearance
+        (column by column, best first).
+    """
+    keep = {}
+    for column in scores.columns:
+        best = scores[column].sort_values(ascending=False).head(n_per_class)
+        for feature in best.index:
+            keep[feature] = None
+    return list(keep)
