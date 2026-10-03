@@ -1,10 +1,10 @@
 {
     "max_epochs": 1,
-    "model_params" : {
+    "model_params": {
         "latent_planes": 16,
-        "latent_dim": 2,
+        "latent_fea_dim": 2,
         "global_conv": true,
-        "block": "Basic_Block",
+        "block": "ResNet_Basic",
         "block_nums": [1, 1],
         "block_planes": [16, 4],
         "dropout": 0.1,
@@ -15,7 +15,7 @@
         "replace_stride_with_dilation": false,
         "norm_layer": "BatchNorm1d"
     },
-    "train_config" : {
+    "train_config": {
         "batch_size": 200,
         "precision": 32,
         "num_nodes": 1,
@@ -24,11 +24,10 @@
         "gradient_clip_val": 0.5,
         "gradient_clip_algorithm": "value",
         "ckpt_every_n_epochs": 1,
-        "save_last":true,
+        "save_last": true,
         "monitor": "vali.accuracy",
         "save_top_k_ckpt": 1,
-        "gradient_accum_schedule": null,   
-    
+        "gradient_accum_schedule": null,
         "loss_reduction": "mean",
         "optimizer": "adamw",
         "learning_rate": 0.01,
@@ -37,7 +36,6 @@
         "momentum": 0.9,
         "scheduler": "cosine",
         "sch_T_0": 10,
-        "sch_T_mult": 2,
-        "sch_eta_min": 0.001
+        "sch_T_mult": 2
     }
 }

@@ -433,6 +433,17 @@ def _get_data_labels(dataset: Dataset, query_idx: list = None) -> list:
     ]
 
 
+def _can_stratify(labels: list, test_fraction: float) -> bool:
+    """Whether ``train_test_split`` can stratify ``labels`` at this fraction.
+
+    It needs every class to have at least two members and the held-out part
+    to hold at least one cell per class.
+    """
+    counts = Counter(labels)
+    n_test = int(np.ceil(test_fraction * len(labels)))
+    return min(counts.values()) >= 2 and n_test >= len(counts)
+
+
 def kfold_random_split(
     dataset,
     n_splits: int = 1,
@@ -490,6 +501,14 @@ def kfold_random_split(
             stratify = (
                 _get_data_labels(dataset, train_indices) if stratified_valid else None
             )
+            if stratify is not None and not _can_stratify(stratify, valid_fraction):
+                _logger.warning(
+                    "Validation split of %d cells cannot be stratified over "
+                    "%d classes; using an unstratified split.",
+                    int(np.ceil(valid_fraction * len(stratify))),
+                    len(set(stratify)),
+                )
+                stratify = None
             train_indices, valid_indices = train_test_split(
                 train_indices,
                 test_size=valid_fraction,
@@ -522,6 +541,26 @@ def kfold_random_split(
             )
 
     return train_list, valid_list, test_list
+
+
+def oversample_corpus(
+    dataset,
+    oversample_method: str,
+    oversample_by: str = 'median',
+    random_seed: int = None,
+) -> Tensor_Corpus:
+    """Oversample a whole corpus so all classes reach a target size.
+
+    The same oversampling the k-fold training splits receive, applied to
+    every cell of ``dataset``. See :func:`_oversample` for the methods.
+    """
+    return _oversample(
+        query=Subset(dataset, list(range(len(dataset)))),
+        parent=dataset,
+        oversample_method=oversample_method,
+        oversample_by=oversample_by,
+        random_seed=random_seed,
+    )
 
 
 def _oversample(

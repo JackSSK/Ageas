@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader, Dataset
 from warnings import warn
 
 from ageas.tool import Trainer_Maker
-from ageas.tool.scores import drop_std_columns
+from ageas.tool.scores import drop_std_columns, l1_normalize_columns
 
 _logger = logging.getLogger(__name__)
 
@@ -30,24 +30,47 @@ def split_metric_key(metric_key: str) -> tuple:
     return split, name
 
 
-def weight_by_metric(
-    scores: pd.DataFrame, metric_value: float, monitor_type: str
-) -> pd.DataFrame:
-    """Scale one unit's score table by its selection metric.
+def mean_metric(record: dict, metric_key: str) -> float:
+    """Mean of ``metric_key`` over the folds of a report record.
 
-    Lower-is-better metrics (``'min'``, e.g. CEL) divide the scores and
-    higher-is-better metrics (``'max'``) multiply them. The weight is used
-    as is: it is unbounded and not normalised across units.
+    Args:
+        record: ``{'vali': ..., 'test': ...}`` where each split holds a list
+            of per-fold metric dicts (a ``'round_<r>'`` record or a deck
+            report) or a single metric dict (a ``'final'`` record).
+        metric_key: Dotted metric key, e.g. ``'test.accuracy'``.
+    """
+    split, _ = split_metric_key(metric_key)
+    folds = record[split]
+    if isinstance(folds, dict):
+        folds = [folds]
+    return float(np.mean([float(fold[metric_key]) for fold in folds]))
+
+
+def metric_weight(value: float, monitor_type: str) -> float:
+    """A unit's unnormalised ``debrief`` weight from its metric value.
+
+    Higher-is-better metrics (``'max'``, e.g. accuracy) are used as they
+    are. Lower-is-better metrics (``'min'``, e.g. CEL) become ``exp(-x)``,
+    which for CEL is the geometric-mean probability given to the true class.
 
     Raises:
         ValueError: If ``monitor_type`` is not ``'min'`` or ``'max'``.
     """
-    if monitor_type == 'min':
-        assert metric_value != 0, "Weight for 'min' monitor type cannot be zero."
-        return scores / metric_value
     if monitor_type == 'max':
-        return scores * metric_value
+        return float(value)
+    if monitor_type == 'min':
+        return float(np.exp(-value))
     raise ValueError(f"monitor_type must be 'min' or 'max', got {monitor_type!r}")
+
+
+def last_round(operation_report: dict) -> str:
+    """Key of the last selection round (``'round_<r>'``) in a unit's report."""
+    rounds = [key for key in operation_report if key.startswith('round_')]
+    if not rounds:
+        raise ValueError(
+            "The unit has no 'round_<r>' records; run n_kfold_selection first."
+        )
+    return max(rounds, key=lambda key: int(key.split('_')[1]))
 
 
 class Deck:
@@ -73,6 +96,7 @@ class Deck:
         n_dataloader_workers: int = 10,
         accelerator: str = 'cpu',
         cuda_devices: list = None,
+        seed: int = None,
     ) -> None:
         """Initialize a Deck.
 
@@ -85,7 +109,10 @@ class Deck:
         :param cuda_devices: Optional list of GPU device indices to bind. When
             ``accelerator='cuda'`` and this is ``None``, all visible devices
             are used.
+        :param seed: Passed to every trainer, which uses it for model
+            parameters such as ``random_state`` that the config leaves unset.
         """
+        self.seed = seed
         self.squad = squad
         self.trainer_maker = Trainer_Maker()
         self.n_dataloader_workers = n_dataloader_workers
@@ -157,6 +184,7 @@ class Deck:
                 train_data=train_data,
                 n_classes=n_classes,
                 fea_names=fea_names,
+                seed=self.seed,
                 **unit.config,
             )
 
@@ -178,7 +206,7 @@ class Deck:
                         test_dataset,
                         num_workers=self.n_dataloader_workers,
                         batch_size=test_batch_size,
-                        shuffle=True,
+                        shuffle=False,
                     ),
                     verbose=verbose,
                 )[0]
@@ -321,58 +349,67 @@ class Deck:
         self,
         exp_dataset: Dataset = None,
         operation: str = 'trail',
-        mission: str = 'final',
-        monitor_type: str = 'min',
-        monitor_metric: str = 'vali.CEL',
+        mission: str = None,
+        monitor_type: str = 'max',
+        monitor_metric: str = 'test.accuracy',
         verbose: bool = True,
         **kwargs,
     ) -> pd.DataFrame:
-        """Aggregate per-class explanation scores across the squad.
+        """Integrate per-class explanation scores across the squad.
 
-        Each unit's ``explain`` method is called on ``exp_dataset`` and the
-        resulting per-class score table is weighted by that unit's metric
-        value (``monitor_metric``) through :func:`weight_by_metric`, then
-        summed across units.
+        Each unit's score table is L1-normalised per column, so no unit
+        counts more because of its scores' scale. The tables are then
+        averaged with weights from :func:`metric_weight`, applied to the
+        unit's out-of-fold ``monitor_metric`` and normalised to sum to 1.
 
         :param exp_dataset: Dataset to explain. Forwarded unchanged to every
             unit's ``explain`` method.
         :param operation: Operation name used to look up the metric in
             ``unit.report``.
-        :param mission: Mission name (e.g. ``'final'`` or ``'fold_1'``) used
-            inside the operation's report.
-        :param monitor_type: ``'min'`` for lower-is-better metrics
-            (divide-by-weight), ``'max'`` for higher-is-better metrics
-            (multiply-by-weight).
-        :param monitor_metric: Dotted metric name (e.g. ``'vali.CEL'``,
-            ``'test.accuracy'``).
+        :param mission: Record in the operation's report that supplies the
+            metric. ``None`` uses the last selection round (``'round_<r>'``),
+            whose metrics are out-of-fold.
+        :param monitor_type: ``'max'`` for higher-is-better metrics,
+            ``'min'`` for lower-is-better ones (see :func:`metric_weight`).
+        :param monitor_metric: Dotted metric name (e.g. ``'test.accuracy'``,
+            the out-of-fold accuracy). Use the selection's monitor metric.
         :param verbose: If ``True``, print per-unit weights and the assembled
             answer.
         :param kwargs: Additional keyword arguments forwarded to each
             ``unit.model.explain`` call.
-        :returns: The integrated per-class score table. Columns ending in
-            ``_Std`` are dropped from the final answer.
+        :returns: The integrated per-class score table, without ``_Std``
+            columns.
+        :raises ValueError: If the squad is empty.
         """
-        split, _ = split_metric_key(monitor_metric)
-        general_ans = None
+        if not self.squad:
+            raise ValueError('debrief needs at least one unit in the squad.')
 
+        weights = {}
         for unit_id, unit in self.squad.items():
-            weight = float(unit.report[operation][mission][split][monitor_metric])
+            op_report = unit.report[operation]
+            record = op_report[mission if mission is not None else last_round(op_report)]
+            weights[unit_id] = metric_weight(
+                mean_metric(record, monitor_metric), monitor_type
+            )
+        total = sum(weights.values())
 
+        general_ans = None
+        for unit_id, unit in self.squad.items():
+            # All-zero metrics (e.g. accuracy 0 everywhere) fall back to equal weights.
+            weight = weights[unit_id] / total if total > 0 else 1 / len(weights)
             if verbose:
-                _logger.info("Explaining Unit: %s, Weight: %s", unit_id, weight)
+                _logger.info("Explaining Unit: %s, Weight: %.4f", unit_id, weight)
 
             report = unit.model.explain(
                 dataset=exp_dataset,
                 device=unit.accelerator,
                 **kwargs,
             )
-            ans = weight_by_metric(report, weight, monitor_type)
+            ans = l1_normalize_columns(drop_std_columns(report)) * weight
             general_ans = ans if general_ans is None else general_ans + ans
 
             if verbose:
                 _logger.info("Unit: %s\n%s", unit_id, ans)
-
-        general_ans = drop_std_columns(general_ans)
 
         if verbose:
             _logger.info("General Answer\n%s", general_ans)

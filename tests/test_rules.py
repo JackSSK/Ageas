@@ -4,14 +4,14 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from ageas.deck import split_metric_key, weight_by_metric
+from ageas.deck import last_round, mean_metric, metric_weight, split_metric_key
 from ageas.ops.n_iter_boost_selection import top_features_per_class
-from ageas.ops.n_iter_extraction import find_outliers, rank_top_factors
-from ageas.ops.n_kfold_selection import (
-    final_selection_metric,
-    passes_final_filter,
-    round_survivors,
+from ageas.ops.n_iter_extraction import (
+    aggregate_iterations,
+    find_outliers,
+    rank_top_factors,
 )
+from ageas.ops.n_kfold_selection import passes_final_filter, round_survivors
 from ageas.tool.scores import contrast_classes, label_score_columns, score_table
 
 
@@ -50,21 +50,26 @@ class SelectionRuleTest(unittest.TestCase):
                                cutoff_point=0.5, monitor_type='min')
         self.assertEqual(keep, ['a', 'b'])
 
-    def test_final_filter_reads_test_split_when_present(self):
-        record = {'vali': {'vali.accuracy': 1.0}, 'test': {'test.accuracy': 0.5}}
-        self.assertEqual(final_selection_metric(record, 'vali.accuracy'), 0.5)
-        record['test'] = None
-        self.assertEqual(final_selection_metric(record, 'test.accuracy'), 1.0)
+    def test_fold_mean_of_a_metric(self):
+        round_record = {
+            'vali': [{'vali.accuracy': 0.2}, {'vali.accuracy': 0.4}],
+            'test': [{'test.accuracy': 0.6}, {'test.accuracy': 1.0}],
+        }
+        self.assertAlmostEqual(mean_metric(round_record, 'test.accuracy'), 0.8)
+        final_record = {'vali': {'vali.accuracy': 1.0}, 'test': None}
+        self.assertEqual(mean_metric(final_record, 'vali.accuracy'), 1.0)
+        self.assertEqual(last_round({'round_2': {}, 'round_10': {}, 'final': {}}),
+                         'round_10')
         self.assertTrue(passes_final_filter(0.9, 0.9, 'max'))
         self.assertFalse(passes_final_filter(0.2, 0.1, 'min'))
 
     def test_metric_weighting(self):
-        scores = pd.DataFrame({'Class_0_Scores': [2.0, 4.0]})
         self.assertEqual(split_metric_key('vali.CEL'), ('vali', 'CEL'))
-        self.assertEqual(list(weight_by_metric(scores, 2.0, 'min')['Class_0_Scores']), [1.0, 2.0])
-        self.assertEqual(list(weight_by_metric(scores, 2.0, 'max')['Class_0_Scores']), [4.0, 8.0])
+        self.assertEqual(metric_weight(0.75, 'max'), 0.75)
+        # exp(-CEL): the geometric-mean probability given to the true class.
+        self.assertAlmostEqual(metric_weight(np.log(2), 'min'), 0.5)
         with self.assertRaises(ValueError):
-            weight_by_metric(scores, 2.0, 'MAX')
+            metric_weight(0.5, 'MAX')
 
 
 class FeatureRuleTest(unittest.TestCase):
@@ -76,6 +81,24 @@ class FeatureRuleTest(unittest.TestCase):
         )
         # q25 = 1, q75 = 3, so the threshold is 3 + 10 * 2 = 23.
         self.assertEqual(find_outliers(scores), ['e'])
+
+    def test_outlier_threshold_is_exclusive(self):
+        scores = pd.DataFrame({'Class_0_Scores': [0.0, 1.0, 2.0, 3.0, 23.0]})
+        self.assertEqual(find_outliers(scores), [])
+
+    def test_column_with_zero_iqr_flags_nothing(self):
+        # Mostly-zero scores (e.g. sparse L1 coefficients): q25 = q75 = 0.
+        scores = pd.DataFrame({'Class_0_Scores': [0.0] * 17 + [0.5, 0.6, 3.0]})
+        self.assertEqual(find_outliers(scores), [])
+
+    def test_iteration_scale_does_not_matter(self):
+        index = ['x', 'y', 'z']
+        first = pd.DataFrame({'Class_0_Scores': [3.0, 1.0, 0.0]}, index=index)
+        second = pd.DataFrame({'Class_0_Scores': [0.0, 1.0, 3.0]}, index=index)
+        plain = aggregate_iterations([first, second], second, {0: 'A'})
+        scaled = aggregate_iterations([first, second * 1000], second, {0: 'A'})
+        pd.testing.assert_frame_equal(plain, scaled)
+        self.assertAlmostEqual(plain['Class_0_Scores'].abs().sum(), 1.0)
 
     def test_rank_points_and_per_class_top_features(self):
         scores = pd.DataFrame(

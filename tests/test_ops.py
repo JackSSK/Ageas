@@ -69,6 +69,27 @@ class ExtractionTest(unittest.TestCase):
         self.assertTrue((top_factors['Outlier_Iter'] >= 0).any())
         self.assertTrue(all(g.startswith('name_') for g in top_factors.index))
 
+    def test_rank_points_and_held_out_scores_have_separate_columns(self):
+        corpus = noisy_marker_corpus()
+        with tempfile.TemporaryDirectory() as folder:
+            hangar = write_hangar(folder, {'logreg': {'good': GOOD}})
+            top_factors, _ = self.run_extraction(hangar, corpus)
+
+        labels = ['type_0', 'type_1', 'type_2']
+        self.assertEqual(
+            sorted(top_factors.columns),
+            sorted([f'Pro_{x}_Scores' for x in labels]
+                   + [f'Pro_{x}_HeldOut' for x in labels] + ['Outlier_Iter']),
+        )
+        held = top_factors['Outlier_Iter'] >= 0
+        rank_cols = [f'Pro_{x}_Scores' for x in labels]
+        held_cols = [f'Pro_{x}_HeldOut' for x in labels]
+        self.assertTrue(held.any() and (~held).any())
+        self.assertTrue(top_factors.loc[held, rank_cols].isna().all().all())
+        self.assertTrue(top_factors.loc[~held, held_cols].isna().all().all())
+        # Held-out features come first.
+        self.assertTrue(held.iloc[:held.sum()].all())
+
     def test_user_exp_dataset_is_not_modified(self):
         corpus = noisy_marker_corpus()
         exp_dataset = corpus.copy()

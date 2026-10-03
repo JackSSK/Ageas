@@ -66,6 +66,12 @@ def score_table(features, scores, stds=None) -> pd.DataFrame:
     return pd.DataFrame(columns, index=features)
 
 
+def l1_normalize_columns(table: pd.DataFrame) -> pd.DataFrame:
+    """Scale each column to unit L1 norm; all-zero columns stay zero."""
+    norms = table.abs().sum(axis=0)
+    return table / norms.where(norms > 0, 1.0)
+
+
 def drop_std_columns(table: pd.DataFrame) -> pd.DataFrame:
     """Return ``table`` without its standard-deviation columns."""
     return table.drop(columns=[c for c in table.columns if 'Std' in str(c)])

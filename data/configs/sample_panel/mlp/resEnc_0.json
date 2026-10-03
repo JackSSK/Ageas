@@ -1,6 +1,6 @@
 {
     "max_epochs": 2,
-    "model_params" : {
+    "model_params": {
         "latent_fea_dim": 64,
         "block": "Residual_Encoder",
         "block_nums": [2, 2],
@@ -9,7 +9,7 @@
         "dropout": 0.1,
         "norm_layer": "LayerNorm"
     },
-    "train_config" : {
+    "train_config": {
         "batch_size": 2,
         "precision": 32,
         "num_nodes": 1,
@@ -18,11 +18,10 @@
         "gradient_clip_val": 0.5,
         "gradient_clip_algorithm": "value",
         "ckpt_every_n_epochs": 1,
-        "save_last":true,
+        "save_last": true,
         "monitor": "vali.accuracy",
         "save_top_k_ckpt": 1,
-        "gradient_accum_schedule": null,   
-    
+        "gradient_accum_schedule": null,
         "loss_reduction": "mean",
         "optimizer": "adamw",
         "learning_rate": 0.01,
@@ -31,7 +30,6 @@
         "momentum": 0.9,
         "scheduler": "cosine",
         "sch_T_0": 10,
-        "sch_T_mult": 2,
-        "sch_eta_min": 0.001
+        "sch_T_mult": 2
     }
 }

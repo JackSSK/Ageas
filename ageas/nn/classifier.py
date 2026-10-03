@@ -16,10 +16,15 @@ import pandas as pd
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
-from torchmetrics import AUROC, Accuracy, F1Score
-from warnings import warn
+from torchmetrics import AUROC, Accuracy, F1Score, MetricCollection
 
-from ageas.nn.blocks import Factorized_Residual_Mixer, ResNet_Basic, get_block
+from ageas.nn.blocks import (
+    Factorized_Residual_Mixer,
+    ResNet_Basic,
+    RNN_Basic,
+    get_block,
+)
+from ageas.nn.embedding import Modality_Embedding
 from ageas.tool import Basic_Clf_Explainer as Clf_Explainer
 from ageas.tool import configure_optimizers as config_optim
 from ageas.tool import l1_normalize
@@ -28,6 +33,33 @@ from ageas.tool.scores import contrast_classes, score_table
 _logger = logging.getLogger(__name__)
 
 __all__ = ['NN_Classifier', 'Mixer_Classifier']
+
+def _with_train_defaults(train_config: dict = None) -> dict:
+    """``train_config`` completed with the keys the model itself needs.
+
+    Without a config, :data:`DEFAULT_TRAIN_CONFIG` is used. A given config
+    only gets ``loss_reduction`` filled in. Optimizer and scheduler keys it
+    leaves out keep the defaults of :func:`~ageas.tool.configure_optimizers`.
+    """
+    if train_config is None:
+        return dict(DEFAULT_TRAIN_CONFIG)
+    return {'loss_reduction': 'mean', **train_config}
+
+
+# Training settings used when no ``train_config`` is given.
+DEFAULT_TRAIN_CONFIG = {
+    'loss_reduction': 'mean',
+    'optimizer': 'adamw',
+    'learning_rate': 1e-3,
+    'weight_decay': 1e-4,
+    'betas': (0.9, 0.999),
+    'momentum': 0.9,
+    'scheduler': 'cosine',
+    'sch_T_0': 10,
+    'sch_T_mult': 2,
+    'sch_eta_min': 1e-6,
+    'total_steps': 100,
+}
 
 NORM_DICT = {
     'BatchNorm1d': nn.BatchNorm1d,
@@ -76,7 +108,8 @@ class NN_Classifier(pl.LightningModule):
                 ``loss_reduction``, ``optimizer``, ``learning_rate``,
                 ``weight_decay``, ``betas``, ``momentum``, ``scheduler``,
                 ``sch_T_0``, ``sch_T_mult``, ``sch_eta_min``,
-                ``total_steps``.
+                ``total_steps``. See :func:`_with_train_defaults` for
+                missing keys.
         """
         if model_params is None:
             model_params = {
@@ -93,20 +126,7 @@ class NN_Classifier(pl.LightningModule):
                 'proj_size': 0,
                 'norm_layer': 'LayerNorm',
             }
-        if train_config is None:
-            train_config = {
-                'loss_reduction': 'mean',
-                'optimizer': 'adamw',
-                'learning_rate': 1e-3,
-                'weight_decay': 1e-4,
-                'betas': (0.9, 0.999),
-                'momentum': 0.9,
-                'scheduler': 'cosine',
-                'sch_T_0': 10,
-                'sch_T_mult': 2,
-                'sch_eta_min': 1e-6,
-                'total_steps': 100,
-            }
+        train_config = _with_train_defaults(train_config)
 
         super().__init__()
         # Use explicit names so save_hyperparameters() reads the current
@@ -144,14 +164,6 @@ class NN_Classifier(pl.LightningModule):
             if 'replace_stride_with_dilation' in model_params:
                 assert num_blocks == len(model_params['replace_stride_with_dilation'])
 
-        if 'block_layer_type' in model_params and (
-            len(set(model_params['block_nums'])) > 1
-        ):
-            warn(
-                'Hidden state (and cell state) will be re-initialized between '
-                'blocks due to inconsistent num_layers'
-            )
-
         if 'block' in model_params:
             self.block = get_block(model_params['block'])
         if 'norm_layer' in model_params:
@@ -160,7 +172,13 @@ class NN_Classifier(pl.LightningModule):
             self.norm_layer = NORM_DICT[model_params['norm_layer']]
 
     def _build_architecture(self, model_params: dict) -> None:
-        """Run sanity checks and build the linear embedder, blocks, and head.
+        """Run sanity checks and build the embedding stage, blocks, and head.
+
+        The embedding stage (:class:`~ageas.nn.embedding.Modality_Embedding`)
+        turns the ``(batch, n_modalities, len_in)`` input into ``seq_len``
+        tokens of ``latent_fea_dim / seq_len`` values. MLP units read one
+        token (``seq_len = 1``); RNN units read ``seq_len`` tokens (default
+        8) with a stacked depth of ``block_num_layer``.
 
         Subclasses override this hook to install a different module stack
         while inheriting the common ``__init__`` scaffolding (hparams,
@@ -168,30 +186,53 @@ class NN_Classifier(pl.LightningModule):
 
         Args:
             model_params: Architecture hyper-parameter dict.
+
+        Raises:
+            ValueError: If ``seq_len`` is set for a non-RNN unit, or doesn't
+                divide ``latent_fea_dim``.
         """
         self.sanity_check(model_params)
+        self.norm_layer = getattr(self, 'norm_layer', nn.LayerNorm)
+        is_rnn = isinstance(getattr(self, 'block', None), type) and issubclass(
+            self.block, RNN_Basic
+        )
 
-        if model_params['latent_fea_dim'] is not None:
-            self.current_fea_dim = model_params['latent_fea_dim']
-            self.embedder = nn.Sequential(
-                nn.Linear(model_params['len_in'], self.current_fea_dim, bias=True),
-                self.norm_layer(self.current_fea_dim),
-                nn.ReLU(inplace=True),
+        self.seq_len = model_params.get('seq_len', 8 if is_rnn else 1)
+        if not is_rnn and self.seq_len != 1:
+            raise ValueError(
+                'seq_len applies to RNN units only; MLP units read a single '
+                f'token (seq_len=1), got seq_len={self.seq_len}.'
             )
-        else:
-            self.current_fea_dim = model_params['len_in']
-            self.embedder = nn.Identity()
+        latent = model_params['latent_fea_dim']
+        if latent is not None and latent % self.seq_len:
+            raise ValueError(
+                f'latent_fea_dim ({latent}) must be divisible by '
+                f'seq_len ({self.seq_len}).'
+            )
+        self.embedder = Modality_Embedding(
+            n_modalities=model_params['inplanes'],
+            len_in=model_params['len_in'],
+            seq_len=self.seq_len,
+            token_dim=None if latent is None else latent // self.seq_len,
+            embedder=model_params.get('embedder', 'mlp'),
+            norm_layer=self.norm_layer,
+        )
+        self.current_fea_dim = self.embedder.token_dim
+
+        extra = {
+            k: v
+            for k, v in model_params.items()
+            if k not in ('block', 'n_blocks', 'out_dim', 'norm_layer',
+                         'block_nums', 'block_dims', 'seq_len', 'embedder',
+                         'block_num_layer')
+        }
+        if is_rnn:
+            extra['num_layers'] = model_params.get('block_num_layer', 1)
 
         self.blocks = nn.ModuleList()
         for num_blocks, out_dim in zip(
             model_params['block_nums'], model_params['block_dims']
         ):
-            extra = {
-                k: v
-                for k, v in model_params.items()
-                if k not in ('block', 'n_blocks', 'out_dim', 'norm_layer',
-                             'block_nums', 'block_dims')
-            }
             self.blocks.append(
                 self._make_block(
                     block=self.block,
@@ -203,7 +244,7 @@ class NN_Classifier(pl.LightningModule):
 
         self.dropout = nn.Dropout(p=model_params['dropout'])
         self.fc = nn.Linear(
-            model_params['inplanes'] * self.current_fea_dim,
+            self.seq_len * self.current_fea_dim,
             model_params['num_classes'],
             bias=True,
         )
@@ -216,16 +257,30 @@ class NN_Classifier(pl.LightningModule):
                 nn.init.constant_(m.bias, 0)
 
     def set_metrics(self, num_classes: int) -> None:
-        """Attach multiclass accuracy, macro F1, and AUROC metrics.
+        """Attach validation and test metrics: accuracy, macro F1, AUROC.
+
+        Each stage has its own metric objects. They accumulate over every
+        batch of an epoch and are computed once over the whole split, so
+        small batches (where one batch may hold a single class) don't
+        distort F1 or AUROC.
 
         Args:
             num_classes: Number of label classes.
         """
-        self.accuracy = Accuracy(num_classes=num_classes, task='multiclass')
-        self.f1 = F1Score(
-            num_classes=num_classes, task='multiclass', average='macro'
-        )
-        self.auroc = AUROC(num_classes=num_classes, task='multiclass')
+        def stage_metrics(prefix: str) -> MetricCollection:
+            return MetricCollection(
+                {
+                    'accuracy': Accuracy(num_classes=num_classes, task='multiclass'),
+                    'f1': F1Score(
+                        num_classes=num_classes, task='multiclass', average='macro'
+                    ),
+                    'auroc': AUROC(num_classes=num_classes, task='multiclass'),
+                },
+                prefix=prefix,
+            )
+
+        self.vali_metrics = stage_metrics('vali.')
+        self.test_metrics = stage_metrics('test.')
 
     def forward(self, x):
         """Forward pass through embedder, blocks, and decision layer.
@@ -301,20 +356,7 @@ class NN_Classifier(pl.LightningModule):
         Returns:
             Scalar validation loss tensor.
         """
-        x, y = batch
-        out = self(x)
-        loss = self.criterion(out, y)
-        self.log_dict(
-            {
-                'vali.CEL': loss,
-                'vali.accuracy': self.accuracy(out, y),
-                'vali.f1': self.f1(out, y),
-                'vali.auroc': self.auroc(out, y),
-            },
-            sync_dist=True,
-            prog_bar=True,
-        )
-        return loss
+        return self._evaluate(batch, 'vali.', self.vali_metrics)
 
     def test_step(self, batch, batch_idx: int = None):
         """Lightning test step.
@@ -329,19 +371,21 @@ class NN_Classifier(pl.LightningModule):
         Returns:
             Scalar test loss tensor.
         """
+        return self._evaluate(batch, 'test.', self.test_metrics)
+
+    def _evaluate(self, batch, prefix: str, metrics: MetricCollection):
+        """Log the batch-size-weighted loss and update whole-split metrics."""
         x, y = batch
         out = self(x)
         loss = self.criterion(out, y)
-        self.log_dict(
-            {
-                'test.CEL': loss,
-                'test.accuracy': self.accuracy(out, y),
-                'test.f1': self.f1(out, y),
-                'test.auroc': self.auroc(out, y),
-            },
-            sync_dist=True,
-            prog_bar=True,
+        self.log(
+            f'{prefix}CEL', loss, on_step=False, on_epoch=True,
+            batch_size=len(y), sync_dist=True, prog_bar=True,
         )
+        metrics.update(out, y)
+        # Logging the collection makes Lightning compute and reset it once
+        # per epoch, over every batch of the split.
+        self.log_dict(metrics, on_step=False, on_epoch=True, prog_bar=True)
         return loss
 
     def explain(
@@ -534,20 +578,7 @@ class Mixer_Classifier(NN_Classifier):
                 'replace_stride_with_dilation': False,
                 'norm_layer': 'BatchNorm1d',
             }
-        if train_config is None:
-            train_config = {
-                'loss_reduction': 'mean',
-                'optimizer': 'adamw',
-                'learning_rate': 1e-3,
-                'weight_decay': 1e-4,
-                'betas': (0.9, 0.999),
-                'momentum': 0.9,
-                'scheduler': 'cosine',
-                'sch_T_0': 10,
-                'sch_T_mult': 2,
-                'sch_eta_min': 1e-6,
-                'total_steps': 100,
-            }
+        train_config = _with_train_defaults(train_config)
 
         super().__init__(model_params=model_params, train_config=train_config)
 

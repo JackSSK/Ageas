@@ -2,12 +2,8 @@
     "max_epochs": 1,
     "model_params": {
         "block": "Residual_Encoder",
-        "block_nums": [
-            2
-        ],
-        "block_dims": [
-            16
-        ],
+        "block_nums": [2],
+        "block_dims": [16],
         "bias": true,
         "dropout": 0.1,
         "norm_layer": "LayerNorm",
@@ -30,14 +26,10 @@
         "optimizer": "adamw",
         "learning_rate": 0.01,
         "weight_decay": 0.001,
-        "betas": [
-            0.9,
-            0.999
-        ],
+        "betas": [0.9, 0.999],
         "momentum": 0.9,
         "scheduler": "cosine",
         "sch_T_0": 10,
-        "sch_T_mult": 2,
-        "sch_eta_min": 0.001
+        "sch_T_mult": 2
     }
 }

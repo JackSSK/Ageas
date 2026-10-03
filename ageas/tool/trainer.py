@@ -288,13 +288,37 @@ class Trainer_Maker:
             enable_checkpointing: If ``True``, enable checkpoint callbacks.
             **kwargs: Ignored extra arguments.
 
+        The Lightning settings above (``precision`` through
+        ``enable_checkpointing``) may also be given inside ``train_config``,
+        as the shipped configs do; there they take precedence.
+
         Returns:
             Tuple ``(model, trainer)`` after the fit call has returned.
         """
-        if model_params is None:
-            model_params = {}
-        if train_config is None:
-            train_config = {}
+        # Copies, so the unit's config is not modified.
+        model_params = dict(model_params or {})
+        train_config = dict(train_config or {})
+
+        precision = train_config.get('precision', precision)
+        num_nodes = train_config.get('num_nodes', num_nodes)
+        log_every_n_steps = train_config.get('log_every_n_steps', log_every_n_steps)
+        accumulate_grad_batches = train_config.get(
+            'accumulate_grad_batches', accumulate_grad_batches
+        )
+        gradient_clip_val = train_config.get('gradient_clip_val', gradient_clip_val)
+        gradient_clip_algorithm = train_config.get(
+            'gradient_clip_algorithm', gradient_clip_algorithm
+        )
+        ckpt_every_n_epochs = train_config.get('ckpt_every_n_epochs', ckpt_every_n_epochs)
+        save_last = train_config.get('save_last', save_last)
+        monitor = train_config.get('monitor', monitor)
+        save_top_k_ckpt = train_config.get('save_top_k_ckpt', save_top_k_ckpt)
+        gradient_accum_schedule = train_config.get(
+            'gradient_accum_schedule', gradient_accum_schedule
+        )
+        enable_checkpointing = train_config.get(
+            'enable_checkpointing', enable_checkpointing
+        )
 
         callbacks: list = []
         if enable_checkpointing:
@@ -313,7 +337,7 @@ class Trainer_Maker:
 
         trainer = Trainer(
             max_epochs=max_epochs,
-            devices=device,
+            devices=device if device is not None else 'auto',
             accelerator=accelerator,
             precision=precision,
             num_nodes=num_nodes,
@@ -387,6 +411,7 @@ class Trainer_Maker:
         n_classes: int = 2,
         fea_names: list = None,
         model_params: dict = None,
+        seed: int = None,
         **kwargs,
     ) -> tuple:
         """Build a :class:`Fake_Trainer` and fit a scikit-learn classifier.
@@ -405,7 +430,8 @@ class Trainer_Maker:
             n_classes: Number of output classes.
             fea_names: Feature names forwarded to the classifier.
             model_params: Hyper-parameters dict for the classifier.
-            **kwargs: Ignored extra arguments.
+            seed: Fills ``random_state`` when the config leaves it unset.
+            **kwargs: Forwarded to the classifier.
 
         Returns:
             Tuple ``(model, trainer)`` after the fit call has returned.
@@ -413,13 +439,15 @@ class Trainer_Maker:
         Raises:
             ValueError: If ``accelerator`` is not ``'cpu'``.
         """
-        if model_params is None:
-            model_params = {}
+        # Copy so the unit's config is not modified.
+        model_params = dict(model_params or {})
 
         if accelerator != 'cpu':
             raise ValueError('Only CPU is supported for scikit-learn models.')
 
         model_params['num_class'] = n_classes
+        if seed is not None and model_params.get('random_state') is None:
+            model_params['random_state'] = seed
         clf_model = clf_object(
             fea_names=fea_names,
             model_params=model_params,
@@ -467,6 +495,7 @@ class Trainer_Maker:
         fea_names: list = None,
         model_params: dict = None,
         train_config: dict = None,
+        seed: int = None,
         **kwargs,
     ) -> tuple:
         """Build a :class:`Fake_Trainer` and fit an XGBoost classifier.
@@ -491,6 +520,7 @@ class Trainer_Maker:
             fea_names: Feature names forwarded to the classifier.
             model_params: XGBoost model parameters dict.
             train_config: XGBoost training parameters dict.
+            seed: XGBoost ``seed`` when the config does not set one.
             **kwargs: Ignored extra arguments.
 
         Returns:
@@ -504,6 +534,10 @@ class Trainer_Maker:
                 'tree_method': 'auto',
                 'max_depth': 6,
             }
+        # Copy so the unit's config is not modified.
+        model_params = dict(model_params)
+        if seed is not None:
+            model_params.setdefault('seed', seed)
         if train_config is None:
             train_config = {
                 'num_boost_round': 100,
