@@ -6,7 +6,11 @@ import pandas as pd
 
 from ageas.deck import last_round, mean_metric, metric_weight, split_metric_key
 from ageas.ops.n_iter_boost_selection import top_features_per_class
-from ageas.ops.n_iter_extraction import find_outliers, rank_top_factors
+from ageas.ops.n_iter_extraction import (
+    aggregate_iterations,
+    find_outliers,
+    rank_top_factors,
+)
 from ageas.ops.n_kfold_selection import passes_final_filter, round_survivors
 from ageas.tool.scores import contrast_classes, label_score_columns, score_table
 
@@ -77,6 +81,24 @@ class FeatureRuleTest(unittest.TestCase):
         )
         # q25 = 1, q75 = 3, so the threshold is 3 + 10 * 2 = 23.
         self.assertEqual(find_outliers(scores), ['e'])
+
+    def test_outlier_threshold_is_exclusive(self):
+        scores = pd.DataFrame({'Class_0_Scores': [0.0, 1.0, 2.0, 3.0, 23.0]})
+        self.assertEqual(find_outliers(scores), [])
+
+    def test_column_with_zero_iqr_flags_nothing(self):
+        # Mostly-zero scores (e.g. sparse L1 coefficients): q25 = q75 = 0.
+        scores = pd.DataFrame({'Class_0_Scores': [0.0] * 17 + [0.5, 0.6, 3.0]})
+        self.assertEqual(find_outliers(scores), [])
+
+    def test_iteration_scale_does_not_matter(self):
+        index = ['x', 'y', 'z']
+        first = pd.DataFrame({'Class_0_Scores': [3.0, 1.0, 0.0]}, index=index)
+        second = pd.DataFrame({'Class_0_Scores': [0.0, 1.0, 3.0]}, index=index)
+        plain = aggregate_iterations([first, second], second, {0: 'A'})
+        scaled = aggregate_iterations([first, second * 1000], second, {0: 'A'})
+        pd.testing.assert_frame_equal(plain, scaled)
+        self.assertAlmostEqual(plain['Class_0_Scores'].abs().sum(), 1.0)
 
     def test_rank_points_and_per_class_top_features(self):
         scores = pd.DataFrame(
