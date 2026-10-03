@@ -28,7 +28,7 @@ def configure_optimizers(
     sch_warmpup_factor: float = 1,
     sch_T_0: int = 20,
     sch_T_mult: int = 2,
-    min_lr: float = 2e-6,
+    sch_eta_min: float = 2e-6,
     total_steps: int = 0,
     steps_per_epoch: int = 0,
     **kwargs,
@@ -54,7 +54,7 @@ def configure_optimizers(
         sch_warmpup_factor: Multiplier applied during the warmup window.
         sch_T_0: ``T_0`` for :class:`~torch.optim.lr_scheduler.CosineAnnealingWarmRestarts`.
         sch_T_mult: ``T_mult`` for CosineAnnealingWarmRestarts.
-        min_lr: Minimum learning rate.
+        sch_eta_min: Minimum learning rate of the cosine and cyclic schedules.
         total_steps: Total number of training steps; required for
             ``'onecycle'``.
         steps_per_epoch: Steps per epoch; used by ``'cyclic'``.
@@ -105,12 +105,12 @@ def configure_optimizers(
             optimizer,
             T_0=sch_T_0,
             T_mult=sch_T_mult,
-            eta_min=min_lr,
+            eta_min=sch_eta_min,
         )
     elif scheduler == 'cyclic':
         lr_scheduler = CyclicLR(
             optimizer,
-            base_lr=min_lr,
+            base_lr=sch_eta_min,
             max_lr=learning_rate,
             step_size_up=steps_per_epoch // 2,
             step_size_down=steps_per_epoch // 2,

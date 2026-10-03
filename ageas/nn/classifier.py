@@ -29,6 +29,33 @@ _logger = logging.getLogger(__name__)
 
 __all__ = ['NN_Classifier', 'Mixer_Classifier']
 
+def _with_train_defaults(train_config: dict = None) -> dict:
+    """``train_config`` completed with the keys the model itself needs.
+
+    Without a config, :data:`DEFAULT_TRAIN_CONFIG` is used. A given config
+    only gets ``loss_reduction`` filled in. Optimizer and scheduler keys it
+    leaves out keep the defaults of :func:`~ageas.tool.configure_optimizers`.
+    """
+    if train_config is None:
+        return dict(DEFAULT_TRAIN_CONFIG)
+    return {'loss_reduction': 'mean', **train_config}
+
+
+# Training settings used when no ``train_config`` is given.
+DEFAULT_TRAIN_CONFIG = {
+    'loss_reduction': 'mean',
+    'optimizer': 'adamw',
+    'learning_rate': 1e-3,
+    'weight_decay': 1e-4,
+    'betas': (0.9, 0.999),
+    'momentum': 0.9,
+    'scheduler': 'cosine',
+    'sch_T_0': 10,
+    'sch_T_mult': 2,
+    'sch_eta_min': 1e-6,
+    'total_steps': 100,
+}
+
 NORM_DICT = {
     'BatchNorm1d': nn.BatchNorm1d,
     'GroupNorm': nn.GroupNorm,
@@ -76,7 +103,8 @@ class NN_Classifier(pl.LightningModule):
                 ``loss_reduction``, ``optimizer``, ``learning_rate``,
                 ``weight_decay``, ``betas``, ``momentum``, ``scheduler``,
                 ``sch_T_0``, ``sch_T_mult``, ``sch_eta_min``,
-                ``total_steps``.
+                ``total_steps``. See :func:`_with_train_defaults` for
+                missing keys.
         """
         if model_params is None:
             model_params = {
@@ -93,20 +121,7 @@ class NN_Classifier(pl.LightningModule):
                 'proj_size': 0,
                 'norm_layer': 'LayerNorm',
             }
-        if train_config is None:
-            train_config = {
-                'loss_reduction': 'mean',
-                'optimizer': 'adamw',
-                'learning_rate': 1e-3,
-                'weight_decay': 1e-4,
-                'betas': (0.9, 0.999),
-                'momentum': 0.9,
-                'scheduler': 'cosine',
-                'sch_T_0': 10,
-                'sch_T_mult': 2,
-                'sch_eta_min': 1e-6,
-                'total_steps': 100,
-            }
+        train_config = _with_train_defaults(train_config)
 
         super().__init__()
         # Use explicit names so save_hyperparameters() reads the current
@@ -537,20 +552,7 @@ class Mixer_Classifier(NN_Classifier):
                 'replace_stride_with_dilation': False,
                 'norm_layer': 'BatchNorm1d',
             }
-        if train_config is None:
-            train_config = {
-                'loss_reduction': 'mean',
-                'optimizer': 'adamw',
-                'learning_rate': 1e-3,
-                'weight_decay': 1e-4,
-                'betas': (0.9, 0.999),
-                'momentum': 0.9,
-                'scheduler': 'cosine',
-                'sch_T_0': 10,
-                'sch_T_mult': 2,
-                'sch_eta_min': 1e-6,
-                'total_steps': 100,
-            }
+        train_config = _with_train_defaults(train_config)
 
         super().__init__(model_params=model_params, train_config=train_config)
 

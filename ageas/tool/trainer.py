@@ -288,13 +288,37 @@ class Trainer_Maker:
             enable_checkpointing: If ``True``, enable checkpoint callbacks.
             **kwargs: Ignored extra arguments.
 
+        The Lightning settings above (``precision`` through
+        ``enable_checkpointing``) may also be given inside ``train_config``,
+        as the shipped configs do; there they take precedence.
+
         Returns:
             Tuple ``(model, trainer)`` after the fit call has returned.
         """
-        if model_params is None:
-            model_params = {}
-        if train_config is None:
-            train_config = {}
+        # Copies, so the unit's config is not modified.
+        model_params = dict(model_params or {})
+        train_config = dict(train_config or {})
+
+        precision = train_config.get('precision', precision)
+        num_nodes = train_config.get('num_nodes', num_nodes)
+        log_every_n_steps = train_config.get('log_every_n_steps', log_every_n_steps)
+        accumulate_grad_batches = train_config.get(
+            'accumulate_grad_batches', accumulate_grad_batches
+        )
+        gradient_clip_val = train_config.get('gradient_clip_val', gradient_clip_val)
+        gradient_clip_algorithm = train_config.get(
+            'gradient_clip_algorithm', gradient_clip_algorithm
+        )
+        ckpt_every_n_epochs = train_config.get('ckpt_every_n_epochs', ckpt_every_n_epochs)
+        save_last = train_config.get('save_last', save_last)
+        monitor = train_config.get('monitor', monitor)
+        save_top_k_ckpt = train_config.get('save_top_k_ckpt', save_top_k_ckpt)
+        gradient_accum_schedule = train_config.get(
+            'gradient_accum_schedule', gradient_accum_schedule
+        )
+        enable_checkpointing = train_config.get(
+            'enable_checkpointing', enable_checkpointing
+        )
 
         callbacks: list = []
         if enable_checkpointing:
@@ -313,7 +337,7 @@ class Trainer_Maker:
 
         trainer = Trainer(
             max_epochs=max_epochs,
-            devices=device,
+            devices=device if device is not None else 'auto',
             accelerator=accelerator,
             precision=precision,
             num_nodes=num_nodes,

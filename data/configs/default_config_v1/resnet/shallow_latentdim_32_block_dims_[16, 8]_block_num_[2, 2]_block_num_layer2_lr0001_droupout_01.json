@@ -3,15 +3,9 @@
     "model_params": {
         "latent_planes": 32,
         "block": "ResNet_Basic",
-        "block_nums": [
-            1,
-            1
-        ],
-        "block_planes": [
-            16,
-            8
-        ],
-        "dropout": 0.0,
+        "block_nums": [1, 1],
+        "block_planes": [16, 8],
+        "dropout": 0.1,
         "zero_init_residual": false,
         "groups": 1,
         "dilation": 1,
@@ -36,15 +30,10 @@
         "gradient_accum_schedule": null,
         "loss_reduction": "mean",
         "optimizer": "adamw",
-        "learning_rate": 0.0001,
+        "learning_rate": 0.001,
         "weight_decay": 0.0,
-        "betas": [
-            0.9,
-            0.999
-        ],
+        "betas": [0.9, 0.999],
         "momentum": 0.9,
-        "scheduler": null,
-        "lr": 0.001,
-        "dropout": 0.1
+        "scheduler": null
     }
 }

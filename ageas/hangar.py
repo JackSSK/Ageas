@@ -13,6 +13,7 @@ import os
 import logging
 
 import ageas.tool.JSON as JSON
+from ageas.config import validate_unit_config
 from ageas.unit import Unit
 
 _logger = logging.getLogger(__name__)
@@ -36,6 +37,8 @@ class Hangar:
         :param config_folder: Folder path that contains one subfolder per model
             type. Each subfolder must hold one or more JSON configuration
             files, each of which becomes a :class:`~ageas.Unit`.
+        :raises ValueError: If a config holds a key the code would not read
+            (see :func:`~ageas.config.validate_unit_config`).
         """
         self.units: dict = {}
         # Sorted for a reproducible unit order; hidden entries (.DS_Store,
@@ -50,10 +53,13 @@ class Hangar:
                 # splitext keeps dots inside names such as 'logreg_C_0.1'.
                 tail = os.path.splitext(unit_file)[0]
                 unit_id = f"{model_type}_{tail}"
+                path = os.path.join(type_dir, unit_file)
+                config = JSON.decode(path)
+                validate_unit_config(model_type, config, source=path)
                 self.units[unit_id] = Unit(
                     tail=tail,
                     unit_type=model_type,
-                    config=JSON.decode(os.path.join(type_dir, unit_file)),
+                    config=config,
                 )
         _logger.debug("Hangar loaded %d units from %s", len(self.units), config_folder)
 

@@ -4,14 +4,8 @@
         "block": "RNN_Residual_Encoder",
         "block_layer_type": "GRU",
         "block_num_layer": 1,
-        "block_nums": [
-            2,
-            2
-        ],
-        "block_dims": [
-            16,
-            4
-        ],
+        "block_nums": [2, 2],
+        "block_dims": [16, 4],
         "nonlinearity": "tanh",
         "bias": true,
         "dropout": 0.0,
@@ -37,14 +31,10 @@
         "optimizer": "adamw",
         "learning_rate": 0.01,
         "weight_decay": 0.001,
-        "betas": [
-            0.9,
-            0.999
-        ],
+        "betas": [0.9, 0.999],
         "momentum": 0.9,
         "scheduler": "cosine",
         "sch_T_0": 10,
-        "sch_T_mult": 2,
-        "sch_eta_min": 0.001
+        "sch_T_mult": 2
     }
 }
