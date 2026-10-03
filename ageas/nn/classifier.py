@@ -17,9 +17,14 @@ import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 from torchmetrics import AUROC, Accuracy, F1Score, MetricCollection
-from warnings import warn
 
-from ageas.nn.blocks import Factorized_Residual_Mixer, ResNet_Basic, get_block
+from ageas.nn.blocks import (
+    Factorized_Residual_Mixer,
+    ResNet_Basic,
+    RNN_Basic,
+    get_block,
+)
+from ageas.nn.embedding import Modality_Embedding
 from ageas.tool import Basic_Clf_Explainer as Clf_Explainer
 from ageas.tool import configure_optimizers as config_optim
 from ageas.tool import l1_normalize
@@ -159,14 +164,6 @@ class NN_Classifier(pl.LightningModule):
             if 'replace_stride_with_dilation' in model_params:
                 assert num_blocks == len(model_params['replace_stride_with_dilation'])
 
-        if 'block_layer_type' in model_params and (
-            len(set(model_params['block_nums'])) > 1
-        ):
-            warn(
-                'Hidden state (and cell state) will be re-initialized between '
-                'blocks due to inconsistent num_layers'
-            )
-
         if 'block' in model_params:
             self.block = get_block(model_params['block'])
         if 'norm_layer' in model_params:
@@ -175,7 +172,13 @@ class NN_Classifier(pl.LightningModule):
             self.norm_layer = NORM_DICT[model_params['norm_layer']]
 
     def _build_architecture(self, model_params: dict) -> None:
-        """Run sanity checks and build the linear embedder, blocks, and head.
+        """Run sanity checks and build the embedding stage, blocks, and head.
+
+        The embedding stage (:class:`~ageas.nn.embedding.Modality_Embedding`)
+        turns the ``(batch, n_modalities, len_in)`` input into ``seq_len``
+        tokens of ``latent_fea_dim / seq_len`` values. MLP units read one
+        token (``seq_len = 1``); RNN units read ``seq_len`` tokens (default
+        8) with a stacked depth of ``block_num_layer``.
 
         Subclasses override this hook to install a different module stack
         while inheriting the common ``__init__`` scaffolding (hparams,
@@ -183,30 +186,53 @@ class NN_Classifier(pl.LightningModule):
 
         Args:
             model_params: Architecture hyper-parameter dict.
+
+        Raises:
+            ValueError: If ``seq_len`` is set for a non-RNN unit, or doesn't
+                divide ``latent_fea_dim``.
         """
         self.sanity_check(model_params)
+        self.norm_layer = getattr(self, 'norm_layer', nn.LayerNorm)
+        is_rnn = isinstance(getattr(self, 'block', None), type) and issubclass(
+            self.block, RNN_Basic
+        )
 
-        if model_params['latent_fea_dim'] is not None:
-            self.current_fea_dim = model_params['latent_fea_dim']
-            self.embedder = nn.Sequential(
-                nn.Linear(model_params['len_in'], self.current_fea_dim, bias=True),
-                self.norm_layer(self.current_fea_dim),
-                nn.ReLU(inplace=True),
+        self.seq_len = model_params.get('seq_len', 8 if is_rnn else 1)
+        if not is_rnn and self.seq_len != 1:
+            raise ValueError(
+                'seq_len applies to RNN units only; MLP units read a single '
+                f'token (seq_len=1), got seq_len={self.seq_len}.'
             )
-        else:
-            self.current_fea_dim = model_params['len_in']
-            self.embedder = nn.Identity()
+        latent = model_params['latent_fea_dim']
+        if latent is not None and latent % self.seq_len:
+            raise ValueError(
+                f'latent_fea_dim ({latent}) must be divisible by '
+                f'seq_len ({self.seq_len}).'
+            )
+        self.embedder = Modality_Embedding(
+            n_modalities=model_params['inplanes'],
+            len_in=model_params['len_in'],
+            seq_len=self.seq_len,
+            token_dim=None if latent is None else latent // self.seq_len,
+            embedder=model_params.get('embedder', 'mlp'),
+            norm_layer=self.norm_layer,
+        )
+        self.current_fea_dim = self.embedder.token_dim
+
+        extra = {
+            k: v
+            for k, v in model_params.items()
+            if k not in ('block', 'n_blocks', 'out_dim', 'norm_layer',
+                         'block_nums', 'block_dims', 'seq_len', 'embedder',
+                         'block_num_layer')
+        }
+        if is_rnn:
+            extra['num_layers'] = model_params.get('block_num_layer', 1)
 
         self.blocks = nn.ModuleList()
         for num_blocks, out_dim in zip(
             model_params['block_nums'], model_params['block_dims']
         ):
-            extra = {
-                k: v
-                for k, v in model_params.items()
-                if k not in ('block', 'n_blocks', 'out_dim', 'norm_layer',
-                             'block_nums', 'block_dims')
-            }
             self.blocks.append(
                 self._make_block(
                     block=self.block,
@@ -218,7 +244,7 @@ class NN_Classifier(pl.LightningModule):
 
         self.dropout = nn.Dropout(p=model_params['dropout'])
         self.fc = nn.Linear(
-            model_params['inplanes'] * self.current_fea_dim,
+            self.seq_len * self.current_fea_dim,
             model_params['num_classes'],
             bias=True,
         )

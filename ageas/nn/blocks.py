@@ -456,51 +456,39 @@ class RNN_Basic(nn.Module):
 
         self.norm = norm_layer(out_dim)
 
-    def _main_forward(self, x_in: tuple) -> tuple:
-        """Run the recurrent layer, re-initializing hidden state when needed.
+    def _main_forward(self, x) -> tuple:
+        """Run the recurrent layer from a fresh (zero) state.
 
         Args:
-            x_in: Tuple ``(x, h0, c0)`` where ``h0`` and ``c0`` may be
-                ``None``.
+            x: ``(batch, seq_len, in_dim)`` tensor, or the ``(out, h, c)``
+                tuple of a preceding block. Only its output is used: blocks
+                are connected by their outputs, never by hidden state.
 
         Returns:
-            Tuple ``(out, h_temp, c_temp)``.
+            Tuple ``(x, out, h, c)``: the input tensor, the recurrent output,
+            and the final hidden (and, for LSTM, cell) state.
         """
-        x, h0, c0 = x_in
-        reinit = (h0 is None and c0 is None) or (
-            h0.shape[0] != self.num_layers * self.bidirectional
-        )
-
-        if reinit:
-            if self.layer_type == 'LSTM':
-                out, (h_temp, c_temp) = self.layer(x)
-            else:
-                out, h_temp = self.layer(x)
-                c_temp = None
+        if isinstance(x, tuple):
+            x = x[0]
+        if self.layer_type == 'LSTM':
+            out, (h, c) = self.layer(x)
         else:
-            if self.layer_type == 'LSTM':
-                assert h0.shape == c0.shape
-                out, (h_temp, c_temp) = self.layer(x, (h0, c0))
-            else:
-                out, h_temp = self.layer(x, h0)
-                c_temp = None
-
-        return out, h_temp, c_temp
+            out, h = self.layer(x)
+            c = None
+        return x, out, h, c
 
     def forward(self, x) -> tuple:
-        """Forward pass; accepts either a tensor or a ``(x, h0, c0)`` tuple.
+        """Forward pass over a token sequence.
 
         Args:
-            x: Input tensor or tuple ``(x, h0, c0)``.
+            x: ``(batch, seq_len, in_dim)`` tensor or a preceding block's
+                ``(out, h, c)`` tuple.
 
         Returns:
-            Tuple ``(out, h_temp, c_temp)`` with the normalised output.
+            Tuple ``(out, h, c)`` with the normalised output.
         """
-        if not isinstance(x, tuple):
-            x = (x, None, None)
-        out, h_temp, c_temp = self._main_forward(x)
-        out = self.norm(out)
-        return (out, h_temp, c_temp)
+        _, out, h, c = self._main_forward(x)
+        return (self.norm(out), h, c)
 
 
 class RNN_Residual_Encoder(RNN_Basic):
@@ -540,14 +528,11 @@ class RNN_Residual_Encoder(RNN_Basic):
         """Forward pass with residual skip connection.
 
         Args:
-            x: Input tensor or tuple ``(x, h0, c0)``.
+            x: ``(batch, seq_len, in_dim)`` tensor or a preceding block's
+                ``(out, h, c)`` tuple.
 
         Returns:
-            Tuple ``(out, h_temp, c_temp)`` with the normalised output.
+            Tuple ``(out, h, c)`` with the normalised output.
         """
-        if not isinstance(x, tuple):
-            x = (x, None, None)
-        out, h_temp, c_temp = super()._main_forward(x)
-        out = out + self.residual(x[0])
-        out = self.norm(out)
-        return (out, h_temp, c_temp)
+        x, out, h, c = self._main_forward(x)
+        return (self.norm(out + self.residual(x)), h, c)

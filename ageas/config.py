@@ -40,7 +40,7 @@ _DERIVED_NN_KEYS = frozenset({'num_classes', 'len_in', 'inplanes'})
 _NN_MODEL_KEYS = frozenset({
     'block', 'block_nums', 'block_dims', 'latent_fea_dim', 'dropout',
     'norm_layer', 'bias', 'block_layer_type', 'block_num_layer',
-    'nonlinearity', 'bidirectional', 'proj_size',
+    'nonlinearity', 'bidirectional', 'proj_size', 'embedder', 'seq_len',
 }) | _DERIVED_NN_KEYS
 
 _MIXER_MODEL_KEYS = frozenset({
